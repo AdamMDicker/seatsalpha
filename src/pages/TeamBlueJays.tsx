@@ -7,6 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import rogersCentreMap from "@/assets/rogers-centre-seating.png";
 
+interface TicketInfo {
+  id: string;
+  section: string;
+  row_name: string | null;
+  seat_number: string | null;
+  price: number;
+  quantity: number;
+  quantity_sold: number;
+  is_reseller_ticket: boolean;
+}
+
 interface GameEvent {
   id: string;
   title: string;
@@ -15,7 +26,7 @@ interface GameEvent {
   province: string;
   event_date: string;
   description: string | null;
-  tickets: { id: string; section: string; row_name: string | null; seat_number: string | null; price: number; quantity: number; quantity_sold: number }[];
+  tickets: TicketInfo[];
 }
 
 // Clickable hotspot zones mapped to the seating chart image (% positions)
@@ -52,10 +63,11 @@ const TeamBlueJays = () => {
         for (const game of data) {
           const { data: tickets } = await supabase
             .from("tickets")
-            .select("id, section, row_name, seat_number, price, quantity, quantity_sold")
+            .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket")
             .eq("event_id", game.id)
             .eq("is_active", true);
-          gamesWithTickets.push({ ...game, tickets: tickets || [] });
+          const sorted = (tickets || []).sort((a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0));
+          gamesWithTickets.push({ ...game, tickets: sorted });
         }
         setGames(gamesWithTickets);
         if (gamesWithTickets.length > 0) setSelectedGame(gamesWithTickets[0]);
@@ -300,10 +312,17 @@ const TeamBlueJays = () => {
                       ← All Sections
                     </button>
                     <div className="space-y-3">
-                      {sectionTickets.map((ticket) => (
-                        <div key={ticket.id} className="glass rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-all">
+                      {sectionTickets.sort((a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)).map((ticket) => (
+                        <div key={ticket.id} className={`glass rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-all ${!ticket.is_reseller_ticket ? 'border-primary/20' : ''}`}>
                           <div>
-                            <p className="font-semibold text-foreground">Section {ticket.section}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-foreground">Section {ticket.section}</p>
+                              {!ticket.is_reseller_ticket ? (
+                                <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold">Featured</span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] font-semibold">Reseller</span>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground">
                               {ticket.row_name && `Row ${ticket.row_name}`}
                               {ticket.seat_number && ` · Seats ${ticket.seat_number}`}
