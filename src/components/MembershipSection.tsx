@@ -1,0 +1,69 @@
+import { Button } from "@/components/ui/button";
+import { Crown, Check, Zap } from "lucide-react";
+
+const benefits = [
+  "Zero fees on all ticket purchases for 12 months",
+  "Early access to presale events",
+  "Exclusive member-only deals",
+  "Priority customer support",
+  "Free cancellation on select events",
+];
+
+const MembershipSection = () => {
+  return (
+    <section className="py-20 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-card/50 to-background" />
+
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-4xl mx-auto">
+          <div className="glass rounded-2xl p-8 md:p-12 glow-gold relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl" />
+
+            <div className="flex flex-col md:flex-row gap-10 items-center">
+              <div className="flex-1 space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/15 border border-gold/30">
+                  <Crown className="h-4 w-4 text-gold" />
+                  <span className="text-sm font-semibold text-gold">seats.ca Membership</span>
+                </div>
+
+                <h2 className="font-display text-3xl md:text-4xl font-bold">
+                  Save More with
+                  <br />
+                  <span className="text-gold">Annual Membership</span>
+                </h2>
+
+                <p className="text-muted-foreground">
+                  Join for just $20/year and never pay a service fee again. Most members save over $200 in their first year.
+                </p>
+
+                <ul className="space-y-3">
+                  {benefits.map((benefit, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <Check className="h-5 w-5 text-gold mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-foreground/80">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button variant="gold" size="lg" className="w-full sm:w-auto">
+                  <Zap className="h-4 w-4" />
+                  Join for $20/year
+                </Button>
+              </div>
+
+              <div className="flex-shrink-0 text-center">
+                <div className="w-48 h-48 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center glow-gold">
+                  <span className="font-display text-5xl font-bold text-gold">$20</span>
+                  <span className="text-sm text-muted-foreground mt-1">per year</span>
+                  <span className="text-xs text-gold/70 mt-0.5">Save $200+ avg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default MembershipSection;
