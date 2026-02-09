@@ -5,12 +5,12 @@ import { useToast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 
 const AdminResellers = () => {
-  const [resellers, setResellers] = useState<(Tables<"resellers"> & { profiles?: { full_name: string | null } | null })[]>([]);
+  const [resellers, setResellers] = useState<Tables<"resellers">[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const fetchResellers = async () => {
-    const { data } = await supabase.from("resellers").select("*, profiles:user_id(full_name)");
+    const { data } = await supabase.from("resellers").select("*");
     setResellers(data || []);
     setLoading(false);
   };
