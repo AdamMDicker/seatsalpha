@@ -5,8 +5,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Pencil, Eye, EyeOff } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Eye, EyeOff, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
+
+type OrderWithItems = Tables<"orders"> & {
+  order_items: (Tables<"order_items"> & { tickets: { section: string; row_name: string | null; events: { title: string } | null } | null })[];
+};
 
 const AdminCustomers = () => {
   const [customers, setCustomers] = useState<Tables<"profiles">[]>([]);
@@ -16,6 +21,9 @@ const AdminCustomers = () => {
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [viewingOrders, setViewingOrders] = useState<Tables<"profiles"> | null>(null);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
 
   const fetchCustomers = async () => {
     const { data } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
@@ -30,6 +38,18 @@ const AdminCustomers = () => {
     setForm({ full_name: c.full_name || "", city: c.city || "", province: c.province || "" });
     setNewPassword("");
     setShowPassword(false);
+  };
+
+  const openOrders = async (c: Tables<"profiles">) => {
+    setViewingOrders(c);
+    setOrdersLoading(true);
+    const { data } = await supabase
+      .from("orders")
+      .select("*, order_items(*, tickets(section, row_name, events(title)))")
+      .eq("user_id", c.user_id)
+      .order("created_at", { ascending: false });
+    setOrders((data as OrderWithItems[]) || []);
+    setOrdersLoading(false);
   };
 
   const saveProfile = async () => {
@@ -53,7 +73,6 @@ const AdminCustomers = () => {
         setSaving(false);
         return;
       }
-      const { data: { session } } = await supabase.auth.getSession();
       const res = await supabase.functions.invoke("admin-update-password", {
         body: { user_id: editing.user_id, new_password: newPassword },
       });
@@ -86,6 +105,9 @@ const AdminCustomers = () => {
             </div>
             <div className="flex items-center gap-3">
               <p className="text-xs text-muted-foreground">Joined {new Date(c.created_at).toLocaleDateString()}</p>
+              <Button size="sm" variant="outline" onClick={() => openOrders(c)}>
+                <ShoppingCart className="h-3.5 w-3.5 mr-1" /> Orders
+              </Button>
               <Button size="sm" variant="outline" onClick={() => openEdit(c)}>
                 <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
               </Button>
@@ -95,6 +117,7 @@ const AdminCustomers = () => {
         {customers.length === 0 && <p className="text-muted-foreground text-center py-8">No customers yet.</p>}
       </div>
 
+      {/* Edit Dialog */}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
           <DialogHeader>
@@ -128,6 +151,43 @@ const AdminCustomers = () => {
               {saving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Orders Dialog */}
+      <Dialog open={!!viewingOrders} onOpenChange={(o) => !o && setViewingOrders(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Orders — {viewingOrders?.full_name || "Customer"}</DialogTitle>
+          </DialogHeader>
+          {ordersLoading ? (
+            <p className="text-muted-foreground py-4">Loading orders...</p>
+          ) : orders.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No orders found.</p>
+          ) : (
+            <div className="space-y-4 pt-2">
+              {orders.map((order) => (
+                <div key={order.id} className="border border-border rounded-lg p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">${Number(order.total_amount).toFixed(2)}</p>
+                    <Badge variant={order.status === "completed" ? "default" : order.status === "pending" ? "secondary" : "destructive"}>
+                      {order.status}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
+                  {order.order_items.length > 0 && (
+                    <div className="space-y-1 pt-1">
+                      {order.order_items.map((item) => (
+                        <p key={item.id} className="text-xs text-muted-foreground">
+                          {item.tickets?.events?.title || "Event"} — {item.tickets?.section}{item.tickets?.row_name ? `, Row ${item.tickets.row_name}` : ""} × {item.quantity} @ ${Number(item.unit_price).toFixed(2)}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
