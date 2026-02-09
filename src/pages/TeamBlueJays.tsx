@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Calendar, MapPin, Clock, Tag, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Clock, Tag, ChevronRight, ZoomIn, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import rogersCentreMap from "@/assets/rogers-centre-seating.png";
