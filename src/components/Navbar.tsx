@@ -94,6 +94,11 @@ const Navbar = () => {
                 <Shield className="h-3.5 w-3.5" /> Admin
               </Link>
             )}
+            {user && (
+              <Link to="/reseller" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                Reseller
+              </Link>
+            )}
             {user ? (
               <div className="flex items-center gap-3">
                 <span className="text-xs text-muted-foreground">{user.email}</span>
