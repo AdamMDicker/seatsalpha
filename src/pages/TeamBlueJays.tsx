@@ -67,7 +67,7 @@ const TeamBlueJays = () => {
             .eq("event_id", game.id)
             .eq("is_active", true);
           const sorted = (tickets || []).sort((a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0));
-          gamesWithTickets.push({ ...game, tickets: tickets || [] });
+          gamesWithTickets.push({ ...game, tickets: sorted });
         }
         setGames(gamesWithTickets);
         if (gamesWithTickets.length > 0) setSelectedGame(gamesWithTickets[0]);
