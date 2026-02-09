@@ -124,7 +124,6 @@ const AdminCustomers = () => {
                 </button>
               </div>
             </div>
-            </div>
             <Button onClick={saveProfile} disabled={saving} className="w-full">
               {saving ? "Saving..." : "Save Changes"}
             </Button>
