@@ -200,6 +200,38 @@ export type Database = {
         }
         Relationships: []
       }
+      reseller_leagues: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          league: string
+          reseller_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          league: string
+          reseller_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          league?: string
+          reseller_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reseller_leagues_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: false
+            referencedRelation: "resellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resellers: {
         Row: {
           business_name: string
