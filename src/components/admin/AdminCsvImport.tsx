@@ -45,9 +45,34 @@ const AdminCsvImport = () => {
     });
   };
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_ROWS = 1000;
+
+  const validateRow = (row: CsvRow, index: number): string | null => {
+    if (row.price && (isNaN(parseFloat(row.price)) || parseFloat(row.price) < 0)) {
+      return `Row ${index + 1}: Invalid price "${row.price}"`;
+    }
+    if (row.quantity && (isNaN(parseInt(row.quantity)) || parseInt(row.quantity) < 1)) {
+      return `Row ${index + 1}: Invalid quantity "${row.quantity}"`;
+    }
+    if (row.event_date && isNaN(Date.parse(row.event_date))) {
+      return `Row ${index + 1}: Invalid date "${row.event_date}"`;
+    }
+    if (row.title && row.title.length > 255) {
+      return `Row ${index + 1}: Title too long (max 255 chars)`;
+    }
+    return null;
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({ title: "File too large", description: "Maximum file size is 5MB", variant: "destructive" });
+      return;
+    }
+
     setFileName(file.name);
     setResults(null);
 
@@ -55,6 +80,24 @@ const AdminCsvImport = () => {
     reader.onload = (evt) => {
       const text = evt.target?.result as string;
       const parsed = parseCsv(text);
+
+      if (parsed.length > MAX_ROWS) {
+        toast({ title: "Too many rows", description: `Maximum ${MAX_ROWS} rows allowed. File has ${parsed.length}.`, variant: "destructive" });
+        return;
+      }
+
+      // Validate all rows
+      const errors: string[] = [];
+      parsed.forEach((row, i) => {
+        const err = validateRow(row, i);
+        if (err) errors.push(err);
+      });
+
+      if (errors.length > 0) {
+        toast({ title: "Validation errors", description: errors.slice(0, 3).join("; ") + (errors.length > 3 ? ` (+${errors.length - 3} more)` : ""), variant: "destructive" });
+        return;
+      }
+
       setCsvData(parsed);
       toast({ title: `Parsed ${parsed.length} rows from ${file.name}` });
     };

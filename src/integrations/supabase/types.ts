@@ -133,8 +133,6 @@ export type Database = {
       }
       orders: {
         Row: {
-          buyer_city: string | null
-          buyer_province: string | null
           created_at: string
           fees_amount: number
           flight_added: boolean
@@ -147,8 +145,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          buyer_city?: string | null
-          buyer_province?: string | null
           created_at?: string
           fees_amount?: number
           flight_added?: boolean
@@ -161,8 +157,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          buyer_city?: string | null
-          buyer_province?: string | null
           created_at?: string
           fees_amount?: number
           flight_added?: boolean
