@@ -132,10 +132,10 @@ const ResellerDashboard = () => {
             </div>
           ) : reseller?.is_enabled ? (
             <div className="glass rounded-xl p-8 max-w-lg mx-auto text-center space-y-4">
-              <CheckCircle className="h-12 w-12 text-primary mx-auto" />
-              <h2 className="font-display text-xl font-semibold">You're Approved!</h2>
+              <AlertCircle className="h-12 w-12 text-gold mx-auto" />
+              <h2 className="font-display text-xl font-semibold">Application Under Review</h2>
               <p className="text-sm text-muted-foreground">
-                Welcome, <strong>{reseller.business_name}</strong>. Your tickets are live on seats.ca. Contact us to manage your inventory or upload new listings.
+                Your reseller application for <strong>{reseller.business_name}</strong> has been approved. You'll receive an email with next steps.
               </p>
             </div>
           ) : (
