@@ -332,7 +332,6 @@ const TeamBlueJays = () => {
                   );
                 })()}
               </div>
-              </div>
             </div>
           )}
         </div>
