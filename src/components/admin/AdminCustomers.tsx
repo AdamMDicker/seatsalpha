@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Pencil } from "lucide-react";
+import { Pencil, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 const AdminCustomers = () => {
@@ -14,6 +14,7 @@ const AdminCustomers = () => {
   const [editing, setEditing] = useState<Tables<"profiles"> | null>(null);
   const [form, setForm] = useState({ full_name: "", city: "", province: "" });
   const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const fetchCustomers = async () => {
@@ -28,6 +29,7 @@ const AdminCustomers = () => {
     setEditing(c);
     setForm({ full_name: c.full_name || "", city: c.city || "", province: c.province || "" });
     setNewPassword("");
+    setShowPassword(false);
   };
 
   const saveProfile = async () => {
@@ -115,7 +117,12 @@ const AdminCustomers = () => {
             </div>
             <div className="space-y-2">
               <Label>New Password (leave blank to keep current)</Label>
-              <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" />
+              <div className="relative">
+                <Input type={showPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <Button onClick={saveProfile} disabled={saving} className="w-full">
               {saving ? "Saving..." : "Save Changes"}
