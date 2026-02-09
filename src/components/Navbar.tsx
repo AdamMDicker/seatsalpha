@@ -44,6 +44,9 @@ const Navbar = () => {
             <Link to="/membership" className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors">
               Membership
             </Link>
+            <Link to="/reseller" className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors">
+              Resellers
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-6" ref={dropdownRef}>
