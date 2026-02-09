@@ -19,7 +19,7 @@ const features = [
   {
     icon: Car,
     title: "Ride to the Venue",
-    description: "Add an Uber ride to and from your event at checkout for a seamless experience.",
+    description: "Add an Uber ride is available to and from your event at checkout for a seamless experience.",
   },
 ];
 
