@@ -56,7 +56,7 @@ const MembershipSection = () => {
 
               <div className="flex-shrink-0 text-center">
                 <div className="w-48 h-48 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center glow-gold">
-                  <span className="font-display text-5xl font-bold text-gold">$20</span>
+                  <span className="font-display text-4xl font-bold text-gold">$19.95</span>
                   <span className="text-sm text-muted-foreground mt-1">per year</span>
                   <span className="text-xs text-gold/70 mt-0.5">Save $200+ avg</span>
                 </div>
