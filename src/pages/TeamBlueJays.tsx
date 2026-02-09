@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Calendar, MapPin, Clock, Tag, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Clock, Tag, ChevronRight, ZoomIn, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import rogersCentreMap from "@/assets/rogers-centre-seating.png";
@@ -37,6 +37,7 @@ const TeamBlueJays = () => {
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "home" | "away">("all");
   const [loading, setLoading] = useState(true);
+  const [mapZoomed, setMapZoomed] = useState(false);
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -157,12 +158,20 @@ const TeamBlueJays = () => {
                   Rogers Centre Seating Map
                 </h2>
                 <div className="glass rounded-xl p-4 relative">
-                  <div className="relative">
+                  <div className="relative group">
                     <img
                       src={rogersCentreMap}
                       alt="Rogers Centre Seating Chart"
-                      className="w-full rounded-lg"
+                      className="w-full rounded-lg cursor-pointer"
+                      onClick={() => setMapZoomed(true)}
                     />
+                    {/* Zoom hint */}
+                    <button
+                      onClick={() => setMapZoomed(true)}
+                      className="absolute top-3 right-3 bg-card/80 backdrop-blur-sm border border-border rounded-lg p-2 opacity-80 group-hover:opacity-100 transition-opacity"
+                    >
+                      <ZoomIn className="h-4 w-4 text-foreground" />
+                    </button>
                     {/* Clickable overlay hotspots */}
                     {SECTIONS.map((sec) => {
                       const hasTickets = availableSections.includes(sec.id);
@@ -201,9 +210,30 @@ const TeamBlueJays = () => {
                     <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(42, 90%, 55%)" }} /> 200 Level</span>
                     <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(220, 60%, 55%)" }} /> 300 Level</span>
                     <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(142, 72%, 42%)" }} /> 500 Level</span>
-                    <span className="text-muted-foreground/60 italic">Click a section to view tickets</span>
+                    <span className="text-muted-foreground/60 italic">Click image to enlarge</span>
                   </div>
                 </div>
+
+                {/* Fullscreen lightbox */}
+                {mapZoomed && (
+                  <div
+                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+                    onClick={() => setMapZoomed(false)}
+                  >
+                    <button
+                      className="absolute top-4 right-4 bg-card/80 border border-border rounded-full p-2 hover:bg-card transition-colors z-10"
+                      onClick={() => setMapZoomed(false)}
+                    >
+                      <X className="h-6 w-6 text-foreground" />
+                    </button>
+                    <img
+                      src={rogersCentreMap}
+                      alt="Rogers Centre Seating Chart - Full Size"
+                      className="max-w-full max-h-[90vh] object-contain rounded-xl"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                )}
 
                 {/* Game info */}
                 <div className="glass rounded-xl p-4 mt-4 space-y-2">
