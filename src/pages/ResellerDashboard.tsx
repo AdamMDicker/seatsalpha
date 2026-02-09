@@ -122,12 +122,12 @@ const ResellerDashboard = () => {
           {/* Application / Status */}
           {isLoading || loading ? (
             <div className="text-center text-muted-foreground py-8">Loading...</div>
-          ) : reseller && !reseller.is_enabled ? (
+          ) : reseller ? (
             <div className="glass rounded-xl p-8 max-w-lg mx-auto text-center space-y-4">
               <AlertCircle className="h-12 w-12 text-gold mx-auto" />
               <h2 className="font-display text-xl font-semibold">Application Under Review</h2>
               <p className="text-sm text-muted-foreground">
-                Your reseller application for <strong>{reseller.business_name}</strong> is being reviewed. Our team will enable your account shortly.
+                Your reseller application for <strong>{reseller.business_name}</strong> is being reviewed. You'll receive an email once your account is approved.
               </p>
             </div>
           ) : reseller?.is_enabled ? (
