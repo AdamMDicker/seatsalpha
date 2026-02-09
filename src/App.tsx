@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import EventDetail from "./pages/EventDetail";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
+import TeamBlueJays from "./pages/TeamBlueJays";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
