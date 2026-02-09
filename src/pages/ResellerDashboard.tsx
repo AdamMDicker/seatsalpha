@@ -62,8 +62,6 @@ const ResellerDashboard = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Application submitted!", description: "Our team will review your application and get back to you." });
-      const { data } = await supabase.from("resellers").select("business_name, is_enabled").eq("user_id", user.id).maybeSingle();
-      setReseller(data);
     }
     setApplying(false);
   };
