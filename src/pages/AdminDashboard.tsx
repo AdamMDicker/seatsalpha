@@ -6,15 +6,17 @@ import Navbar from "@/components/Navbar";
 import AdminEvents from "@/components/admin/AdminEvents";
 import AdminTickets from "@/components/admin/AdminTickets";
 import AdminResellers from "@/components/admin/AdminResellers";
+import AdminCustomers from "@/components/admin/AdminCustomers";
 import AdminOrders from "@/components/admin/AdminOrders";
 import AdminCsvImport from "@/components/admin/AdminCsvImport";
-import { LayoutDashboard, Calendar, Ticket, Users, ShoppingCart, Upload } from "lucide-react";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload } from "lucide-react";
 
 const tabs = [
   { id: "events", label: "Events", icon: Calendar },
   { id: "tickets", label: "Tickets", icon: Ticket },
   { id: "import", label: "CSV Import", icon: Upload },
   { id: "resellers", label: "Resellers", icon: Users },
+  { id: "customers", label: "Customers", icon: UserCheck },
   { id: "orders", label: "Orders", icon: ShoppingCart },
 ];
 
