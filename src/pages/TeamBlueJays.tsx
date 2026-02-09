@@ -18,15 +18,16 @@ interface GameEvent {
   tickets: { id: string; section: string; row_name: string | null; seat_number: string | null; price: number; quantity: number; quantity_sold: number }[];
 }
 
+// Clickable hotspot zones mapped to the seating chart image (% positions)
 const SECTIONS = [
-  { id: "100L", label: "100 Level Left", color: "hsl(353, 82%, 49%)", x: 20, y: 55, w: 18, h: 14 },
-  { id: "100R", label: "100 Level Right", color: "hsl(353, 82%, 49%)", x: 62, y: 55, w: 18, h: 14 },
-  { id: "200L", label: "200 Level Left", color: "hsl(42, 90%, 55%)", x: 14, y: 42, w: 16, h: 12 },
-  { id: "200R", label: "200 Level Right", color: "hsl(42, 90%, 55%)", x: 70, y: 42, w: 16, h: 12 },
-  { id: "300L", label: "300 Level Left", color: "hsl(220, 60%, 55%)", x: 10, y: 30, w: 14, h: 11 },
-  { id: "300R", label: "300 Level Right", color: "hsl(220, 60%, 55%)", x: 76, y: 30, w: 14, h: 11 },
-  { id: "500L", label: "500 Level Left", color: "hsl(142, 72%, 42%)", x: 6, y: 18, w: 12, h: 11 },
-  { id: "500R", label: "500 Level Right", color: "hsl(142, 72%, 42%)", x: 82, y: 18, w: 12, h: 11 },
+  { id: "100L", label: "100 Level Left (Sections 107-113)", color: "hsl(353, 82%, 49%)", left: 5, top: 45, width: 18, height: 22 },
+  { id: "100R", label: "100 Level Right (Sections 115-121)", color: "hsl(353, 82%, 49%)", left: 77, top: 45, width: 18, height: 22 },
+  { id: "200L", label: "200 Level Left (Sections 211-221)", color: "hsl(42, 90%, 55%)", left: 8, top: 28, width: 16, height: 16 },
+  { id: "200R", label: "200 Level Right (Sections 227-237)", color: "hsl(42, 90%, 55%)", left: 76, top: 28, width: 16, height: 16 },
+  { id: "300L", label: "300 Level Left (Suites)", color: "hsl(220, 60%, 55%)", left: 12, top: 22, width: 14, height: 8 },
+  { id: "300R", label: "300 Level Right (Suites)", color: "hsl(220, 60%, 55%)", left: 74, top: 22, width: 14, height: 8 },
+  { id: "500L", label: "500 Level Left (Sections 511-521)", color: "hsl(142, 72%, 42%)", left: 4, top: 8, width: 18, height: 16 },
+  { id: "500R", label: "500 Level Right (Sections 527-537)", color: "hsl(142, 72%, 42%)", left: 78, top: 8, width: 18, height: 16 },
 ];
 
 const TeamBlueJays = () => {
