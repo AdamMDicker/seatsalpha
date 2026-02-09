@@ -179,7 +179,7 @@ const ResellerDashboard = () => {
                   </div>
 
                   <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">How many tickets do you typically hold?</label>
+                    <label className="text-sm text-muted-foreground mb-1 block">How many tickets do you own?</label>
                     <input
                       type="number"
                       value={form.ticketCount}
