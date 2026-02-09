@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { Calendar, MapPin, Clock, Tag, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import rogersCentreMap from "@/assets/rogers-centre-seating.png";
 
 interface GameEvent {
   id: string;
@@ -17,15 +18,16 @@ interface GameEvent {
   tickets: { id: string; section: string; row_name: string | null; seat_number: string | null; price: number; quantity: number; quantity_sold: number }[];
 }
 
+// Clickable hotspot zones mapped to the seating chart image (% positions)
 const SECTIONS = [
-  { id: "100L", label: "100 Level Left", color: "hsl(353, 82%, 49%)", x: 20, y: 55, w: 18, h: 14 },
-  { id: "100R", label: "100 Level Right", color: "hsl(353, 82%, 49%)", x: 62, y: 55, w: 18, h: 14 },
-  { id: "200L", label: "200 Level Left", color: "hsl(42, 90%, 55%)", x: 14, y: 42, w: 16, h: 12 },
-  { id: "200R", label: "200 Level Right", color: "hsl(42, 90%, 55%)", x: 70, y: 42, w: 16, h: 12 },
-  { id: "300L", label: "300 Level Left", color: "hsl(220, 60%, 55%)", x: 10, y: 30, w: 14, h: 11 },
-  { id: "300R", label: "300 Level Right", color: "hsl(220, 60%, 55%)", x: 76, y: 30, w: 14, h: 11 },
-  { id: "500L", label: "500 Level Left", color: "hsl(142, 72%, 42%)", x: 6, y: 18, w: 12, h: 11 },
-  { id: "500R", label: "500 Level Right", color: "hsl(142, 72%, 42%)", x: 82, y: 18, w: 12, h: 11 },
+  { id: "100L", label: "100 Level Left (Sections 107-113)", color: "hsl(353, 82%, 49%)", left: 5, top: 45, width: 18, height: 22 },
+  { id: "100R", label: "100 Level Right (Sections 115-121)", color: "hsl(353, 82%, 49%)", left: 77, top: 45, width: 18, height: 22 },
+  { id: "200L", label: "200 Level Left (Sections 211-221)", color: "hsl(42, 90%, 55%)", left: 8, top: 28, width: 16, height: 16 },
+  { id: "200R", label: "200 Level Right (Sections 227-237)", color: "hsl(42, 90%, 55%)", left: 76, top: 28, width: 16, height: 16 },
+  { id: "300L", label: "300 Level Left (Suites)", color: "hsl(220, 60%, 55%)", left: 12, top: 22, width: 14, height: 8 },
+  { id: "300R", label: "300 Level Right (Suites)", color: "hsl(220, 60%, 55%)", left: 74, top: 22, width: 14, height: 8 },
+  { id: "500L", label: "500 Level Left (Sections 511-521)", color: "hsl(142, 72%, 42%)", left: 4, top: 8, width: 18, height: 16 },
+  { id: "500R", label: "500 Level Right (Sections 527-537)", color: "hsl(142, 72%, 42%)", left: 78, top: 8, width: 18, height: 16 },
 ];
 
 const TeamBlueJays = () => {
@@ -154,60 +156,52 @@ const TeamBlueJays = () => {
                 <h2 className="font-display text-lg font-semibold text-foreground mb-4">
                   Rogers Centre Seating Map
                 </h2>
-                <div className="glass rounded-xl p-6 relative">
-                  <svg viewBox="0 0 100 80" className="w-full" xmlns="http://www.w3.org/2000/svg">
-                    {/* Field */}
-                    <ellipse cx="50" cy="62" rx="16" ry="10" fill="hsl(142, 50%, 30%)" stroke="hsl(142, 50%, 40%)" strokeWidth="0.3" />
-                    <text x="50" y="63" textAnchor="middle" fill="hsl(142, 50%, 60%)" fontSize="3" fontWeight="600">FIELD</text>
-
-                    {/* Diamond */}
-                    <polygon points="50,54 54,58 50,62 46,58" fill="hsl(35, 60%, 50%)" opacity="0.5" />
-
-                    {/* Sections */}
+                <div className="glass rounded-xl p-4 relative">
+                  <div className="relative">
+                    <img
+                      src={rogersCentreMap}
+                      alt="Rogers Centre Seating Chart"
+                      className="w-full rounded-lg"
+                    />
+                    {/* Clickable overlay hotspots */}
                     {SECTIONS.map((sec) => {
                       const hasTickets = availableSections.includes(sec.id);
                       const isSelected = selectedSection === sec.id;
                       const isHovered = hoveredSection === sec.id;
                       return (
-                        <g key={sec.id}>
-                          <rect
-                            x={sec.x}
-                            y={sec.y}
-                            width={sec.w}
-                            height={sec.h}
-                            rx="1.5"
-                            fill={hasTickets ? sec.color : "hsl(220, 12%, 18%)"}
-                            opacity={isSelected ? 1 : isHovered && hasTickets ? 0.85 : hasTickets ? 0.6 : 0.25}
-                            stroke={isSelected ? "white" : "transparent"}
-                            strokeWidth={isSelected ? "0.8" : "0"}
-                            className={hasTickets ? "cursor-pointer transition-all" : ""}
-                            onMouseEnter={() => hasTickets && setHoveredSection(sec.id)}
-                            onMouseLeave={() => setHoveredSection(null)}
-                            onClick={() => hasTickets && setSelectedSection(sec.id)}
-                          />
-                          <text
-                            x={sec.x + sec.w / 2}
-                            y={sec.y + sec.h / 2 + 1}
-                            textAnchor="middle"
-                            fill="white"
-                            fontSize="2.5"
-                            fontWeight="600"
-                            className="pointer-events-none"
-                          >
-                            {sec.id}
-                          </text>
-                        </g>
+                        <div
+                          key={sec.id}
+                          className={`absolute rounded transition-all ${hasTickets ? "cursor-pointer" : ""}`}
+                          style={{
+                            left: `${sec.left}%`,
+                            top: `${sec.top}%`,
+                            width: `${sec.width}%`,
+                            height: `${sec.height}%`,
+                            background: hasTickets
+                              ? isSelected
+                                ? `${sec.color.replace(")", " / 0.5)")}`
+                                : isHovered
+                                  ? `${sec.color.replace(")", " / 0.35)")}`
+                                  : "transparent"
+                              : "hsla(0, 0%, 0%, 0.4)",
+                            border: isSelected ? "2px solid white" : hasTickets && isHovered ? `2px solid ${sec.color}` : "2px solid transparent",
+                          }}
+                          onMouseEnter={() => hasTickets && setHoveredSection(sec.id)}
+                          onMouseLeave={() => setHoveredSection(null)}
+                          onClick={() => hasTickets && setSelectedSection(sec.id)}
+                          title={hasTickets ? `${sec.label} - Click to view tickets` : `${sec.label} - No tickets available`}
+                        />
                       );
                     })}
-                  </svg>
+                  </div>
 
                   {/* Legend */}
-                  <div className="flex flex-wrap gap-3 mt-4 text-xs">
+                  <div className="flex flex-wrap gap-3 mt-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(353, 82%, 49%)" }} /> 100 Level</span>
                     <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(42, 90%, 55%)" }} /> 200 Level</span>
                     <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(220, 60%, 55%)" }} /> 300 Level</span>
                     <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(142, 72%, 42%)" }} /> 500 Level</span>
-                    <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-muted" /> Unavailable</span>
+                    <span className="text-muted-foreground/60 italic">Click a section to view tickets</span>
                   </div>
                 </div>
 
