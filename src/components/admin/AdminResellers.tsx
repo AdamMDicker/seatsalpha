@@ -39,7 +39,7 @@ const AdminResellers = () => {
             <div>
               <h3 className="font-semibold text-foreground">{r.business_name}</h3>
               <p className="text-sm text-muted-foreground">
-                {(r.profiles as any)?.full_name || "Unknown"} · Joined {new Date(r.created_at).toLocaleDateString()}
+                Joined {new Date(r.created_at).toLocaleDateString()}
               </p>
             </div>
             <Button
