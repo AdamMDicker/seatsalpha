@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Crown, Check, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const benefits = [
   "Zero fees on all ticket purchases for 12 months",
