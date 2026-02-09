@@ -1,216 +1,243 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Store, Plus, Package, AlertCircle } from "lucide-react";
-import type { Tables } from "@/integrations/supabase/types";
+import { Store, DollarSign, Eye, Zap, Shield, Users, CheckCircle, AlertCircle } from "lucide-react";
+
+const benefits = [
+  { icon: DollarSign, title: "Zero Listing Fees", description: "List your tickets for free — we only take a small commission on completed sales." },
+  { icon: Eye, title: "Maximum Exposure", description: "Your tickets appear alongside our featured inventory on every team page and the homepage." },
+  { icon: Zap, title: "Instant Listings", description: "Upload your inventory and have tickets live within minutes of admin approval." },
+  { icon: Shield, title: "Trusted Platform", description: "seats.ca is Canada's trusted no-fee ticket marketplace. Your tickets are backed by our buyer guarantee." },
+  { icon: Users, title: "Growing Audience", description: "Tap into our rapidly growing base of Canadian sports, concert, and theatre fans." },
+];
 
 const ResellerDashboard = () => {
   const { user, isLoading } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [reseller, setReseller] = useState<Tables<"resellers"> | null>(null);
-  const [tickets, setTickets] = useState<(Tables<"tickets"> & { events?: { title: string } | null })[]>([]);
-  const [events, setEvents] = useState<Tables<"events">[]>([]);
+  const [reseller, setReseller] = useState<{ business_name: string; is_enabled: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
-  const [businessName, setBusinessName] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ event_id: "", section: "", row_name: "", seat_number: "", price: "", quantity: "1" });
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    companyName: "",
+    phone: "",
+    email: "",
+    ticketCount: "",
+  });
 
   useEffect(() => {
-    if (!isLoading && !user) navigate("/auth");
-  }, [user, isLoading, navigate]);
-
-  useEffect(() => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     const load = async () => {
-      // Check reseller status
-      const { data: resellerData } = await supabase
+      const { data } = await supabase
         .from("resellers")
-        .select("*")
+        .select("business_name, is_enabled")
         .eq("user_id", user.id)
         .maybeSingle();
-
-      setReseller(resellerData);
-
-      if (resellerData?.is_enabled) {
-        // Fetch their tickets and events
-        const [ticketsRes, eventsRes] = await Promise.all([
-          supabase.from("tickets").select("*, events(title)").eq("seller_id", user.id).order("created_at", { ascending: false }),
-          supabase.from("events").select("*").order("event_date"),
-        ]);
-        setTickets(ticketsRes.data || []);
-        setEvents(eventsRes.data || []);
-      }
+      setReseller(data);
       setLoading(false);
     };
     load();
   }, [user]);
 
-  const handleApply = async () => {
-    if (!businessName.trim() || !user) return;
+  const handleApply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.companyName.trim() || !form.email.trim()) {
+      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" });
+      return;
+    }
+
     setApplying(true);
+
+    // If user not logged in, redirect to auth
+    if (!user) {
+      toast({ title: "Sign in required", description: "Please create an account first, then come back to apply." });
+      setApplying(false);
+      return;
+    }
+
     const { error } = await supabase.from("resellers").insert({
       user_id: user.id,
-      business_name: businessName.trim(),
+      business_name: form.companyName.trim(),
+      first_name: form.firstName.trim(),
+      last_name: form.lastName.trim(),
+      phone: form.phone.trim() || null,
+      email: form.email.trim(),
+      ticket_count: form.ticketCount ? parseInt(form.ticketCount) : null,
     });
+
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Application submitted!", description: "An admin will review and enable your account." });
-      // Reload
-      const { data } = await supabase.from("resellers").select("*").eq("user_id", user.id).maybeSingle();
+      toast({ title: "Application submitted!", description: "Our team will review your application and get back to you." });
+      const { data } = await supabase.from("resellers").select("business_name, is_enabled").eq("user_id", user.id).maybeSingle();
       setReseller(data);
     }
     setApplying(false);
   };
 
-  const handleAddTicket = async () => {
-    if (!form.event_id || !form.section || !form.price || !user) {
-      toast({ title: "Error", description: "Fill in all required fields.", variant: "destructive" });
-      return;
-    }
-    const { error } = await supabase.from("tickets").insert({
-      event_id: form.event_id,
-      section: form.section,
-      row_name: form.row_name || null,
-      seat_number: form.seat_number || null,
-      price: parseFloat(form.price),
-      quantity: parseInt(form.quantity),
-      is_reseller_ticket: true,
-      seller_id: user.id,
-    });
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({ title: "Ticket listed!" });
-    setShowForm(false);
-    setForm({ event_id: "", section: "", row_name: "", seat_number: "", price: "", quantity: "1" });
-    // Refresh
-    const { data } = await supabase.from("tickets").select("*, events(title)").eq("seller_id", user.id).order("created_at", { ascending: false });
-    setTickets(data || []);
-  };
-
-  if (isLoading || loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-24 text-center text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
+  const inputClass = "w-full px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50";
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-20 container mx-auto px-4 pb-20">
-        <div className="flex items-center gap-3 mb-8">
-          <Store className="h-6 w-6 text-primary" />
-          <h1 className="font-display text-2xl font-bold">Reseller Dashboard</h1>
+
+      {/* Hero */}
+      <div className="pt-20">
+        <div className="bg-gradient-to-b from-primary/10 to-transparent py-16">
+          <div className="container mx-auto px-4 text-center">
+            <Store className="h-12 w-12 text-primary mx-auto mb-4" />
+            <h1 className="font-display text-3xl md:text-4xl font-bold mb-3">
+              Sell Your Tickets on <span className="text-gradient">seats.ca</span>
+            </h1>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Join Canada's fastest-growing ticket marketplace. List your inventory, reach thousands of buyers, and grow your business with zero listing fees.
+            </p>
+          </div>
         </div>
 
-        {/* Not yet applied */}
-        {!reseller && (
-          <div className="glass rounded-xl p-8 max-w-lg mx-auto text-center space-y-4">
-            <Store className="h-12 w-12 text-primary mx-auto" />
-            <h2 className="font-display text-xl font-semibold">Become a Reseller</h2>
-            <p className="text-sm text-muted-foreground">
-              Apply to list your ticket inventory on seats.ca. Once approved by an admin, your tickets will appear on our platform.
-            </p>
-            <div>
-              <input
-                placeholder="Your business name *"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm mb-3"
-                maxLength={100}
-              />
-              <Button variant="hero" onClick={handleApply} disabled={applying || !businessName.trim()}>
-                {applying ? "Submitting..." : "Apply as Reseller"}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Applied but not enabled */}
-        {reseller && !reseller.is_enabled && (
-          <div className="glass rounded-xl p-8 max-w-lg mx-auto text-center space-y-4">
-            <AlertCircle className="h-12 w-12 text-gold mx-auto" />
-            <h2 className="font-display text-xl font-semibold">Pending Approval</h2>
-            <p className="text-sm text-muted-foreground">
-              Your reseller application for <strong>{reseller.business_name}</strong> is under review. An admin will enable your account soon.
-            </p>
-          </div>
-        )}
-
-        {/* Enabled reseller */}
-        {reseller?.is_enabled && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="font-display text-lg font-semibold">{reseller.business_name}</h2>
-                <p className="text-sm text-muted-foreground">Your listed tickets ({tickets.length})</p>
-              </div>
-              <Button variant="hero" size="sm" onClick={() => setShowForm(!showForm)}>
-                <Plus className="h-4 w-4" /> Add Ticket
-              </Button>
-            </div>
-
-            {showForm && (
-              <div className="glass rounded-xl p-6 mb-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <select
-                    value={form.event_id}
-                    onChange={(e) => setForm({ ...form, event_id: e.target.value })}
-                    className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
-                  >
-                    <option value="">Select Event *</option>
-                    {events.map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
-                  </select>
-                  <input placeholder="Section *" value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" maxLength={20} />
-                  <input placeholder="Row" value={form.row_name} onChange={(e) => setForm({ ...form, row_name: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" maxLength={20} />
-                  <input placeholder="Seat #" value={form.seat_number} onChange={(e) => setForm({ ...form, seat_number: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" maxLength={20} />
-                  <input type="number" placeholder="Price *" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" min="1" max="10000" />
-                  <input type="number" placeholder="Quantity" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" min="1" max="100" />
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="hero" size="sm" onClick={handleAddTicket}>Save</Button>
-                  <Button variant="glass" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {tickets.map((ticket) => (
-                <div key={ticket.id} className={`glass rounded-xl p-4 flex items-center justify-between ${!ticket.is_active ? "opacity-50" : ""}`}>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{ticket.events?.title || "Unknown Event"}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {ticket.section} {ticket.row_name && `· Row ${ticket.row_name}`} {ticket.seat_number && `· Seat ${ticket.seat_number}`} · ${ticket.price} · {ticket.quantity - ticket.quantity_sold} remaining
-                    </p>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${ticket.is_active ? "bg-primary/15 text-primary" : "bg-destructive/15 text-destructive"}`}>
-                    {ticket.is_active ? "Active" : "Inactive"}
-                  </span>
+        <div className="container mx-auto px-4 py-16">
+          {/* Benefits */}
+          <div className="mb-16">
+            <h2 className="font-display text-2xl font-bold text-center mb-10">
+              Why Resell on seats.ca?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {benefits.map((b) => (
+                <div key={b.title} className="glass rounded-xl p-6 text-center hover:border-primary/30 transition-all">
+                  <b.icon className="h-8 w-8 text-primary mx-auto mb-3" />
+                  <h3 className="font-display font-semibold text-foreground mb-2">{b.title}</h3>
+                  <p className="text-sm text-muted-foreground">{b.description}</p>
                 </div>
               ))}
-              {tickets.length === 0 && (
-                <div className="glass rounded-xl p-8 text-center text-muted-foreground">
-                  <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No tickets listed yet. Click "Add Ticket" to get started.</p>
-                </div>
-              )}
             </div>
           </div>
-        )}
+
+          {/* Application / Status */}
+          {isLoading || loading ? (
+            <div className="text-center text-muted-foreground py-8">Loading...</div>
+          ) : reseller && !reseller.is_enabled ? (
+            <div className="glass rounded-xl p-8 max-w-lg mx-auto text-center space-y-4">
+              <AlertCircle className="h-12 w-12 text-gold mx-auto" />
+              <h2 className="font-display text-xl font-semibold">Application Under Review</h2>
+              <p className="text-sm text-muted-foreground">
+                Your reseller application for <strong>{reseller.business_name}</strong> is being reviewed. Our team will enable your account shortly.
+              </p>
+            </div>
+          ) : reseller?.is_enabled ? (
+            <div className="glass rounded-xl p-8 max-w-lg mx-auto text-center space-y-4">
+              <CheckCircle className="h-12 w-12 text-primary mx-auto" />
+              <h2 className="font-display text-xl font-semibold">You're Approved!</h2>
+              <p className="text-sm text-muted-foreground">
+                Welcome, <strong>{reseller.business_name}</strong>. Your tickets are live on seats.ca. Contact us to manage your inventory or upload new listings.
+              </p>
+            </div>
+          ) : (
+            <div id="apply" className="max-w-xl mx-auto">
+              <div className="glass rounded-xl p-8">
+                <h2 className="font-display text-2xl font-bold text-center mb-2">Apply to Become a Reseller</h2>
+                <p className="text-sm text-muted-foreground text-center mb-8">
+                  {user ? "Fill out the form below and our team will review your application." : "Create an account first, then fill out the form below."}
+                </p>
+
+                <form onSubmit={handleApply} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">First Name *</label>
+                      <input
+                        value={form.firstName}
+                        onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                        placeholder="John"
+                        required
+                        maxLength={50}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">Last Name *</label>
+                      <input
+                        value={form.lastName}
+                        onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                        placeholder="Smith"
+                        required
+                        maxLength={50}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Company Name *</label>
+                    <input
+                      value={form.companyName}
+                      onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+                      placeholder="Your ticket company"
+                      required
+                      maxLength={100}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">Phone Number</label>
+                      <input
+                        type="tel"
+                        value={form.phone}
+                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        placeholder="(416) 555-0123"
+                        maxLength={20}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">Email *</label>
+                      <input
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        placeholder="you@company.com"
+                        required
+                        maxLength={100}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">How many tickets do you typically hold?</label>
+                    <input
+                      type="number"
+                      value={form.ticketCount}
+                      onChange={(e) => setForm({ ...form, ticketCount: e.target.value })}
+                      placeholder="e.g. 500"
+                      min="1"
+                      max="100000"
+                      className={inputClass}
+                    />
+                  </div>
+
+                  {!user && (
+                    <p className="text-xs text-gold text-center">
+                      You'll need to <a href="/auth" className="underline hover:text-primary">create an account</a> before submitting your application.
+                    </p>
+                  )}
+
+                  <Button variant="hero" className="w-full" size="lg" disabled={applying || !user}>
+                    {applying ? "Submitting..." : "Submit Application"}
+                  </Button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+
       <Footer />
     </div>
   );

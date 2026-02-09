@@ -204,24 +204,39 @@ export type Database = {
         Row: {
           business_name: string
           created_at: string
+          email: string | null
+          first_name: string | null
           id: string
           is_enabled: boolean
+          last_name: string | null
+          phone: string | null
+          ticket_count: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           business_name: string
           created_at?: string
+          email?: string | null
+          first_name?: string | null
           id?: string
           is_enabled?: boolean
+          last_name?: string | null
+          phone?: string | null
+          ticket_count?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           business_name?: string
           created_at?: string
+          email?: string | null
+          first_name?: string | null
           id?: string
           is_enabled?: boolean
+          last_name?: string | null
+          phone?: string | null
+          ticket_count?: number | null
           updated_at?: string
           user_id?: string
         }
