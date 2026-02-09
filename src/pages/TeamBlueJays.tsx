@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { Calendar, MapPin, Clock, Tag, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import rogersCentreMap from "@/assets/rogers-centre-seating.png";
 
 interface GameEvent {
   id: string;
