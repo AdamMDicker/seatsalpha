@@ -20,8 +20,7 @@ const ResellerDashboard = () => {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const [reseller, setReseller] = useState<{ business_name: string; is_enabled: boolean } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
@@ -32,19 +31,6 @@ const ResellerDashboard = () => {
     ticketCount: "",
   });
 
-  useEffect(() => {
-    if (!user) { setLoading(false); return; }
-    const load = async () => {
-      const { data } = await supabase
-        .from("resellers")
-        .select("business_name, is_enabled")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setReseller(data);
-      setLoading(false);
-    };
-    load();
-  }, [user]);
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,8 +62,6 @@ const ResellerDashboard = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Application submitted!", description: "Our team will review your application and get back to you." });
-      const { data } = await supabase.from("resellers").select("business_name, is_enabled").eq("user_id", user.id).maybeSingle();
-      setReseller(data);
     }
     setApplying(false);
   };
@@ -122,7 +106,7 @@ const ResellerDashboard = () => {
           {/* Application / Status */}
           {isLoading || loading ? (
             <div className="text-center text-muted-foreground py-8">Loading...</div>
-          ) : !reseller && (
+          ) : (
             <div id="apply" className="max-w-xl mx-auto">
               <div className="glass rounded-xl p-8">
                 <h2 className="font-display text-2xl font-bold text-center mb-2">Apply to Become a Reseller</h2>
