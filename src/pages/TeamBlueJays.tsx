@@ -260,89 +260,77 @@ const TeamBlueJays = () => {
 
               {/* Right: Ticket listings */}
               <div>
-                <h2 className="font-display text-lg font-semibold text-foreground mb-4">
-                  {selectedSection ? `Section ${selectedSection} Tickets` : "Available Tickets"}
-                </h2>
+                {(() => {
+                  const allTickets = selectedSection
+                    ? selectedGame.tickets.filter((t) => t.section === selectedSection)
+                    : selectedGame.tickets;
+                  const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket).slice(0, 4);
+                  const resellerTickets = allTickets.filter((t) => t.is_reseller_ticket).slice(0, 3);
 
-                {!selectedSection ? (
-                  <div className="space-y-3">
-                    {availableSections.length === 0 ? (
-                      <div className="glass rounded-xl p-8 text-center text-muted-foreground">
-                        No tickets available for this game yet.
-                      </div>
-                    ) : (
-                      availableSections.sort().map((sec) => {
-                        const secTickets = selectedGame.tickets.filter((t) => t.section === sec);
-                        const minPrice = Math.min(...secTickets.map((t) => t.price));
-                        const totalQty = secTickets.reduce((sum, t) => sum + (t.quantity - t.quantity_sold), 0);
-                        const sectionInfo = SECTIONS.find((s) => s.id === sec);
-                        return (
-                          <button
-                            key={sec}
-                            onClick={() => setSelectedSection(sec)}
-                            className="glass rounded-xl p-4 w-full text-left hover:border-primary/40 transition-all flex items-center justify-between group"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: sectionInfo?.color || "hsl(220,12%,18%)" }}>
-                                {sec}
-                              </div>
-                              <div>
-                                <p className="font-semibold text-foreground">{sectionInfo?.label || sec}</p>
-                                <p className="text-xs text-muted-foreground">{totalQty} tickets available</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="text-right">
-                                <p className="text-xs text-muted-foreground">From</p>
-                                <p className="font-display font-bold text-foreground">${minPrice}</p>
-                              </div>
-                              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                            </div>
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-                ) : (
-                  <div>
-                    <button
-                      onClick={() => setSelectedSection(null)}
-                      className="text-sm text-primary hover:underline mb-4 flex items-center gap-1"
-                    >
-                      ← All Sections
-                    </button>
-                    <div className="space-y-3">
-                      {sectionTickets.sort((a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)).map((ticket) => (
-                        <div key={ticket.id} className={`glass rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-all ${!ticket.is_reseller_ticket ? 'border-primary/20' : ''}`}>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-semibold text-foreground">Section {ticket.section}</p>
-                              {!ticket.is_reseller_ticket ? (
-                                <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold">Featured</span>
-                              ) : (
-                                <span className="px-1.5 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] font-semibold">Reseller</span>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {ticket.row_name && `Row ${ticket.row_name}`}
-                              {ticket.seat_number && ` · Seats ${ticket.seat_number}`}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {ticket.quantity - ticket.quantity_sold} available
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <p className="font-display text-xl font-bold text-foreground">${ticket.price}</p>
-                              <p className="text-xs text-muted-foreground">per ticket</p>
-                            </div>
-                            <Button variant="hero" size="sm">Buy</Button>
-                          </div>
+                  const renderTicket = (ticket: TicketInfo) => (
+                    <div key={ticket.id} className={`glass rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-all ${!ticket.is_reseller_ticket ? 'border-primary/20' : ''}`}>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-foreground">Section {ticket.section}</p>
+                          {!ticket.is_reseller_ticket && (
+                            <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold">No Fees</span>
+                          )}
                         </div>
-                      ))}
+                        <p className="text-sm text-muted-foreground">
+                          {ticket.row_name && `Row ${ticket.row_name}`}
+                          {ticket.seat_number && ` · Seats ${ticket.seat_number}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {ticket.quantity - ticket.quantity_sold} available
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="font-display text-xl font-bold text-foreground">${ticket.price}</p>
+                          <p className="text-xs text-muted-foreground">per ticket</p>
+                        </div>
+                        <Button variant="hero" size="sm">Buy</Button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+
+                  return (
+                    <div>
+                      {selectedSection && (
+                        <button
+                          onClick={() => setSelectedSection(null)}
+                          className="text-sm text-primary hover:underline mb-4 flex items-center gap-1"
+                        >
+                          ← All Sections
+                        </button>
+                      )}
+
+                      {/* Featured Tickets */}
+                      <h2 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                        ⭐ Featured Tickets
+                      </h2>
+                      {featuredTickets.length > 0 ? (
+                        <div className="space-y-3 mb-8">
+                          {featuredTickets.map(renderTicket)}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-sm mb-8">No featured tickets for this selection.</p>
+                      )}
+
+                      {/* Reseller Tickets */}
+                      <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+                        Tickets
+                      </h2>
+                      {resellerTickets.length > 0 ? (
+                        <div className="space-y-3">
+                          {resellerTickets.map(renderTicket)}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">No reseller tickets for this selection.</p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
