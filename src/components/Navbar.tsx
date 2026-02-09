@@ -12,12 +12,17 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2">
-            <Ticket className="h-7 w-7 text-primary" />
-            <span className="font-display text-xl font-bold tracking-tight">
-              seats<span className="text-primary">.ca</span>
-            </span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2">
+              <Ticket className="h-7 w-7 text-primary" />
+              <span className="font-display text-xl font-bold tracking-tight">
+                seats<span className="text-primary">.ca</span>
+              </span>
+            </Link>
+            <a href="/#membership" className="text-sm font-semibold text-white hover:text-primary transition-colors">
+              Membership
+            </a>
+          </div>
 
           <div className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
