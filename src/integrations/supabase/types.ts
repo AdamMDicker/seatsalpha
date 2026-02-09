@@ -210,6 +210,7 @@ export type Database = {
           is_enabled: boolean
           last_name: string | null
           phone: string | null
+          status: string
           ticket_count: number | null
           updated_at: string
           user_id: string
@@ -223,6 +224,7 @@ export type Database = {
           is_enabled?: boolean
           last_name?: string | null
           phone?: string | null
+          status?: string
           ticket_count?: number | null
           updated_at?: string
           user_id: string
@@ -236,6 +238,7 @@ export type Database = {
           is_enabled?: boolean
           last_name?: string | null
           phone?: string | null
+          status?: string
           ticket_count?: number | null
           updated_at?: string
           user_id?: string
