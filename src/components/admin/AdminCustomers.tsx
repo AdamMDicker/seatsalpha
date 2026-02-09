@@ -14,6 +14,7 @@ const AdminCustomers = () => {
   const [editing, setEditing] = useState<Tables<"profiles"> | null>(null);
   const [form, setForm] = useState({ full_name: "", city: "", province: "" });
   const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const fetchCustomers = async () => {
