@@ -31,19 +31,6 @@ const ResellerDashboard = () => {
     ticketCount: "",
   });
 
-  useEffect(() => {
-    if (!user) { setLoading(false); return; }
-    const load = async () => {
-      const { data } = await supabase
-        .from("resellers")
-        .select("business_name, is_enabled")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setReseller(data);
-      setLoading(false);
-    };
-    load();
-  }, [user]);
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
