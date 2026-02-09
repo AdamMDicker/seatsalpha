@@ -46,10 +46,12 @@ const MembershipSection = () => {
                   ))}
                 </ul>
 
-                <Button variant="gold" size="lg" className="w-full sm:w-auto">
-                  <Zap className="h-4 w-4" />
-                  Join for $20/year
-                </Button>
+                <Link to="/membership">
+                  <Button variant="gold" size="lg" className="w-full sm:w-auto">
+                    <Zap className="h-4 w-4" />
+                    Learn More — $19.95/year
+                  </Button>
+                </Link>
               </div>
 
               <div className="flex-shrink-0 text-center">

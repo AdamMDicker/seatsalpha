@@ -41,9 +41,9 @@ const Navbar = () => {
                 seats<span className="text-primary">.ca</span>
               </span>
             </Link>
-            <a href="/#membership" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+            <Link to="/membership" className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors">
               Membership
-            </a>
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-6" ref={dropdownRef}>
