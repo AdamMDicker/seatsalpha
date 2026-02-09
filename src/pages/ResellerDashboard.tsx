@@ -13,6 +13,7 @@ const benefits = [
   { icon: Zap, title: "Instant Listings", description: "Upload your inventory and have tickets live within minutes of admin approval." },
   { icon: Shield, title: "Trusted Platform", description: "seats.ca is Canada's trusted no-fee ticket marketplace. Your tickets are backed by our buyer guarantee." },
   { icon: Users, title: "Growing Audience", description: "Tap into our rapidly growing base of Canadian sports, concert, and theatre fans." },
+  { icon: CheckCircle, title: "Fast Approvals", description: "Our team reviews applications quickly so you can start selling as soon as possible." },
 ];
 
 const ResellerDashboard = () => {
@@ -121,20 +122,12 @@ const ResellerDashboard = () => {
           {/* Application / Status */}
           {isLoading || loading ? (
             <div className="text-center text-muted-foreground py-8">Loading...</div>
-          ) : reseller && !reseller.is_enabled ? (
+          ) : reseller ? (
             <div className="glass rounded-xl p-8 max-w-lg mx-auto text-center space-y-4">
               <AlertCircle className="h-12 w-12 text-gold mx-auto" />
               <h2 className="font-display text-xl font-semibold">Application Under Review</h2>
               <p className="text-sm text-muted-foreground">
-                Your reseller application for <strong>{reseller.business_name}</strong> is being reviewed. Our team will enable your account shortly.
-              </p>
-            </div>
-          ) : reseller?.is_enabled ? (
-            <div className="glass rounded-xl p-8 max-w-lg mx-auto text-center space-y-4">
-              <CheckCircle className="h-12 w-12 text-primary mx-auto" />
-              <h2 className="font-display text-xl font-semibold">You're Approved!</h2>
-              <p className="text-sm text-muted-foreground">
-                Welcome, <strong>{reseller.business_name}</strong>. Your tickets are live on seats.ca. Contact us to manage your inventory or upload new listings.
+                Your reseller application for <strong>{reseller.business_name}</strong> is being reviewed. You'll receive an email once your account is approved.
               </p>
             </div>
           ) : (
