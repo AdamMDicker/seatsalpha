@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import TeamBlueJays from "./pages/TeamBlueJays";
 import Membership from "./pages/Membership";
+import ResellerDashboard from "./pages/ResellerDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
