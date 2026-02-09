@@ -1,10 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { Search, ShieldCheck, MapPin } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-arena.jpg";
+
+const TEAMS = [
+  { name: "Toronto Blue Jays", league: "MLB", path: "/teams/blue-jays" },
+];
 
 const HeroSection = () => {
   const [search, setSearch] = useState("");
+  const [showResults, setShowResults] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  const filtered = search.trim().length > 1
+    ? TEAMS.filter((t) =>
+        t.name.toLowerCase().includes(search.toLowerCase()) ||
+        t.league.toLowerCase().includes(search.toLowerCase())
+      )
+    : [];
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (resultsRef.current && !resultsRef.current.contains(e.target as Node)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
@@ -32,16 +57,34 @@ const HeroSection = () => {
             Zero fees. Real savings. The way buying tickets in Canada should be.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 max-w-lg mb-10 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <div className="flex flex-col sm:flex-row gap-3 max-w-lg mb-10 animate-fade-in relative" style={{ animationDelay: "0.3s" }} ref={resultsRef}>
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search events, teams, artists..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setShowResults(true); }}
+                onFocus={() => setShowResults(true)}
                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-card/80 backdrop-blur border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
               />
+              {showResults && filtered.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 py-2 animate-fade-in">
+                  {filtered.map((team) => (
+                    <button
+                      key={team.path}
+                      onClick={() => { navigate(team.path); setShowResults(false); setSearch(""); }}
+                      className="w-full text-left px-4 py-3 hover:bg-secondary transition-colors flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{team.name}</p>
+                        <p className="text-xs text-muted-foreground">{team.league} · View schedule & tickets</p>
+                      </div>
+                      <span className="text-xs font-medium text-primary">→</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <Button variant="hero" className="px-6 py-3 h-auto">
               Search
