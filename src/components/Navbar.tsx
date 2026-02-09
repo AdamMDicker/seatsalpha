@@ -28,7 +28,7 @@ const Navbar = () => {
             <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               All Events
             </Link>
-            {["NHL", "NBA", "MLB", "Theatre", "Comedy"].map((league) => (
+            {["NHL", "NBA", "MLB", "NFL", "MLS", "CFL", "Theatre", "Comedy", "Concerts"].map((league) => (
               <Link
                 key={league}
                 to={`/?category=${league.toLowerCase()}`}
