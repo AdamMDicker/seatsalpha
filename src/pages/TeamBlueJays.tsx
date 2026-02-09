@@ -7,6 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import rogersCentreMap from "@/assets/rogers-centre-seating.png";
 
+interface TicketInfo {
+  id: string;
+  section: string;
+  row_name: string | null;
+  seat_number: string | null;
+  price: number;
+  quantity: number;
+  quantity_sold: number;
+  is_reseller_ticket: boolean;
+}
+
 interface GameEvent {
   id: string;
   title: string;
@@ -15,7 +26,7 @@ interface GameEvent {
   province: string;
   event_date: string;
   description: string | null;
-  tickets: { id: string; section: string; row_name: string | null; seat_number: string | null; price: number; quantity: number; quantity_sold: number }[];
+  tickets: TicketInfo[];
 }
 
 // Clickable hotspot zones mapped to the seating chart image (% positions)
