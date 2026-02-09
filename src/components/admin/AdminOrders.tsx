@@ -28,7 +28,7 @@ const AdminOrders = () => {
                 <p className="text-sm text-muted-foreground">
                   ${order.total_amount} · {order.status}
                   {order.is_fee_waived && <span className="text-success ml-2">· Member (no fees)</span>}
-                  {order.buyer_city && <span className="ml-2">· From: {order.buyer_city}, {order.buyer_province}</span>}
+                  
                 </p>
                 <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                   {order.uber_added && <span className="text-primary">🚗 Uber</span>}
