@@ -312,10 +312,17 @@ const TeamBlueJays = () => {
                       ← All Sections
                     </button>
                     <div className="space-y-3">
-                      {sectionTickets.map((ticket) => (
-                        <div key={ticket.id} className="glass rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-all">
+                      {sectionTickets.sort((a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)).map((ticket) => (
+                        <div key={ticket.id} className={`glass rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-all ${!ticket.is_reseller_ticket ? 'border-primary/20' : ''}`}>
                           <div>
-                            <p className="font-semibold text-foreground">Section {ticket.section}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-foreground">Section {ticket.section}</p>
+                              {!ticket.is_reseller_ticket ? (
+                                <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold">Featured</span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] font-semibold">Reseller</span>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground">
                               {ticket.row_name && `Row ${ticket.row_name}`}
                               {ticket.seat_number && ` · Seats ${ticket.seat_number}`}
