@@ -63,9 +63,10 @@ const TeamBlueJays = () => {
         for (const game of data) {
           const { data: tickets } = await supabase
             .from("tickets")
-            .select("id, section, row_name, seat_number, price, quantity, quantity_sold")
+            .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket")
             .eq("event_id", game.id)
             .eq("is_active", true);
+          const sorted = (tickets || []).sort((a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0));
           gamesWithTickets.push({ ...game, tickets: tickets || [] });
         }
         setGames(gamesWithTickets);
