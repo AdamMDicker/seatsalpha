@@ -4,9 +4,31 @@ import { Menu, X, Ticket, LogOut, Shield, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
+const MLB_TEAMS = [
+  { name: "Toronto Blue Jays", path: "/teams/blue-jays" },
+];
+
+const LEAGUES_WITH_DROPDOWNS: Record<string, { name: string; path: string }[]> = {
+  MLB: MLB_TEAMS,
+};
+
+const LEAGUES = ["NHL", "NBA", "MLB", "NFL", "MLS", "CFL", "Theatre", "Comedy", "Concerts"];
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAdmin, signOut } = useAuth();
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -19,24 +41,54 @@ const Navbar = () => {
                 seats<span className="text-primary">.ca</span>
               </span>
             </Link>
-            <a href="/#membership" className="text-sm font-semibold text-white hover:text-primary transition-colors">
+            <a href="/#membership" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
               Membership
             </a>
           </div>
 
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-6" ref={dropdownRef}>
             <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               All Events
             </Link>
-            {["NHL", "NBA", "MLB", "NFL", "MLS", "CFL", "Theatre", "Comedy", "Concerts"].map((league) => (
-              <Link
-                key={league}
-                to={`/?category=${league.toLowerCase()}`}
-                className="text-sm font-semibold text-white hover:text-primary transition-colors"
-              >
-                {league}
-              </Link>
-            ))}
+            {LEAGUES.map((league) => {
+              const teams = LEAGUES_WITH_DROPDOWNS[league];
+              if (teams) {
+                return (
+                  <div key={league} className="relative">
+                    <button
+                      onClick={() => setOpenDropdown(openDropdown === league ? null : league)}
+                      className="text-sm font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1"
+                    >
+                      {league}
+                      <ChevronDown className={`h-3.5 w-3.5 transition-transform ${openDropdown === league ? "rotate-180" : ""}`} />
+                    </button>
+                    {openDropdown === league && (
+                      <div className="absolute top-full left-0 mt-2 w-56 rounded-xl bg-card border border-border shadow-xl z-50 py-2 animate-fade-in">
+                        {teams.map((team) => (
+                          <Link
+                            key={team.path}
+                            to={team.path}
+                            onClick={() => setOpenDropdown(null)}
+                            className="block px-4 py-2.5 text-sm text-foreground hover:bg-secondary hover:text-primary transition-colors"
+                          >
+                            {team.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return (
+                <Link
+                  key={league}
+                  to={`/?category=${league.toLowerCase()}`}
+                  className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                >
+                  {league}
+                </Link>
+              );
+            })}
             {isAdmin && (
               <Link to="/admin" className="text-sm font-medium text-gold hover:text-gold/80 transition-colors flex items-center gap-1">
                 <Shield className="h-3.5 w-3.5" /> Admin
