@@ -22,6 +22,7 @@ const AdminDashboard = () => {
   const { user, isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("events");
+  const [serverVerified, setServerVerified] = useState(false);
 
   useEffect(() => {
     if (!isLoading && (!user || !isAdmin)) {
@@ -29,8 +30,19 @@ const AdminDashboard = () => {
     }
   }, [user, isAdmin, isLoading, navigate]);
 
-  if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Loading...</p></div>;
-  if (!isAdmin) return null;
+  // Server-side admin verification via RPC
+  useEffect(() => {
+    const verify = async () => {
+      if (!user) return;
+      const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
+      if (!data) { navigate("/"); return; }
+      setServerVerified(true);
+    };
+    if (user && isAdmin) verify();
+  }, [user, isAdmin, navigate]);
+
+  if (isLoading || (!serverVerified && isAdmin)) return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Loading...</p></div>;
+  if (!isAdmin || !serverVerified) return null;
 
   return (
     <div className="min-h-screen bg-background">
