@@ -69,7 +69,7 @@ const HeroSection = () => {
                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-card/80 backdrop-blur border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
               />
               {showResults && filtered.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 py-2 animate-fade-in">
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl shadow-xl z-50 py-2 animate-fade-in">
                   {filtered.map((team) => (
                     <button
                       key={team.path}
