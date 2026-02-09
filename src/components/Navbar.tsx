@@ -21,8 +21,17 @@ const Navbar = () => {
 
           <div className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Events
+              All Events
             </Link>
+            {["NHL", "NBA", "MLB", "Theatre", "Comedy"].map((league) => (
+              <Link
+                key={league}
+                to={`/?category=${league.toLowerCase()}`}
+                className="text-sm font-semibold text-white hover:text-primary transition-colors"
+              >
+                {league}
+              </Link>
+            ))}
             {isAdmin && (
               <Link to="/admin" className="text-sm font-medium text-gold hover:text-gold/80 transition-colors flex items-center gap-1">
                 <Shield className="h-3.5 w-3.5" /> Admin
