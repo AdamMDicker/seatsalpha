@@ -14,16 +14,312 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          category: string
+          city: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_date: string
+          id: string
+          image_url: string | null
+          province: string
+          title: string
+          updated_at: string
+          venue: string
+        }
+        Insert: {
+          category?: string
+          city: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date: string
+          id?: string
+          image_url?: string | null
+          province: string
+          title: string
+          updated_at?: string
+          venue: string
+        }
+        Update: {
+          category?: string
+          city?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date?: string
+          id?: string
+          image_url?: string | null
+          province?: string
+          title?: string
+          updated_at?: string
+          venue?: string
+        }
+        Relationships: []
+      }
+      memberships: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          price_paid: number
+          starts_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          price_paid?: number
+          starts_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          price_paid?: number
+          starts_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          quantity: number
+          ticket_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          quantity?: number
+          ticket_id: string
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          quantity?: number
+          ticket_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          buyer_city: string | null
+          buyer_province: string | null
+          created_at: string
+          fees_amount: number
+          flight_added: boolean
+          hotel_added: boolean
+          id: string
+          is_fee_waived: boolean
+          status: string
+          total_amount: number
+          uber_added: boolean
+          user_id: string
+        }
+        Insert: {
+          buyer_city?: string | null
+          buyer_province?: string | null
+          created_at?: string
+          fees_amount?: number
+          flight_added?: boolean
+          hotel_added?: boolean
+          id?: string
+          is_fee_waived?: boolean
+          status?: string
+          total_amount: number
+          uber_added?: boolean
+          user_id: string
+        }
+        Update: {
+          buyer_city?: string | null
+          buyer_province?: string | null
+          created_at?: string
+          fees_amount?: number
+          flight_added?: boolean
+          hotel_added?: boolean
+          id?: string
+          is_fee_waived?: boolean
+          status?: string
+          total_amount?: number
+          uber_added?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          city: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          province: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          province?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          province?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resellers: {
+        Row: {
+          business_name: string
+          created_at: string
+          id: string
+          is_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_name: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_name?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tickets: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          is_active: boolean
+          is_reseller_ticket: boolean
+          price: number
+          quantity: number
+          quantity_sold: number
+          row_name: string | null
+          seat_number: string | null
+          section: string
+          seller_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          is_active?: boolean
+          is_reseller_ticket?: boolean
+          price: number
+          quantity?: number
+          quantity_sold?: number
+          row_name?: string | null
+          seat_number?: string | null
+          section: string
+          seller_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_active?: boolean
+          is_reseller_ticket?: boolean
+          price?: number
+          quantity?: number
+          quantity_sold?: number
+          row_name?: string | null
+          seat_number?: string | null
+          section?: string
+          seller_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_active_membership: { Args: { _user_id: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "customer" | "reseller"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +446,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "customer", "reseller"],
+    },
   },
 } as const
