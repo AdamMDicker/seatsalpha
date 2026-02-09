@@ -13,6 +13,7 @@ const benefits = [
   { icon: Zap, title: "Instant Listings", description: "Upload your inventory and have tickets live within minutes of admin approval." },
   { icon: Shield, title: "Trusted Platform", description: "seats.ca is Canada's trusted no-fee ticket marketplace. Your tickets are backed by our buyer guarantee." },
   { icon: Users, title: "Growing Audience", description: "Tap into our rapidly growing base of Canadian sports, concert, and theatre fans." },
+  { icon: CheckCircle, title: "Fast Approvals", description: "Our team reviews applications quickly so you can start selling as soon as possible." },
 ];
 
 const ResellerDashboard = () => {
