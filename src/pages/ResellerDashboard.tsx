@@ -122,7 +122,7 @@ const ResellerDashboard = () => {
           {/* Application / Status */}
           {isLoading || loading ? (
             <div className="text-center text-muted-foreground py-8">Loading...</div>
-          ) : !reseller ? (
+          ) : !reseller && (
             <div id="apply" className="max-w-xl mx-auto">
               <div className="glass rounded-xl p-8">
                 <h2 className="font-display text-2xl font-bold text-center mb-2">Apply to Become a Reseller</h2>
