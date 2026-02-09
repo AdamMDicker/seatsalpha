@@ -29,6 +29,7 @@ const AdminCustomers = () => {
     setEditing(c);
     setForm({ full_name: c.full_name || "", city: c.city || "", province: c.province || "" });
     setNewPassword("");
+    setShowPassword(false);
   };
 
   const saveProfile = async () => {
