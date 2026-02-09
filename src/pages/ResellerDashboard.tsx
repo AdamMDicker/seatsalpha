@@ -20,8 +20,7 @@ const ResellerDashboard = () => {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const [reseller, setReseller] = useState<{ business_name: string; is_enabled: boolean } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
