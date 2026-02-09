@@ -12,7 +12,7 @@ const LEAGUES_WITH_DROPDOWNS: Record<string, { name: string; path: string }[]> =
   MLB: MLB_TEAMS,
 };
 
-const LEAGUES = ["NHL", "NBA", "MLB", "NFL", "MLS", "CFL", "Theatre", "Comedy", "Concerts"];
+const LEAGUES = ["NHL", "NBA", "MLB", "NFL", "MLS", "CFL", "Concerts"];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
