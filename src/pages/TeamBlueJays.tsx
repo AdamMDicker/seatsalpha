@@ -37,6 +37,7 @@ const TeamBlueJays = () => {
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "home" | "away">("all");
   const [loading, setLoading] = useState(true);
+  const [mapZoomed, setMapZoomed] = useState(false);
 
   useEffect(() => {
     const fetchGames = async () => {
