@@ -117,7 +117,13 @@ const AdminCustomers = () => {
             </div>
             <div className="space-y-2">
               <Label>New Password (leave blank to keep current)</Label>
-              <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" />
+              <div className="relative">
+                <Input type={showPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
             </div>
             <Button onClick={saveProfile} disabled={saving} className="w-full">
               {saving ? "Saving..." : "Save Changes"}
