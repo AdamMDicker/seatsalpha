@@ -40,7 +40,7 @@ const EventsSection = () => {
             time: new Date(ev.event_date).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" }),
             category: (ev.category as Event["category"]) || "sports",
             priceFrom: minPrice,
-            image: ev.image_url || "https://images.unsplash.com/photo-1580748142004-fcd0a75f3ea8?w=600&h=400&fit=crop",
+            image: ev.image_url || "https://images.unsplash.com/photo-1529768167801-9173d94c2a42?w=600&h=400&fit=crop",
             isOwn: hasInternalTickets,
           });
         }
