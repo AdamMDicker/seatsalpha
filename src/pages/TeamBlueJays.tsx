@@ -6,6 +6,7 @@ import { Calendar, MapPin, Clock, Tag, ChevronRight, ZoomIn, X } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import rogersCentreMap from "@/assets/rogers-centre-seating.png";
+import blueJaysLogo from "@/assets/teams/blue-jays.png";
 
 interface TicketInfo {
   id: string;
@@ -110,8 +111,8 @@ const TeamBlueJays = () => {
         {/* Hero banner */}
         <div className="bg-[hsl(220,60%,20%)] py-8 border-b border-border">
           <div className="container mx-auto px-4 flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-[hsl(220,60%,30%)] flex items-center justify-center text-3xl font-bold text-white font-display">
-              🐦
+            <div className="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center p-1.5">
+              <img src={blueJaysLogo} alt="Toronto Blue Jays" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="font-display text-2xl md:text-3xl font-bold text-white">Toronto Blue Jays</h1>
