@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import rogersCentreMap from "@/assets/rogers-centre-seating.png";
 import blueJaysLogo from "@/assets/teams/blue-jays.png";
+import BlueJaysNews from "@/components/BlueJaysNews";
 
 interface TicketInfo {
   id: string;
@@ -335,6 +336,8 @@ const TeamBlueJays = () => {
               </div>
             </div>
           )}
+          {/* News Section */}
+          <BlueJaysNews />
         </div>
       </div>
       <Footer />
