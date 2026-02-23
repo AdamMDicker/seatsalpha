@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Search, ShieldCheck, MapPin } from "lucide-react";
+import { Search, ShieldCheck } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import heroImage from "@/assets/hero-arena.jpg";
 
 const TEAMS = [
@@ -42,10 +42,10 @@ const HeroSection = () => {
 
       <div className="container mx-auto px-4 relative z-10 pt-20">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/15 border border-primary/30 mb-6 animate-fade-in">
+          <Link to="/membership" className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/15 border border-primary/30 mb-6 animate-fade-in hover:bg-primary/25 transition-colors cursor-pointer group">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Canada's First No-Fee Ticket Platform</span>
-          </div>
+            <span className="text-sm font-medium text-primary">Pay No Fees — Click Here to Learn How</span>
+          </Link>
 
           <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight mb-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             Not Just a Seat,
@@ -92,10 +92,6 @@ const HeroSection = () => {
           </div>
 
           <div className="flex flex-wrap gap-6 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary" />
-              <span>All Major Canadian Cities</span>
-            </div>
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-success" />
               <span>100% Guaranteed Tickets</span>
