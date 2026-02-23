@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import EventDetail from "./pages/EventDetail";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
-import TeamBlueJays from "./pages/TeamBlueJays";
+import TeamMLBPage from "./pages/TeamMLBPage";
 import Membership from "./pages/Membership";
 import ResellerDashboard from "./pages/ResellerDashboard";
 import NotFound from "./pages/NotFound";
@@ -25,7 +25,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/event/:id" element={<EventDetail />} />
-            <Route path="/teams/blue-jays" element={<TeamBlueJays />} />
+            <Route path="/teams/mlb/:slug" element={<TeamMLBPage />} />
+            {/* Legacy Blue Jays route redirect */}
+            <Route path="/teams/blue-jays" element={<TeamMLBPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/reseller" element={<ResellerDashboard />} />

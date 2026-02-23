@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
+import { useParams, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import blueJaysLogo from "@/assets/teams/blue-jays.png";
 import BlueJaysNews from "@/components/BlueJaysNews";
 import GameScheduleFilters from "@/components/team/GameScheduleFilters";
 import GameCard from "@/components/team/GameCard";
 import SeatingMap from "@/components/team/SeatingMap";
 import TicketListings from "@/components/team/TicketListings";
+import { getMLBTeamBySlug } from "@/data/mlbTeams";
+import blueJaysLogo from "@/assets/teams/blue-jays.png";
 
 interface TicketInfo {
   id: string;
@@ -35,7 +37,12 @@ interface GameEvent {
   tickets: TicketInfo[];
 }
 
-const TeamBlueJays = () => {
+const TeamMLBPage = () => {
+  const { slug: routeSlug } = useParams<{ slug: string }>();
+  // Support legacy /teams/blue-jays route
+  const slug = routeSlug || (window.location.pathname.includes("blue-jays") ? "blue-jays" : undefined);
+  const team = slug ? getMLBTeamBySlug(slug) : undefined;
+
   const [games, setGames] = useState<GameEvent[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
@@ -46,11 +53,21 @@ const TeamBlueJays = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!team) return;
+    setLoading(true);
+    setGames([]);
+    setSelectedGame(null);
+    setSelectedSection(null);
+    setFilter("all");
+    setSelectedMonth("all");
+    setSelectedOpponent("all");
+    setMaxBudget(null);
+
     const fetchGames = async () => {
       const { data } = await supabase
         .from("events")
         .select("id, title, venue, city, province, event_date, description, is_giveaway, giveaway_item")
-        .like("title", "%Blue Jays%")
+        .like("title", `%${team.searchTerm}%`)
         .order("event_date", { ascending: true });
 
       if (data) {
@@ -70,33 +87,24 @@ const TeamBlueJays = () => {
       setLoading(false);
     };
     fetchGames();
-  }, []);
+  }, [team?.slug]);
 
-  // Apply all filters
   const filteredGames = useMemo(() => {
     return games.filter((g) => {
-      // Home/Away
       if (filter === "home" && !g.description?.includes("Home")) return false;
       if (filter === "away" && !g.description?.includes("Away")) return false;
-
-      // Month
       if (selectedMonth !== "all") {
         const d = new Date(g.event_date);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         if (key !== selectedMonth) return false;
       }
-
-      // Opponent
       if (selectedOpponent !== "all") {
         if (!g.title.toLowerCase().includes(selectedOpponent.toLowerCase())) return false;
       }
-
-      // Budget — at least one ticket under budget
       if (maxBudget !== null) {
         const cheapest = g.tickets.length > 0 ? Math.min(...g.tickets.map((t) => t.price)) : Infinity;
         if (cheapest > maxBudget) return false;
       }
-
       return true;
     });
   }, [games, filter, selectedMonth, selectedOpponent, maxBudget]);
@@ -105,11 +113,16 @@ const TeamBlueJays = () => {
     ? [...new Set(selectedGame.tickets.map((t) => t.section))]
     : [];
 
+  if (!team) return <Navigate to="/" replace />;
+
+  // Use Blue Jays logo if available, otherwise show first letter
+  const isBlueJays = team.slug === "blue-jays";
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="pt-24 text-center text-muted-foreground">Loading Blue Jays schedule...</div>
+        <div className="pt-24 text-center text-muted-foreground">Loading {team.name} schedule...</div>
       </div>
     );
   }
@@ -119,20 +132,23 @@ const TeamBlueJays = () => {
       <Navbar />
       <div className="pt-20">
         {/* Hero banner */}
-        <div className="bg-[hsl(220,60%,20%)] py-8 border-b border-border">
+        <div className="py-8 border-b border-border" style={{ background: team.primaryColor }}>
           <div className="container mx-auto px-4 flex items-center gap-4">
             <div className="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center p-1.5">
-              <img src={blueJaysLogo} alt="Toronto Blue Jays" className="w-full h-full object-contain" />
+              {isBlueJays ? (
+                <img src={blueJaysLogo} alt={team.name} className="w-full h-full object-contain" />
+              ) : (
+                <span className="text-2xl font-bold text-white">{team.shortName.charAt(0)}</span>
+              )}
             </div>
             <div>
-              <h1 className="font-display text-2xl md:text-3xl font-bold text-white">Toronto Blue Jays</h1>
-              <p className="text-sm text-blue-200">Rogers Centre · Toronto, ON · 2026 MLB Season</p>
+              <h1 className="font-display text-2xl md:text-3xl font-bold text-white">{team.name}</h1>
+              <p className="text-sm text-white/70">{team.venue} · {team.city}, {team.province} · {team.season}</p>
             </div>
           </div>
         </div>
 
         <div className="container mx-auto px-4 py-8">
-          {/* Filters */}
           <GameScheduleFilters
             games={games}
             filter={filter}
@@ -145,7 +161,6 @@ const TeamBlueJays = () => {
             setMaxBudget={setMaxBudget}
           />
 
-          {/* Game schedule strip */}
           {filteredGames.length > 0 ? (
             <div className="flex gap-3 overflow-x-auto pb-4 mb-8 scrollbar-hide">
               {filteredGames.map((game) => (
@@ -154,18 +169,25 @@ const TeamBlueJays = () => {
                   game={game}
                   isSelected={selectedGame?.id === game.id}
                   onClick={() => { setSelectedGame(game); setSelectedSection(null); }}
+                  teamLogo={isBlueJays ? blueJaysLogo : undefined}
                 />
               ))}
             </div>
           ) : (
             <div className="glass rounded-xl p-8 text-center mb-8">
-              <p className="text-muted-foreground">No games match your filters.</p>
-              <button
-                onClick={() => { setFilter("all"); setSelectedMonth("all"); setSelectedOpponent("all"); setMaxBudget(null); }}
-                className="text-primary text-sm mt-2 hover:underline"
-              >
-                Clear all filters
-              </button>
+              <p className="text-muted-foreground">
+                {games.length === 0
+                  ? `No ${team.name} events found yet. Check back soon!`
+                  : "No games match your filters."}
+              </p>
+              {games.length > 0 && (
+                <button
+                  onClick={() => { setFilter("all"); setSelectedMonth("all"); setSelectedOpponent("all"); setMaxBudget(null); }}
+                  className="text-primary text-sm mt-2 hover:underline"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
           )}
 
@@ -187,7 +209,8 @@ const TeamBlueJays = () => {
             </div>
           )}
 
-          <BlueJaysNews />
+          {/* Only show news for Blue Jays for now */}
+          {isBlueJays && <BlueJaysNews />}
         </div>
       </div>
       <Footer />
@@ -195,4 +218,4 @@ const TeamBlueJays = () => {
   );
 };
 
-export default TeamBlueJays;
+export default TeamMLBPage;
