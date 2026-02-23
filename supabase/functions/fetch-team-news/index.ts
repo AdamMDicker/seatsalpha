@@ -32,7 +32,7 @@ serve(async (req) => {
     
     // Use MLB.com RSS feed for Blue Jays
     const feedUrls: Record<string, string> = {
-      'blue-jays': 'https://www.mlb.com/feeds/news/rss.xml',
+      'blue-jays': 'https://rss.app/feed/0u6Xk4rUZEEuFzRj',
     };
 
     const feedUrl = feedUrls[team] || feedUrls['blue-jays'];
@@ -52,7 +52,7 @@ serve(async (req) => {
     const itemRegex = /<item>([\s\S]*?)<\/item>/g;
     let match;
 
-    while ((match = itemRegex.exec(xml)) !== null && items.length < 20) {
+    while ((match = itemRegex.exec(xml)) !== null && items.length < 8) {
       const itemXml = match[1];
       
       const titleMatch = itemXml.match(/<title>([\s\S]*?)<\/title>/);
@@ -62,14 +62,8 @@ serve(async (req) => {
 
       const title = titleMatch ? extractCDATA(titleMatch[1]) : '';
       const description = descMatch ? stripHtml(extractCDATA(descMatch[1])) : '';
-      
-      // Filter for Blue Jays related content
-      const searchText = (title + ' ' + description).toLowerCase();
-      const isBlueJays = searchText.includes('blue jays') || 
-                         searchText.includes('toronto') ||
-                         searchText.includes('jays');
 
-      if (isBlueJays && title) {
+      if (title) {
         items.push({
           title,
           link: linkMatch ? extractCDATA(linkMatch[1]) : '',
