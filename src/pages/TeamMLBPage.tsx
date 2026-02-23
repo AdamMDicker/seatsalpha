@@ -9,7 +9,7 @@ import GameCard from "@/components/team/GameCard";
 import SeatingMap from "@/components/team/SeatingMap";
 import TicketListings from "@/components/team/TicketListings";
 import { getMLBTeamBySlug } from "@/data/mlbTeams";
-import blueJaysLogo from "@/assets/teams/blue-jays.png";
+import { getMLBLogo } from "@/data/mlbLogos";
 
 interface TicketInfo {
   id: string;
@@ -39,9 +39,9 @@ interface GameEvent {
 
 const TeamMLBPage = () => {
   const { slug: routeSlug } = useParams<{ slug: string }>();
-  // Support legacy /teams/blue-jays route
   const slug = routeSlug || (window.location.pathname.includes("blue-jays") ? "blue-jays" : undefined);
   const team = slug ? getMLBTeamBySlug(slug) : undefined;
+  const teamLogo = slug ? getMLBLogo(slug) : undefined;
 
   const [games, setGames] = useState<GameEvent[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
@@ -115,9 +115,6 @@ const TeamMLBPage = () => {
 
   if (!team) return <Navigate to="/" replace />;
 
-  // Use Blue Jays logo if available, otherwise show first letter
-  const isBlueJays = team.slug === "blue-jays";
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -135,8 +132,8 @@ const TeamMLBPage = () => {
         <div className="py-8 border-b border-border" style={{ background: team.primaryColor }}>
           <div className="container mx-auto px-4 flex items-center gap-4">
             <div className="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center p-1.5">
-              {isBlueJays ? (
-                <img src={blueJaysLogo} alt={team.name} className="w-full h-full object-contain" />
+              {teamLogo ? (
+                <img src={teamLogo} alt={team.name} className="w-full h-full object-contain" />
               ) : (
                 <span className="text-2xl font-bold text-white">{team.shortName.charAt(0)}</span>
               )}
@@ -169,7 +166,7 @@ const TeamMLBPage = () => {
                   game={game}
                   isSelected={selectedGame?.id === game.id}
                   onClick={() => { setSelectedGame(game); setSelectedSection(null); }}
-                  teamLogo={isBlueJays ? blueJaysLogo : undefined}
+                  teamLogo={teamLogo}
                 />
               ))}
             </div>
@@ -198,6 +195,8 @@ const TeamMLBPage = () => {
                 selectedSection={selectedSection}
                 setSelectedSection={setSelectedSection}
                 game={selectedGame}
+                teamLogo={teamLogo}
+                teamColor={team.primaryColor}
               />
               <TicketListings
                 tickets={selectedGame.tickets}
@@ -210,7 +209,7 @@ const TeamMLBPage = () => {
           )}
 
           {/* Only show news for Blue Jays for now */}
-          {isBlueJays && <BlueJaysNews />}
+          {slug === "blue-jays" && <BlueJaysNews />}
         </div>
       </div>
       <Footer />
