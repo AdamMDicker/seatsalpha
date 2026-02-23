@@ -2,20 +2,31 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus } from "lucide-react";
+import { Plus, Pencil, Search } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import type { Tables } from "@/integrations/supabase/types";
+import { TEAMS_VENUES, LEAGUES_LIST } from "@/data/teamsVenues";
+
+type TicketWithEvent = Tables<"tickets"> & { events?: { title: string; city: string; venue: string } | null };
 
 const AdminTickets = () => {
-  const [tickets, setTickets] = useState<(Tables<"tickets"> & { events?: { title: string } | null })[]>([]);
+  const [tickets, setTickets] = useState<TicketWithEvent[]>([]);
   const [events, setEvents] = useState<Tables<"events">[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ event_id: "", section: "", row_name: "", seat_number: "", price: "", quantity: "1" });
+  const [editing, setEditing] = useState<TicketWithEvent | null>(null);
+  const [editForm, setEditForm] = useState({ section: "", row_name: "", seat_number: "", price: "", quantity: "1" });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterLeague, setFilterLeague] = useState("all");
+  const [filterCity, setFilterCity] = useState("all");
   const { toast } = useToast();
 
   const fetchData = async () => {
     const [ticketsRes, eventsRes] = await Promise.all([
-      supabase.from("tickets").select("*, events(title)").order("created_at", { ascending: false }),
+      supabase.from("tickets").select("*, events(title, city, venue)").order("created_at", { ascending: false }),
       supabase.from("events").select("*").order("event_date"),
     ]);
     setTickets(ticketsRes.data || []);
@@ -31,12 +42,9 @@ const AdminTickets = () => {
       return;
     }
     const { error } = await supabase.from("tickets").insert({
-      event_id: form.event_id,
-      section: form.section,
-      row_name: form.row_name || null,
-      seat_number: form.seat_number || null,
-      price: parseFloat(form.price),
-      quantity: parseInt(form.quantity),
+      event_id: form.event_id, section: form.section,
+      row_name: form.row_name || null, seat_number: form.seat_number || null,
+      price: parseFloat(form.price), quantity: parseInt(form.quantity),
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Ticket added!" });
@@ -45,10 +53,42 @@ const AdminTickets = () => {
     fetchData();
   };
 
+  const openEdit = (ticket: TicketWithEvent) => {
+    setEditing(ticket);
+    setEditForm({
+      section: ticket.section, row_name: ticket.row_name || "",
+      seat_number: ticket.seat_number || "", price: String(ticket.price),
+      quantity: String(ticket.quantity),
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    const { error } = await supabase.from("tickets").update({
+      section: editForm.section, row_name: editForm.row_name || null,
+      seat_number: editForm.seat_number || null, price: parseFloat(editForm.price),
+      quantity: parseInt(editForm.quantity),
+    }).eq("id", editing.id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Ticket updated!" });
+    setEditing(null);
+    fetchData();
+  };
+
   const toggleActive = async (ticket: Tables<"tickets">) => {
     await supabase.from("tickets").update({ is_active: !ticket.is_active }).eq("id", ticket.id);
     fetchData();
   };
+
+  // Derive cities from tickets
+  const cities = [...new Set(tickets.map((t) => t.events?.city).filter(Boolean))] as string[];
+
+  const filteredTickets = tickets.filter((t) => {
+    const matchesSearch = !searchQuery || (t.events?.title || "").toLowerCase().includes(searchQuery.toLowerCase()) || t.section.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCity = filterCity === "all" || t.events?.city === filterCity;
+    const matchesLeague = filterLeague === "all" || TEAMS_VENUES.some((tv) => tv.league === filterLeague && (t.events?.title || "").includes(tv.team));
+    return matchesSearch && matchesCity && matchesLeague;
+  });
 
   if (loading) return <p className="text-muted-foreground">Loading...</p>;
 
@@ -61,10 +101,30 @@ const AdminTickets = () => {
         </Button>
       </div>
 
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input placeholder="Search by event or section..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" />
+        </div>
+        <select value={filterLeague} onChange={(e) => setFilterLeague(e.target.value)}
+          className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm">
+          <option value="all">All Leagues</option>
+          {LEAGUES_LIST.map((l) => <option key={l} value={l}>{l}</option>)}
+        </select>
+        <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)}
+          className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm">
+          <option value="all">All Cities</option>
+          {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+
       {showForm && (
         <div className="glass rounded-xl p-6 mb-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <select value={form.event_id} onChange={(e) => setForm({ ...form, event_id: e.target.value })} className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm">
+            <select value={form.event_id} onChange={(e) => setForm({ ...form, event_id: e.target.value })}
+              className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm">
               <option value="">Select Event *</option>
               {events.map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
             </select>
@@ -82,22 +142,46 @@ const AdminTickets = () => {
       )}
 
       <div className="space-y-3">
-        {tickets.map((ticket) => (
+        {filteredTickets.map((ticket) => (
           <div key={ticket.id} className={`glass rounded-xl p-4 flex items-center justify-between ${!ticket.is_active ? "opacity-50" : ""}`}>
             <div>
               <h3 className="font-semibold text-foreground">{ticket.events?.title || "Unknown Event"}</h3>
               <p className="text-sm text-muted-foreground">
                 {ticket.section} {ticket.row_name && `· Row ${ticket.row_name}`} {ticket.seat_number && `· Seat ${ticket.seat_number}`} · ${ticket.price} · {ticket.quantity - ticket.quantity_sold} remaining
-                {ticket.is_reseller_ticket && <span className="ml-2 text-gold">(Reseller)</span>}
+                {ticket.is_reseller_ticket && <span className="ml-2 text-primary">(Reseller)</span>}
               </p>
             </div>
-            <Button variant="glass" size="sm" onClick={() => toggleActive(ticket)}>
-              {ticket.is_active ? "Deactivate" : "Activate"}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="icon" onClick={() => openEdit(ticket)}><Pencil className="h-4 w-4" /></Button>
+              <Button variant="glass" size="sm" onClick={() => toggleActive(ticket)}>
+                {ticket.is_active ? "Deactivate" : "Activate"}
+              </Button>
+            </div>
           </div>
         ))}
-        {tickets.length === 0 && <p className="text-muted-foreground text-center py-8">No tickets. Add them manually or via CSV import.</p>}
+        {filteredTickets.length === 0 && <p className="text-muted-foreground text-center py-8">No tickets found.</p>}
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Ticket — {editing?.events?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2"><Label>Section</Label><Input value={editForm.section} onChange={(e) => setEditForm({ ...editForm, section: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2"><Label>Row</Label><Input value={editForm.row_name} onChange={(e) => setEditForm({ ...editForm, row_name: e.target.value })} /></div>
+              <div className="space-y-2"><Label>Seat #</Label><Input value={editForm.seat_number} onChange={(e) => setEditForm({ ...editForm, seat_number: e.target.value })} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2"><Label>Price ($)</Label><Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} /></div>
+              <div className="space-y-2"><Label>Quantity</Label><Input type="number" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} /></div>
+            </div>
+            <Button onClick={saveEdit} className="w-full">Save Changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
