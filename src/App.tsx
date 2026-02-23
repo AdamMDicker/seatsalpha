@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import TeamMLBPage from "./pages/TeamMLBPage";
 import TeamNHLPage from "./pages/TeamNHLPage";
 import TeamNBAPage from "./pages/TeamNBAPage";
+import TeamNFLPage from "./pages/TeamNFLPage";
 import Membership from "./pages/Membership";
 import ResellerDashboard from "./pages/ResellerDashboard";
 import NotFound from "./pages/NotFound";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/teams/mlb/:slug" element={<TeamMLBPage />} />
             <Route path="/teams/nhl/:slug" element={<TeamNHLPage />} />
             <Route path="/teams/nba/:slug" element={<TeamNBAPage />} />
+            <Route path="/teams/nfl/:slug" element={<TeamNFLPage />} />
             {/* Legacy Blue Jays route redirect */}
             <Route path="/teams/blue-jays" element={<TeamMLBPage />} />
             <Route path="/auth" element={<Auth />} />
