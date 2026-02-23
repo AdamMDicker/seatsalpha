@@ -1,9 +1,16 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Crown, Check, Zap, X, ArrowRight } from "lucide-react";
+import { Crown, Check, Zap, X, ArrowRight, HelpCircle, ShoppingCart, Music, Dribbble } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
+// Competitor logos as text-based badges (could be replaced with real logos later)
 const competitorFees = [
   { platform: "Ticketmaster", fee: "Service Fee", percent: "20–30%", example: "$30–$45 on a $150 ticket" },
   { platform: "Ticketmaster", fee: "Order Processing Fee", percent: "Flat", example: "$5.50 per order" },
@@ -23,11 +30,58 @@ const memberBenefits = [
 ];
 
 const savingsExamples = [
-  { event: "Blue Jays Game (2 tickets)", faceValue: 150, competitorFees: 42, saved: 42 },
-  { event: "Raptors Courtside (2 tickets)", faceValue: 400, competitorFees: 108, saved: 108 },
-  { event: "Drake Concert (2 tickets)", faceValue: 300, competitorFees: 82, saved: 82 },
-  { event: "Leafs Playoffs (2 tickets)", faceValue: 500, competitorFees: 135, saved: 135 },
+  { event: "Blue Jays Game (2 tickets)", sport: "⚾", sportLabel: "MLB", faceValue: 150, competitorFees: 42, saved: 42 },
+  { event: "Raptors Courtside (2 tickets)", sport: "🏀", sportLabel: "NBA", faceValue: 400, competitorFees: 108, saved: 108 },
+  { event: "Drake Concert (2 tickets)", sport: "🎵", sportLabel: "Concert", faceValue: 300, competitorFees: 82, saved: 82 },
+  { event: "Leafs Playoffs (2 tickets)", sport: "🏒", sportLabel: "NHL", faceValue: 500, competitorFees: 135, saved: 135 },
 ];
+
+const faqs = [
+  {
+    q: "What is included with my seats.ca membership?",
+    a: "Your $19.95/year membership eliminates all service fees, processing fees, and facility charges on every ticket you buy through seats.ca. You also get early access to presales, exclusive member pricing, and priority support.",
+  },
+  {
+    q: "How much will I actually save?",
+    a: "The average Canadian fan pays $300+ per year in hidden ticketing fees. Most members save 10–20x their membership cost in the first year alone. Even attending just one event typically covers your membership.",
+  },
+  {
+    q: "Are there any hidden fees at checkout?",
+    a: "Absolutely not. With a seats.ca membership, the price you see is the price you pay. No service fees, no processing fees, no facility charges, no surprises at checkout.",
+  },
+  {
+    q: "Don't other sites just build fees into the ticket price?",
+    a: "Yes — many platforms advertise 'no fees' but simply inflate the ticket's listed price to absorb costs. At seats.ca, our prices reflect the actual ticket value. We're transparent about how we work: a flat $19.95/year membership replaces all hidden markups.",
+  },
+  {
+    q: "Can I cancel my membership?",
+    a: "Yes. You can cancel anytime. Your membership benefits remain active until the end of your billing period. No cancellation fees — ever.",
+  },
+  {
+    q: "Do I need a membership to buy tickets?",
+    a: "No. Anyone can browse and purchase tickets on seats.ca. However, non-members will pay standard service fees at checkout. A membership removes all of those fees instantly.",
+  },
+  {
+    q: "Are the tickets guaranteed authentic?",
+    a: "100%. Every ticket sold on seats.ca is backed by our authenticity guarantee. If there's ever an issue, we'll provide a replacement or full refund.",
+  },
+  {
+    q: "What types of events can I buy tickets for?",
+    a: "We cover all major sports leagues (NHL, NBA, MLB, NFL, MLS, CFL), plus concerts, comedy shows, theatre, and more. Our catalogue is growing every day.",
+  },
+];
+
+const platformLogos: Record<string, string> = {
+  Ticketmaster: "TM",
+  StubHub: "SH",
+  "Vivid Seats": "VS",
+};
+
+const platformColors: Record<string, string> = {
+  Ticketmaster: "bg-blue-600",
+  StubHub: "bg-purple-600",
+  "Vivid Seats": "bg-orange-600",
+};
 
 const Membership = () => {
   const totalSaved = savingsExamples.reduce((sum, e) => sum + e.saved, 0);
@@ -76,7 +130,12 @@ const Membership = () => {
             </div>
             {competitorFees.map((fee, i) => (
               <div key={i} className="grid grid-cols-4 gap-2 p-4 border-b border-border/50 text-sm items-center">
-                <span className="font-medium text-foreground">{fee.platform}</span>
+                <span className="font-medium text-foreground flex items-center gap-2">
+                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-[10px] font-bold text-white ${platformColors[fee.platform]}`}>
+                    {platformLogos[fee.platform]}
+                  </span>
+                  {fee.platform}
+                </span>
                 <span className="text-muted-foreground">{fee.fee}</span>
                 <span className="text-destructive font-semibold">{fee.percent}</span>
                 <span className="text-destructive">{fee.example}</span>
@@ -88,6 +147,14 @@ const Membership = () => {
               <span className="font-bold text-primary">0%</span>
               <span className="font-bold text-primary flex items-center gap-1">$0.00 <Check className="h-4 w-4" /></span>
             </div>
+          </div>
+
+          {/* Hidden fees callout */}
+          <div className="max-w-3xl mx-auto mt-6 glass rounded-xl p-5 border-l-4 border-gold">
+            <p className="text-sm text-foreground/90">
+              <strong className="text-gold">⚠️ Watch out for "no-fee" claims.</strong>{" "}
+              Some platforms advertise no service fees but simply bake the cost into the ticket price — so you're still overpaying, you just can't see it. At seats.ca, our prices reflect the real ticket value. No inflated prices, no hidden markups.
+            </p>
           </div>
         </div>
       </section>
@@ -104,15 +171,22 @@ const Membership = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto mb-8">
             {savingsExamples.map((item, i) => (
-              <div key={i} className="glass rounded-xl p-5 text-center hover:border-gold/40 transition-all">
-                <p className="text-sm font-medium text-muted-foreground mb-2">{item.event}</p>
-                <p className="text-xs text-muted-foreground">Face value: ${item.faceValue}</p>
-                <div className="my-3 flex items-center justify-center gap-2">
-                  <span className="text-destructive line-through text-sm">${item.competitorFees} fees</span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-primary font-bold">$0</span>
+              <div key={i} className="glass rounded-xl overflow-hidden hover:border-gold/40 transition-all">
+                {/* Sport header badge */}
+                <div className="bg-primary/10 border-b border-border px-4 py-2.5 flex items-center justify-center gap-2">
+                  <span className="text-xl">{item.sport}</span>
+                  <span className="text-sm font-bold text-primary tracking-wide">{item.sportLabel}</span>
                 </div>
-                <p className="text-gold font-bold text-lg">You save ${item.saved}</p>
+                <div className="p-5 text-center">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">{item.event}</p>
+                  <p className="text-xs text-muted-foreground">Face value: ${item.faceValue}</p>
+                  <div className="my-3 flex items-center justify-center gap-2">
+                    <span className="text-destructive line-through text-sm">${item.competitorFees} fees</span>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-primary font-bold">$0</span>
+                  </div>
+                  <p className="text-gold font-bold text-lg">You save ${item.saved}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -190,6 +264,36 @@ const Membership = () => {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
+                <HelpCircle className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">FAQ</span>
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl font-bold">
+                Frequently Asked Questions
+              </h2>
+            </div>
+
+            <Accordion type="single" collapsible className="space-y-3">
+              {faqs.map((faq, i) => (
+                <AccordionItem key={i} value={`faq-${i}`} className="glass rounded-xl border border-border px-5">
+                  <AccordionTrigger className="text-sm font-semibold text-foreground hover:text-primary text-left">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>
