@@ -4,6 +4,7 @@ import { Menu, X, Ticket, LogOut, Shield, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { MLB_TEAMS_CONFIG } from "@/data/mlbTeams";
+import { MLB_LOGOS } from "@/data/mlbLogos";
 
 // Group MLB teams by division for the dropdown
 const DIVISIONS = ["AL East", "AL Central", "AL West", "NL East", "NL Central", "NL West"] as const;
@@ -12,6 +13,7 @@ const MLB_TEAMS = MLB_TEAMS_CONFIG.map((t) => ({
   name: t.name,
   path: `/teams/mlb/${t.slug}`,
   division: t.division,
+  logo: MLB_LOGOS[t.slug],
 }));
 
 const LEAGUES_WITH_DROPDOWNS: Record<string, typeof MLB_TEAMS> = {
@@ -79,13 +81,14 @@ const Navbar = () => {
                           return (
                             <div key={div}>
                               <p className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">{div}</p>
-                              {divTeams.map((team) => (
+                                {divTeams.map((team) => (
                                 <Link
                                   key={team.path}
                                   to={team.path}
                                   onClick={() => setOpenDropdown(null)}
-                                  className="block px-4 py-2 text-sm text-foreground hover:bg-secondary hover:text-primary transition-colors"
+                                  className="flex items-center gap-2.5 px-4 py-2 text-sm text-foreground hover:bg-secondary hover:text-primary transition-colors"
                                 >
+                                  {team.logo && <img src={team.logo} alt="" className="w-5 h-5 object-contain flex-shrink-0" />}
                                   {team.name}
                                 </Link>
                               ))}
