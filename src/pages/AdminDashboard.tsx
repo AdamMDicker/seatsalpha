@@ -9,7 +9,8 @@ import AdminResellers from "@/components/admin/AdminResellers";
 import AdminCustomers from "@/components/admin/AdminCustomers";
 import AdminOrders from "@/components/admin/AdminOrders";
 import AdminCsvImport from "@/components/admin/AdminCsvImport";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload } from "lucide-react";
+import AdminBannedUsers from "@/components/admin/AdminBannedUsers";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban } from "lucide-react";
 
 const tabs = [
   { id: "events", label: "Events", icon: Calendar },
@@ -18,6 +19,7 @@ const tabs = [
   { id: "resellers", label: "Resellers", icon: Users },
   { id: "customers", label: "Customers", icon: UserCheck },
   { id: "orders", label: "Orders", icon: ShoppingCart },
+  { id: "banned", label: "Banned", icon: Ban },
 ];
 
 const AdminDashboard = () => {
@@ -78,6 +80,7 @@ const AdminDashboard = () => {
         {activeTab === "resellers" && <AdminResellers />}
         {activeTab === "customers" && <AdminCustomers />}
         {activeTab === "orders" && <AdminOrders />}
+        {activeTab === "banned" && <AdminBannedUsers />}
       </div>
     </div>
   );

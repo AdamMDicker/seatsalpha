@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      banned_users: {
+        Row: {
+          banned_by: string | null
+          created_at: string
+          email: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          banned_by?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          banned_by?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           category: string
@@ -408,6 +432,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_email_banned: { Args: { _email: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "customer" | "reseller"
