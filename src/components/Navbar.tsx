@@ -5,19 +5,36 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { MLB_TEAMS_CONFIG } from "@/data/mlbTeams";
 import { MLB_LOGOS } from "@/data/mlbLogos";
+import { NHL_TEAMS_CONFIG, NHL_DIVISIONS } from "@/data/nhlTeams";
+import { NHL_LOGOS } from "@/data/nhlLogos";
 
-// Group MLB teams by division for the dropdown
-const DIVISIONS = ["AL East", "AL Central", "AL West", "NL East", "NL Central", "NL West"] as const;
+// Group teams by division for the dropdown
+const MLB_DIVISIONS = ["AL East", "AL Central", "AL West", "NL East", "NL Central", "NL West"] as const;
 
-const MLB_TEAMS = MLB_TEAMS_CONFIG.map((t) => ({
+interface NavTeam {
+  name: string;
+  path: string;
+  division: string;
+  logo?: string;
+}
+
+const MLB_TEAMS: NavTeam[] = MLB_TEAMS_CONFIG.map((t) => ({
   name: t.name,
   path: `/teams/mlb/${t.slug}`,
   division: t.division,
   logo: MLB_LOGOS[t.slug],
 }));
 
-const LEAGUES_WITH_DROPDOWNS: Record<string, typeof MLB_TEAMS> = {
-  MLB: MLB_TEAMS,
+const NHL_TEAMS: NavTeam[] = NHL_TEAMS_CONFIG.map((t) => ({
+  name: t.name,
+  path: `/teams/nhl/${t.slug}`,
+  division: t.division,
+  logo: NHL_LOGOS[t.slug],
+}));
+
+const LEAGUES_WITH_DROPDOWNS: Record<string, { teams: NavTeam[]; divisions: readonly string[] }> = {
+  NHL: { teams: NHL_TEAMS, divisions: NHL_DIVISIONS },
+  MLB: { teams: MLB_TEAMS, divisions: MLB_DIVISIONS },
 };
 
 const LEAGUES = ["NHL", "NBA", "MLB", "NFL", "MLS", "CFL", "Concerts", "Theatre"];
@@ -62,8 +79,9 @@ const Navbar = () => {
               All Events
             </Link>
             {LEAGUES.map((league) => {
-              const teams = LEAGUES_WITH_DROPDOWNS[league];
-              if (teams) {
+              const config = LEAGUES_WITH_DROPDOWNS[league];
+              if (config) {
+                const { teams, divisions } = config;
                 return (
                   <div key={league} className="relative">
                     <button
@@ -75,7 +93,7 @@ const Navbar = () => {
                     </button>
                     {openDropdown === league && (
                       <div className="absolute top-full left-0 mt-2 w-64 max-h-[70vh] overflow-y-auto rounded-xl bg-card border border-border shadow-xl z-50 py-2 animate-fade-in">
-                        {DIVISIONS.map((div) => {
+                        {divisions.map((div) => {
                           const divTeams = teams.filter((t) => t.division === div);
                           if (divTeams.length === 0) return null;
                           return (
