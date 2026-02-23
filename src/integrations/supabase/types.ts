@@ -22,8 +22,10 @@ export type Database = {
           created_by: string | null
           description: string | null
           event_date: string
+          giveaway_item: string | null
           id: string
           image_url: string | null
+          is_giveaway: boolean
           province: string
           title: string
           updated_at: string
@@ -36,8 +38,10 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           event_date: string
+          giveaway_item?: string | null
           id?: string
           image_url?: string | null
+          is_giveaway?: boolean
           province: string
           title: string
           updated_at?: string
@@ -50,8 +54,10 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           event_date?: string
+          giveaway_item?: string | null
           id?: string
           image_url?: string | null
+          is_giveaway?: boolean
           province?: string
           title?: string
           updated_at?: string
@@ -277,6 +283,41 @@ export type Database = {
         }
         Relationships: []
       }
+      seat_images: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          ticket_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          ticket_id: string
+          uploaded_by: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          ticket_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seat_images_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tickets: {
         Row: {
           created_at: string
@@ -284,10 +325,12 @@ export type Database = {
           id: string
           is_active: boolean
           is_reseller_ticket: boolean
+          perks: string[] | null
           price: number
           quantity: number
           quantity_sold: number
           row_name: string | null
+          seat_notes: string | null
           seat_number: string | null
           section: string
           seller_id: string | null
@@ -298,10 +341,12 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_reseller_ticket?: boolean
+          perks?: string[] | null
           price: number
           quantity?: number
           quantity_sold?: number
           row_name?: string | null
+          seat_notes?: string | null
           seat_number?: string | null
           section: string
           seller_id?: string | null
@@ -312,10 +357,12 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_reseller_ticket?: boolean
+          perks?: string[] | null
           price?: number
           quantity?: number
           quantity_sold?: number
           row_name?: string | null
+          seat_notes?: string | null
           seat_number?: string | null
           section?: string
           seller_id?: string | null

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Search } from "lucide-react";
+import { Plus, Pencil, Search, Camera, X, Upload } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -162,27 +162,109 @@ const AdminTickets = () => {
         {filteredTickets.length === 0 && <p className="text-muted-foreground text-center py-8">No tickets found.</p>}
       </div>
 
-      {/* Edit Dialog */}
-      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Ticket — {editing?.events?.title}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="space-y-2"><Label>Section</Label><Input value={editForm.section} onChange={(e) => setEditForm({ ...editForm, section: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2"><Label>Row</Label><Input value={editForm.row_name} onChange={(e) => setEditForm({ ...editForm, row_name: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Seat #</Label><Input value={editForm.seat_number} onChange={(e) => setEditForm({ ...editForm, seat_number: e.target.value })} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2"><Label>Price ($)</Label><Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Quantity</Label><Input type="number" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} /></div>
-            </div>
-            <Button onClick={saveEdit} className="w-full">Save Changes</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Edit Dialog with Seat Image Upload */}
+      <EditTicketDialog
+        editing={editing}
+        editForm={editForm}
+        setEditForm={setEditForm}
+        onClose={() => setEditing(null)}
+        onSave={() => { saveEdit(); }}
+      />
     </div>
+  );
+};
+
+// Seat image upload + edit dialog
+const EditTicketDialog = ({
+  editing, editForm, setEditForm, onClose, onSave,
+}: {
+  editing: TicketWithEvent | null;
+  editForm: { section: string; row_name: string; seat_number: string; price: string; quantity: string };
+  setEditForm: (f: any) => void;
+  onClose: () => void;
+  onSave: () => void;
+}) => {
+  const [seatImages, setSeatImages] = useState<{ id: string; image_url: string; caption: string | null }[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!editing) { setSeatImages([]); return; }
+    supabase.from("seat_images").select("id, image_url, caption").eq("ticket_id", editing.id)
+      .then(({ data }) => setSeatImages(data || []));
+  }, [editing?.id]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editing) return;
+    setUploading(true);
+    const path = `${editing.id}/${Date.now()}-${file.name}`;
+    const { error: uploadErr } = await supabase.storage.from("seat-images").upload(path, file);
+    if (uploadErr) { toast({ title: "Upload failed", description: uploadErr.message, variant: "destructive" }); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from("seat-images").getPublicUrl(path);
+    const { data: session } = await supabase.auth.getSession();
+    const userId = session?.session?.user?.id;
+    if (!userId) { setUploading(false); return; }
+    const { error: insertErr } = await supabase.from("seat_images").insert({
+      ticket_id: editing.id, image_url: urlData.publicUrl, uploaded_by: userId,
+    });
+    if (insertErr) { toast({ title: "Error", description: insertErr.message, variant: "destructive" }); }
+    else {
+      const { data: imgs } = await supabase.from("seat_images").select("id, image_url, caption").eq("ticket_id", editing.id);
+      setSeatImages(imgs || []);
+      toast({ title: "Seat photo uploaded!" });
+    }
+    setUploading(false);
+  };
+
+  const deleteImage = async (imgId: string) => {
+    await supabase.from("seat_images").delete().eq("id", imgId);
+    setSeatImages((prev) => prev.filter((i) => i.id !== imgId));
+  };
+
+  return (
+    <Dialog open={!!editing} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Edit Ticket — {editing?.events?.title}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2"><Label>Section</Label><Input value={editForm.section} onChange={(e) => setEditForm({ ...editForm, section: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2"><Label>Row</Label><Input value={editForm.row_name} onChange={(e) => setEditForm({ ...editForm, row_name: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Seat #</Label><Input value={editForm.seat_number} onChange={(e) => setEditForm({ ...editForm, seat_number: e.target.value })} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2"><Label>Price ($)</Label><Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Quantity</Label><Input type="number" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} /></div>
+          </div>
+
+          {/* Seat images */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5"><Camera className="h-3.5 w-3.5" /> Seat View Photos</Label>
+            {seatImages.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                {seatImages.map((img) => (
+                  <div key={img.id} className="relative group">
+                    <img src={img.image_url} alt="Seat view" className="w-20 h-14 object-cover rounded-lg border border-border" />
+                    <button onClick={() => deleteImage(img.id)} className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <label className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary border border-dashed border-border cursor-pointer hover:border-primary/40 transition-colors">
+              <Upload className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">{uploading ? "Uploading..." : "Upload seat photo"}</span>
+              <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
+            </label>
+          </div>
+
+          <Button onClick={onSave} className="w-full">Save Changes</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
