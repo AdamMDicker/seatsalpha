@@ -40,8 +40,8 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
       <div className="absolute inset-0 bg-gradient-to-r from-background/60 to-transparent" />
 
-      <div className="container mx-auto px-4 relative z-10 pt-20">
-        <div className="max-w-3xl">
+      <div className="container mx-auto px-4 relative z-10 pt-20 flex flex-col items-center text-center">
+        <div className="max-w-3xl flex flex-col items-center">
           <Link to="/membership" className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/15 border border-primary/30 mb-6 animate-fade-in hover:bg-primary/25 transition-colors cursor-pointer group">
             <ShieldCheck className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-primary">Pay No Fees — Click Here to Learn How</span>
