@@ -45,7 +45,7 @@ const Navbar = () => {
               Become a Member
             </Link>
             <Link to="/reseller" className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors">
-              Become a Seller
+              Become a Reseller
             </Link>
           </div>
 
