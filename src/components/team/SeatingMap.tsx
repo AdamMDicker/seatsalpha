@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { ZoomIn, X, Gift, Calendar, Clock, MapPin } from "lucide-react";
 import rogersCentreMap from "@/assets/rogers-centre-seating.png";
+import yankeeStadiumMap from "@/assets/venues/yankee-stadium-seating.jpg";
+import fenwayParkMap from "@/assets/venues/fenway-park-seating.jpg";
+import dodgerStadiumMap from "@/assets/venues/dodger-stadium-seating.jpg";
+import wrigleyFieldMap from "@/assets/venues/wrigley-field-seating.jpg";
+import truistParkMap from "@/assets/venues/truist-park-seating.jpg";
+import citiFieldMap from "@/assets/venues/citi-field-seating.jpg";
+import oracleParkMap from "@/assets/venues/oracle-park-seating.jpg";
+import buschStadiumMap from "@/assets/venues/busch-stadium-seating.jpg";
+import petcoParkMap from "@/assets/venues/petco-park-seating.jpg";
 
 // Rogers Centre specific section overlays
 const ROGERS_CENTRE_SECTIONS = [
@@ -14,9 +23,18 @@ const ROGERS_CENTRE_SECTIONS = [
   { id: "500R", label: "500 Level Right (Sections 527-537)", color: "hsl(142, 72%, 42%)", left: 78, top: 8, width: 18, height: 16 },
 ];
 
-// Venue-specific seating map images (add more as they become available)
+// Venue-specific seating map images
 const VENUE_MAPS: Record<string, string> = {
   "Rogers Centre": rogersCentreMap,
+  "Yankee Stadium": yankeeStadiumMap,
+  "Fenway Park": fenwayParkMap,
+  "Dodger Stadium": dodgerStadiumMap,
+  "Wrigley Field": wrigleyFieldMap,
+  "Truist Park": truistParkMap,
+  "Citi Field": citiFieldMap,
+  "Oracle Park": oracleParkMap,
+  "Busch Stadium": buschStadiumMap,
+  "Petco Park": petcoParkMap,
 };
 
 interface SeatingMapProps {
