@@ -42,10 +42,10 @@ const Navbar = () => {
               </span>
             </Link>
             <Link to="/membership" className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors">
-              Membership
+              Become a Member
             </Link>
             <Link to="/reseller" className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors">
-              Resellers
+              Become a Seller
             </Link>
           </div>
 
