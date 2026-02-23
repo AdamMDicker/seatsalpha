@@ -1,0 +1,248 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Camera, Gift, Star, ChevronDown, ChevronUp } from "lucide-react";
+
+interface TicketInfo {
+  id: string;
+  section: string;
+  row_name: string | null;
+  seat_number: string | null;
+  price: number;
+  quantity: number;
+  quantity_sold: number;
+  is_reseller_ticket: boolean;
+  perks?: string[] | null;
+  seat_notes?: string | null;
+}
+
+interface SeatImage {
+  id: string;
+  ticket_id: string;
+  image_url: string;
+  caption: string | null;
+}
+
+interface TicketListingsProps {
+  tickets: TicketInfo[];
+  selectedSection: string | null;
+  setSelectedSection: (s: string | null) => void;
+  isGiveaway?: boolean;
+  giveawayItem?: string | null;
+}
+
+const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
+  aisle: { label: "Aisle Seat", emoji: "🪑" },
+  row1: { label: "Row 1", emoji: "🥇" },
+  food: { label: "Food Included", emoji: "🍔" },
+  drinks: { label: "Drinks Included", emoji: "🍺" },
+  lounge: { label: "Lounge Access", emoji: "🛋️" },
+  parking: { label: "Parking Included", emoji: "🅿️" },
+  giveaway_guaranteed: { label: "Giveaway Guaranteed", emoji: "🎁" },
+};
+
+const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem }: TicketListingsProps) => {
+  const [seatImages, setSeatImages] = useState<Record<string, SeatImage[]>>({});
+  const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
+
+  // Fetch seat images for all tickets
+  useEffect(() => {
+    const ids = tickets.map((t) => t.id);
+    if (ids.length === 0) return;
+
+    const fetchImages = async () => {
+      const { data } = await supabase
+        .from("seat_images")
+        .select("id, ticket_id, image_url, caption")
+        .in("ticket_id", ids);
+
+      if (data) {
+        const grouped: Record<string, SeatImage[]> = {};
+        data.forEach((img) => {
+          if (!grouped[img.ticket_id]) grouped[img.ticket_id] = [];
+          grouped[img.ticket_id].push(img);
+        });
+        setSeatImages(grouped);
+      }
+    };
+    fetchImages();
+  }, [tickets]);
+
+  const allTickets = selectedSection
+    ? tickets.filter((t) => t.section === selectedSection)
+    : tickets;
+  const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket).slice(0, 4);
+  const resellerTickets = allTickets.filter((t) => t.is_reseller_ticket);
+
+  const FeaturedTicketCard = ({ ticket }: { ticket: TicketInfo }) => {
+    const images = seatImages[ticket.id] || [];
+    const perks = ticket.perks || [];
+
+    return (
+      <div className="glass rounded-xl p-4 hover:border-primary/40 transition-all border-primary/20">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-semibold text-foreground">Section {ticket.section}</p>
+              <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold">No Fees</span>
+              {isGiveaway && perks.includes("giveaway_guaranteed") && (
+                <span className="px-1.5 py-0.5 rounded bg-accent/20 text-[10px] font-semibold text-primary flex items-center gap-0.5">
+                  <Gift className="h-2.5 w-2.5" /> Giveaway Guaranteed
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {ticket.row_name && `Row ${ticket.row_name}`}
+              {ticket.seat_number && ` · Seats ${ticket.seat_number}`}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
+
+            {/* Perks */}
+            {perks.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {perks.filter((p) => p !== "giveaway_guaranteed").map((p) => {
+                  const info = PERK_LABELS[p];
+                  return info ? (
+                    <span key={p} className="px-1.5 py-0.5 rounded bg-secondary text-[10px] text-muted-foreground">
+                      {info.emoji} {info.label}
+                    </span>
+                  ) : null;
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col items-end gap-2">
+            <div className="text-right">
+              <p className="font-display text-xl font-bold text-foreground">${ticket.price}</p>
+              <p className="text-xs text-muted-foreground">per ticket</p>
+            </div>
+            <Button variant="hero" size="sm">Buy</Button>
+          </div>
+        </div>
+
+        {/* Seat images for featured */}
+        {images.length > 0 ? (
+          <div className="mt-3 flex gap-2 overflow-x-auto">
+            {images.map((img) => (
+              <img
+                key={img.id}
+                src={img.image_url}
+                alt={img.caption || "Seat view"}
+                className="w-20 h-14 object-cover rounded-lg border border-border"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground/50">
+            <Camera className="h-3 w-3" />
+            <span>No seat view photos yet</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const CompactTicketCard = ({ ticket }: { ticket: TicketInfo }) => {
+    const images = seatImages[ticket.id] || [];
+    const isExpanded = expandedTicket === ticket.id;
+    const perks = ticket.perks || [];
+
+    return (
+      <div className="glass rounded-lg transition-all hover:border-border/60">
+        <div
+          className="flex items-center justify-between px-3 py-2 cursor-pointer"
+          onClick={() => setExpandedTicket(isExpanded ? null : ticket.id)}
+        >
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-medium text-foreground">Sec {ticket.section}</span>
+                {ticket.row_name && <span className="text-xs text-muted-foreground">Row {ticket.row_name}</span>}
+                {perks.length > 0 && <Star className="h-3 w-3 text-primary/60" />}
+                {images.length > 0 && <Camera className="h-3 w-3 text-muted-foreground/60" />}
+              </div>
+            </div>
+            <span className="text-xs text-muted-foreground">{ticket.quantity - ticket.quantity_sold} avail</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+            <Button variant="hero" size="sm" className="h-7 text-xs px-2.5" onClick={(e) => { e.stopPropagation(); }}>
+              Buy
+            </Button>
+            {isExpanded ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+          </div>
+        </div>
+
+        {/* Expandable details */}
+        {isExpanded && (
+          <div className="px-3 pb-3 pt-0 border-t border-border/50 animate-fade-in">
+            <div className="flex flex-wrap gap-1 mt-2">
+              {ticket.seat_number && <span className="text-xs text-muted-foreground">Seats {ticket.seat_number}</span>}
+              {perks.map((p) => {
+                const info = PERK_LABELS[p];
+                return info ? (
+                  <span key={p} className="px-1.5 py-0.5 rounded bg-secondary text-[10px] text-muted-foreground">
+                    {info.emoji} {info.label}
+                  </span>
+                ) : null;
+              })}
+            </div>
+            {ticket.seat_notes && <p className="text-xs text-muted-foreground mt-1">{ticket.seat_notes}</p>}
+            {images.length > 0 && (
+              <div className="mt-2 flex gap-2 overflow-x-auto">
+                {images.map((img) => (
+                  <img key={img.id} src={img.image_url} alt={img.caption || "Seat view"} className="w-16 h-12 object-cover rounded border border-border" />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      {selectedSection && (
+        <button onClick={() => setSelectedSection(null)} className="text-sm text-primary hover:underline mb-4 flex items-center gap-1">
+          ← All Sections
+        </button>
+      )}
+
+      {/* Giveaway banner */}
+      {isGiveaway && giveawayItem && (
+        <div className="glass rounded-xl p-3 mb-4 flex items-center gap-2 border-primary/20 bg-primary/5">
+          <Gift className="h-4 w-4 text-primary flex-shrink-0" />
+          <div>
+            <p className="text-xs font-semibold text-primary">Giveaway Game!</p>
+            <p className="text-xs text-muted-foreground">{giveawayItem}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Featured */}
+      <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+        ⭐ Featured Tickets
+      </h2>
+      {featuredTickets.length > 0 ? (
+        <div className="space-y-3 mb-6">{featuredTickets.map((t) => <FeaturedTicketCard key={t.id} ticket={t} />)}</div>
+      ) : (
+        <p className="text-muted-foreground text-sm mb-6">No featured tickets for this selection.</p>
+      )}
+
+      {/* Regular tickets - compact */}
+      <h2 className="font-display text-sm font-semibold text-foreground mb-2 flex items-center justify-between">
+        <span>Tickets ({resellerTickets.length})</span>
+      </h2>
+      {resellerTickets.length > 0 ? (
+        <div className="space-y-1">{resellerTickets.map((t) => <CompactTicketCard key={t.id} ticket={t} />)}</div>
+      ) : (
+        <p className="text-muted-foreground text-sm">No other tickets for this selection.</p>
+      )}
+    </div>
+  );
+};
+
+export default TicketListings;
