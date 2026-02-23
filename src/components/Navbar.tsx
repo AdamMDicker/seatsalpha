@@ -3,12 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Ticket, LogOut, Shield, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { MLB_TEAMS_CONFIG } from "@/data/mlbTeams";
 
-const MLB_TEAMS = [
-  { name: "Toronto Blue Jays", path: "/teams/blue-jays" },
-];
+// Group MLB teams by division for the dropdown
+const DIVISIONS = ["AL East", "AL Central", "AL West", "NL East", "NL Central", "NL West"] as const;
 
-const LEAGUES_WITH_DROPDOWNS: Record<string, { name: string; path: string }[]> = {
+const MLB_TEAMS = MLB_TEAMS_CONFIG.map((t) => ({
+  name: t.name,
+  path: `/teams/mlb/${t.slug}`,
+  division: t.division,
+}));
+
+const LEAGUES_WITH_DROPDOWNS: Record<string, typeof MLB_TEAMS> = {
   MLB: MLB_TEAMS,
 };
 
@@ -66,17 +72,26 @@ const Navbar = () => {
                       <ChevronDown className={`h-3.5 w-3.5 transition-transform ${openDropdown === league ? "rotate-180" : ""}`} />
                     </button>
                     {openDropdown === league && (
-                      <div className="absolute top-full left-0 mt-2 w-56 rounded-xl bg-card border border-border shadow-xl z-50 py-2 animate-fade-in">
-                        {teams.map((team) => (
-                          <Link
-                            key={team.path}
-                            to={team.path}
-                            onClick={() => setOpenDropdown(null)}
-                            className="block px-4 py-2.5 text-sm text-foreground hover:bg-secondary hover:text-primary transition-colors"
-                          >
-                            {team.name}
-                          </Link>
-                        ))}
+                      <div className="absolute top-full left-0 mt-2 w-64 max-h-[70vh] overflow-y-auto rounded-xl bg-card border border-border shadow-xl z-50 py-2 animate-fade-in">
+                        {DIVISIONS.map((div) => {
+                          const divTeams = teams.filter((t) => t.division === div);
+                          if (divTeams.length === 0) return null;
+                          return (
+                            <div key={div}>
+                              <p className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">{div}</p>
+                              {divTeams.map((team) => (
+                                <Link
+                                  key={team.path}
+                                  to={team.path}
+                                  onClick={() => setOpenDropdown(null)}
+                                  className="block px-4 py-2 text-sm text-foreground hover:bg-secondary hover:text-primary transition-colors"
+                                >
+                                  {team.name}
+                                </Link>
+                              ))}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

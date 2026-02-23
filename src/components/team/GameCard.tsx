@@ -1,5 +1,4 @@
 import { Gift } from "lucide-react";
-import blueJaysLogo from "@/assets/teams/blue-jays.png";
 
 interface GameCardProps {
   game: {
@@ -13,9 +12,10 @@ interface GameCardProps {
   };
   isSelected: boolean;
   onClick: () => void;
+  teamLogo?: string;
 }
 
-const GameCard = ({ game, isSelected, onClick }: GameCardProps) => {
+const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" });
   const formatTime = (d: string) =>
@@ -31,7 +31,7 @@ const GameCard = ({ game, isSelected, onClick }: GameCardProps) => {
       }`}
     >
       <div className="flex items-center gap-2 mb-1">
-        <img src={blueJaysLogo} alt="" className="w-5 h-5 object-contain" />
+        {teamLogo && <img src={teamLogo} alt="" className="w-5 h-5 object-contain" />}
         <p className="text-xs font-semibold text-primary">{formatDate(game.event_date)}</p>
       </div>
       <p className="text-xs text-muted-foreground">{formatTime(game.event_date)}</p>
