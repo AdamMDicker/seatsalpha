@@ -7,6 +7,8 @@ import { MLB_TEAMS_CONFIG } from "@/data/mlbTeams";
 import { MLB_LOGOS } from "@/data/mlbLogos";
 import { NHL_TEAMS_CONFIG, NHL_DIVISIONS } from "@/data/nhlTeams";
 import { NHL_LOGOS } from "@/data/nhlLogos";
+import { NBA_TEAMS_CONFIG, NBA_DIVISIONS } from "@/data/nbaTeams";
+import { NBA_LOGOS } from "@/data/nbaLogos";
 
 // Group teams by division for the dropdown
 const MLB_DIVISIONS = ["AL East", "AL Central", "AL West", "NL East", "NL Central", "NL West"] as const;
@@ -32,8 +34,16 @@ const NHL_TEAMS: NavTeam[] = NHL_TEAMS_CONFIG.map((t) => ({
   logo: NHL_LOGOS[t.slug],
 }));
 
+const NBA_TEAMS: NavTeam[] = NBA_TEAMS_CONFIG.map((t) => ({
+  name: t.name,
+  path: `/teams/nba/${t.slug}`,
+  division: t.division,
+  logo: NBA_LOGOS[t.slug],
+}));
+
 const LEAGUES_WITH_DROPDOWNS: Record<string, { teams: NavTeam[]; divisions: readonly string[] }> = {
   NHL: { teams: NHL_TEAMS, divisions: NHL_DIVISIONS },
+  NBA: { teams: NBA_TEAMS, divisions: NBA_DIVISIONS },
   MLB: { teams: MLB_TEAMS, divisions: MLB_DIVISIONS },
 };
 
