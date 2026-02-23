@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Eye, EyeOff, ShoppingCart, Search } from "lucide-react";
+import { Pencil, Eye, EyeOff, ShoppingCart, Search, Ban } from "lucide-react";
 import { toast } from "sonner";
-import { PROVINCES } from "@/data/teamsVenues";
+import { useAuth } from "@/contexts/AuthContext";
 
 type OrderWithItems = Tables<"orders"> & {
   order_items: (Tables<"order_items"> & { tickets: { section: string; row_name: string | null; events: { title: string } | null } | null })[];
