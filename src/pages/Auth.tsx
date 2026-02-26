@@ -28,9 +28,11 @@ const Auth = () => {
         navigate("/");
       }
     } else {
-      const { error } = await signUp(email, password, fullName);
+      const { error, data } = await signUp(email, password, fullName);
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else if (data?.session) {
+        navigate("/");
       } else {
         toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
       }
