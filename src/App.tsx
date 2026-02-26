@@ -16,6 +16,8 @@ import TeamMLSPage from "./pages/TeamMLSPage";
 import TeamCFLPage from "./pages/TeamCFLPage";
 import Membership from "./pages/Membership";
 import ResellerDashboard from "./pages/ResellerDashboard";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCanceled from "./pages/PaymentCanceled";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
