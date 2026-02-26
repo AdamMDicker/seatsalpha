@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Camera, Gift, Star, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -29,6 +31,7 @@ interface TicketListingsProps {
   setSelectedSection: (s: string | null) => void;
   isGiveaway?: boolean;
   giveawayItem?: string | null;
+  gameTitle?: string;
 }
 
 const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -41,21 +44,18 @@ const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
   giveaway_guaranteed: { label: "Giveaway Guaranteed", emoji: "🎁" },
 };
 
-const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem }: TicketListingsProps) => {
+const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle }: TicketListingsProps) => {
   const [seatImages, setSeatImages] = useState<Record<string, SeatImage[]>>({});
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
+  const [buyingTicketId, setBuyingTicketId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  // Fetch seat images for all tickets
   useEffect(() => {
     const ids = tickets.map((t) => t.id);
     if (ids.length === 0) return;
-
     const fetchImages = async () => {
-      const { data } = await supabase
-        .from("seat_images")
-        .select("id, ticket_id, image_url, caption")
-        .in("ticket_id", ids);
-
+      const { data } = await supabase.from("seat_images").select("id, ticket_id, image_url, caption").in("ticket_id", ids);
       if (data) {
         const grouped: Record<string, SeatImage[]> = {};
         data.forEach((img) => {
@@ -68,9 +68,34 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     fetchImages();
   }, [tickets]);
 
-  const allTickets = selectedSection
-    ? tickets.filter((t) => t.section === selectedSection)
-    : tickets;
+  const handleBuy = async (ticket: TicketInfo) => {
+    if (!user) {
+      window.location.href = "/auth";
+      return;
+    }
+    setBuyingTicketId(ticket.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: {
+          eventTitle: gameTitle || "Event Ticket",
+          totalAmount: ticket.price,
+          quantity: 1,
+          tier: `Section ${ticket.section}${ticket.row_name ? ` Row ${ticket.row_name}` : ""}`,
+          uberAdded: false,
+          hotelAdded: false,
+          flightAdded: false,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Could not start checkout", variant: "destructive" });
+    } finally {
+      setBuyingTicketId(null);
+    }
+  };
+
+  const allTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
   const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket).slice(0, 4);
   const resellerTickets = allTickets.filter((t) => t.is_reseller_ticket);
 
@@ -96,41 +121,36 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               {ticket.seat_number && ` · Seats ${ticket.seat_number}`}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
-
-            {/* Perks */}
             {perks.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {perks.filter((p) => p !== "giveaway_guaranteed").map((p) => {
                   const info = PERK_LABELS[p];
                   return info ? (
-                    <span key={p} className="px-1.5 py-0.5 rounded bg-secondary text-[10px] text-muted-foreground">
-                      {info.emoji} {info.label}
-                    </span>
+                    <span key={p} className="px-1.5 py-0.5 rounded bg-secondary text-[10px] text-muted-foreground">{info.emoji} {info.label}</span>
                   ) : null;
                 })}
               </div>
             )}
           </div>
-
           <div className="flex flex-col items-end gap-2">
             <div className="text-right">
               <p className="font-display text-xl font-bold text-foreground">${ticket.price}</p>
               <p className="text-xs text-muted-foreground">per ticket</p>
             </div>
-            <Button variant="hero" size="sm">Buy</Button>
+            <Button
+              variant="hero"
+              size="sm"
+              onClick={() => handleBuy(ticket)}
+              disabled={buyingTicketId === ticket.id}
+            >
+              {buyingTicketId === ticket.id ? "..." : "Buy"}
+            </Button>
           </div>
         </div>
-
-        {/* Seat images for featured */}
         {images.length > 0 ? (
           <div className="mt-3 flex gap-2 overflow-x-auto">
             {images.map((img) => (
-              <img
-                key={img.id}
-                src={img.image_url}
-                alt={img.caption || "Seat view"}
-                className="w-20 h-14 object-cover rounded-lg border border-border"
-              />
+              <img key={img.id} src={img.image_url} alt={img.caption || "Seat view"} className="w-20 h-14 object-cover rounded-lg border border-border" />
             ))}
           </div>
         ) : (
@@ -150,10 +170,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
     return (
       <div className="glass rounded-lg transition-all hover:border-border/60">
-        <div
-          className="flex items-center justify-between px-3 py-2 cursor-pointer"
-          onClick={() => setExpandedTicket(isExpanded ? null : ticket.id)}
-        >
+        <div className="flex items-center justify-between px-3 py-2 cursor-pointer" onClick={() => setExpandedTicket(isExpanded ? null : ticket.id)}>
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
@@ -165,36 +182,33 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             </div>
             <span className="text-xs text-muted-foreground">{ticket.quantity - ticket.quantity_sold} avail</span>
           </div>
-
           <div className="flex items-center gap-2">
             <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
-            <Button variant="hero" size="sm" className="h-7 text-xs px-2.5" onClick={(e) => { e.stopPropagation(); }}>
-              Buy
+            <Button
+              variant="hero"
+              size="sm"
+              className="h-7 text-xs px-2.5"
+              onClick={(e) => { e.stopPropagation(); handleBuy(ticket); }}
+              disabled={buyingTicketId === ticket.id}
+            >
+              {buyingTicketId === ticket.id ? "..." : "Buy"}
             </Button>
             {isExpanded ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
           </div>
         </div>
-
-        {/* Expandable details */}
         {isExpanded && (
           <div className="px-3 pb-3 pt-0 border-t border-border/50 animate-fade-in">
             <div className="flex flex-wrap gap-1 mt-2">
               {ticket.seat_number && <span className="text-xs text-muted-foreground">Seats {ticket.seat_number}</span>}
               {perks.map((p) => {
                 const info = PERK_LABELS[p];
-                return info ? (
-                  <span key={p} className="px-1.5 py-0.5 rounded bg-secondary text-[10px] text-muted-foreground">
-                    {info.emoji} {info.label}
-                  </span>
-                ) : null;
+                return info ? (<span key={p} className="px-1.5 py-0.5 rounded bg-secondary text-[10px] text-muted-foreground">{info.emoji} {info.label}</span>) : null;
               })}
             </div>
             {ticket.seat_notes && <p className="text-xs text-muted-foreground mt-1">{ticket.seat_notes}</p>}
             {images.length > 0 && (
               <div className="mt-2 flex gap-2 overflow-x-auto">
-                {images.map((img) => (
-                  <img key={img.id} src={img.image_url} alt={img.caption || "Seat view"} className="w-16 h-12 object-cover rounded border border-border" />
-                ))}
+                {images.map((img) => (<img key={img.id} src={img.image_url} alt={img.caption || "Seat view"} className="w-16 h-12 object-cover rounded border border-border" />))}
               </div>
             )}
           </div>
@@ -206,12 +220,8 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   return (
     <div>
       {selectedSection && (
-        <button onClick={() => setSelectedSection(null)} className="text-sm text-primary hover:underline mb-4 flex items-center gap-1">
-          ← All Sections
-        </button>
+        <button onClick={() => setSelectedSection(null)} className="text-sm text-primary hover:underline mb-4 flex items-center gap-1">← All Sections</button>
       )}
-
-      {/* Giveaway banner */}
       {isGiveaway && giveawayItem && (
         <div className="glass rounded-xl p-3 mb-4 flex items-center gap-2 border-primary/20 bg-primary/5">
           <Gift className="h-4 w-4 text-primary flex-shrink-0" />
@@ -221,18 +231,12 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           </div>
         </div>
       )}
-
-      {/* Featured */}
-      <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-        ⭐ Featured Tickets
-      </h2>
+      <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">⭐ Featured Tickets</h2>
       {featuredTickets.length > 0 ? (
         <div className="space-y-3 mb-6">{featuredTickets.map((t) => <FeaturedTicketCard key={t.id} ticket={t} />)}</div>
       ) : (
         <p className="text-muted-foreground text-sm mb-6">No featured tickets for this selection.</p>
       )}
-
-      {/* Regular tickets - compact */}
       <h2 className="font-display text-sm font-semibold text-foreground mb-2 flex items-center justify-between">
         <span>Tickets ({resellerTickets.length})</span>
       </h2>
