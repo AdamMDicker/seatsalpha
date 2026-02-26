@@ -204,6 +204,7 @@ const TeamMLBPage = () => {
                 setSelectedSection={setSelectedSection}
                 isGiveaway={selectedGame.is_giveaway}
                 giveawayItem={selectedGame.giveaway_item}
+                gameTitle={selectedGame.title}
               />
             </div>
           )}
