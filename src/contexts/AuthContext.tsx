@@ -9,7 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   isMember: boolean;
   membershipEnd: string | null;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any; data: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   checkMembership: () => Promise<void>;
