@@ -87,7 +87,7 @@ const LEAGUES_WITH_DROPDOWNS: Record<string, { teams: NavTeam[]; divisions: read
   WNBA: { teams: WNBA_TEAMS, divisions: WNBA_CONFERENCES },
 };
 
-const LEAGUES = ["NHL", "NBA", "MLB", "NFL", "MLS", "CFL", "Concerts", "Theatre"];
+const LEAGUES = ["NHL", "NBA", "WNBA", "MLB", "NFL", "MLS", "CFL", "Concerts", "Theatre"];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
