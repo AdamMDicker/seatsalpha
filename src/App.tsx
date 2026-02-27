@@ -14,6 +14,7 @@ import TeamNBAPage from "./pages/TeamNBAPage";
 import TeamNFLPage from "./pages/TeamNFLPage";
 import TeamMLSPage from "./pages/TeamMLSPage";
 import TeamCFLPage from "./pages/TeamCFLPage";
+import TeamWNBAPage from "./pages/TeamWNBAPage";
 import Membership from "./pages/Membership";
 import ResellerDashboard from "./pages/ResellerDashboard";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/teams/nfl/:slug" element={<TeamNFLPage />} />
             <Route path="/teams/mls/:slug" element={<TeamMLSPage />} />
             <Route path="/teams/cfl/:slug" element={<TeamCFLPage />} />
+            <Route path="/teams/wnba/:slug" element={<TeamWNBAPage />} />
             {/* Legacy Blue Jays route redirect */}
             <Route path="/teams/blue-jays" element={<TeamMLBPage />} />
             <Route path="/auth" element={<Auth />} />

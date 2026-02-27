@@ -15,6 +15,8 @@ import { MLS_TEAMS_CONFIG, MLS_CONFERENCES } from "@/data/mlsTeams";
 import { MLS_LOGOS } from "@/data/mlsLogos";
 import { CFL_TEAMS_CONFIG, CFL_DIVISIONS } from "@/data/cflTeams";
 import { CFL_LOGOS } from "@/data/cflLogos";
+import { WNBA_TEAMS_CONFIG, WNBA_CONFERENCES } from "@/data/wnbaTeams";
+import { WNBA_LOGOS } from "@/data/wnbaLogos";
 
 // Group teams by division for the dropdown
 const MLB_DIVISIONS = ["AL East", "AL Central", "AL West", "NL East", "NL Central", "NL West"] as const;
@@ -68,6 +70,13 @@ const CFL_TEAMS_NAV: NavTeam[] = CFL_TEAMS_CONFIG.map((t) => ({
   logo: CFL_LOGOS[t.slug],
 }));
 
+const WNBA_TEAMS: NavTeam[] = WNBA_TEAMS_CONFIG.map((t) => ({
+  name: t.name,
+  path: `/teams/wnba/${t.slug}`,
+  division: t.conference,
+  logo: WNBA_LOGOS[t.slug],
+}));
+
 const LEAGUES_WITH_DROPDOWNS: Record<string, { teams: NavTeam[]; divisions: readonly string[] }> = {
   NHL: { teams: NHL_TEAMS, divisions: NHL_DIVISIONS },
   NBA: { teams: NBA_TEAMS, divisions: NBA_DIVISIONS },
@@ -75,9 +84,10 @@ const LEAGUES_WITH_DROPDOWNS: Record<string, { teams: NavTeam[]; divisions: read
   NFL: { teams: NFL_TEAMS, divisions: NFL_DIVISIONS },
   MLS: { teams: MLS_TEAMS, divisions: MLS_CONFERENCES },
   CFL: { teams: CFL_TEAMS_NAV, divisions: CFL_DIVISIONS },
+  WNBA: { teams: WNBA_TEAMS, divisions: WNBA_CONFERENCES },
 };
 
-const LEAGUES = ["NHL", "NBA", "MLB", "NFL", "MLS", "CFL", "Concerts", "Theatre"];
+const LEAGUES = ["NHL", "NBA", "WNBA", "MLB", "NFL", "MLS", "CFL", "Concerts", "Theatre"];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
