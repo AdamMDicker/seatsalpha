@@ -84,6 +84,7 @@ const LEAGUES_WITH_DROPDOWNS: Record<string, { teams: NavTeam[]; divisions: read
   NFL: { teams: NFL_TEAMS, divisions: NFL_DIVISIONS },
   MLS: { teams: MLS_TEAMS, divisions: MLS_CONFERENCES },
   CFL: { teams: CFL_TEAMS_NAV, divisions: CFL_DIVISIONS },
+  WNBA: { teams: WNBA_TEAMS, divisions: WNBA_CONFERENCES },
 };
 
 const LEAGUES = ["NHL", "NBA", "MLB", "NFL", "MLS", "CFL", "Concerts", "Theatre"];
