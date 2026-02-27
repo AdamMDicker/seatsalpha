@@ -16,24 +16,33 @@ export type Database = {
     Tables: {
       banned_users: {
         Row: {
+          ban_type: string
           banned_by: string | null
           created_at: string
-          email: string
+          email: string | null
           id: string
+          ip_address: string | null
+          phone: string | null
           reason: string | null
         }
         Insert: {
+          ban_type?: string
           banned_by?: string | null
           created_at?: string
-          email: string
+          email?: string | null
           id?: string
+          ip_address?: string | null
+          phone?: string | null
           reason?: string | null
         }
         Update: {
+          ban_type?: string
           banned_by?: string | null
           created_at?: string
-          email?: string
+          email?: string | null
           id?: string
+          ip_address?: string | null
+          phone?: string | null
           reason?: string | null
         }
         Relationships: []
@@ -433,6 +442,8 @@ export type Database = {
         Returns: boolean
       }
       is_email_banned: { Args: { _email: string }; Returns: boolean }
+      is_ip_banned: { Args: { _ip: string }; Returns: boolean }
+      is_phone_banned: { Args: { _phone: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "customer" | "reseller"
