@@ -58,8 +58,8 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
   const [mapZoomed, setMapZoomed] = useState(false);
 
   const venueMap = VENUE_MAPS[game.venue];
-  const isRogersCentre = game.venue === "Rogers Centre";
-  const sections = isRogersCentre ? ROGERS_CENTRE_SECTIONS : [];
+  const isSkydome = game.venue === "Skydome";
+  const sections = isSkydome ? SKYDOME_SECTIONS : [];
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" });
   const formatTime = (d: string) => new Date(d).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" });
