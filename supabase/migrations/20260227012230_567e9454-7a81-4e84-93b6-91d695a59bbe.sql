@@ -1,0 +1,1 @@
+UPDATE events SET venue = 'Skydome' WHERE venue = 'Rogers Centre';
