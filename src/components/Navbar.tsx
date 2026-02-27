@@ -70,6 +70,13 @@ const CFL_TEAMS_NAV: NavTeam[] = CFL_TEAMS_CONFIG.map((t) => ({
   logo: CFL_LOGOS[t.slug],
 }));
 
+const WNBA_TEAMS: NavTeam[] = WNBA_TEAMS_CONFIG.map((t) => ({
+  name: t.name,
+  path: `/teams/wnba/${t.slug}`,
+  division: t.conference,
+  logo: WNBA_LOGOS[t.slug],
+}));
+
 const LEAGUES_WITH_DROPDOWNS: Record<string, { teams: NavTeam[]; divisions: readonly string[] }> = {
   NHL: { teams: NHL_TEAMS, divisions: NHL_DIVISIONS },
   NBA: { teams: NBA_TEAMS, divisions: NBA_DIVISIONS },
