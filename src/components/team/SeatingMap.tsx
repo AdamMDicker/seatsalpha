@@ -26,6 +26,7 @@ const SKYDOME_SECTIONS = [
 // Venue-specific seating map images
 const VENUE_MAPS: Record<string, string> = {
   "Skydome": rogersCentreMap,
+  "Rogers Centre": rogersCentreMap,
   "Yankee Stadium": yankeeStadiumMap,
   "Fenway Park": fenwayParkMap,
   "Dodger Stadium": dodgerStadiumMap,
