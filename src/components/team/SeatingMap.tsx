@@ -11,8 +11,8 @@ import oracleParkMap from "@/assets/venues/oracle-park-seating.jpg";
 import buschStadiumMap from "@/assets/venues/busch-stadium-seating.jpg";
 import petcoParkMap from "@/assets/venues/petco-park-seating.jpg";
 
-// Rogers Centre specific section overlays
-const ROGERS_CENTRE_SECTIONS = [
+// Skydome specific section overlays
+const SKYDOME_SECTIONS = [
   { id: "100L", label: "100 Level Left (Sections 107-113)", color: "hsl(353, 82%, 49%)", left: 5, top: 45, width: 18, height: 22 },
   { id: "100R", label: "100 Level Right (Sections 115-121)", color: "hsl(353, 82%, 49%)", left: 77, top: 45, width: 18, height: 22 },
   { id: "200L", label: "200 Level Left (Sections 211-221)", color: "hsl(42, 90%, 55%)", left: 8, top: 28, width: 16, height: 16 },
@@ -25,7 +25,7 @@ const ROGERS_CENTRE_SECTIONS = [
 
 // Venue-specific seating map images
 const VENUE_MAPS: Record<string, string> = {
-  "Rogers Centre": rogersCentreMap,
+  "Skydome": rogersCentreMap,
   "Yankee Stadium": yankeeStadiumMap,
   "Fenway Park": fenwayParkMap,
   "Dodger Stadium": dodgerStadiumMap,
@@ -58,8 +58,8 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
   const [mapZoomed, setMapZoomed] = useState(false);
 
   const venueMap = VENUE_MAPS[game.venue];
-  const isRogersCentre = game.venue === "Rogers Centre";
-  const sections = isRogersCentre ? ROGERS_CENTRE_SECTIONS : [];
+  const isSkydome = game.venue === "Skydome";
+  const sections = isSkydome ? SKYDOME_SECTIONS : [];
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" });
   const formatTime = (d: string) => new Date(d).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" });
@@ -122,7 +122,7 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
           </div>
         )}
 
-        {isRogersCentre && (
+        {isSkydome && (
           <div className="flex flex-wrap gap-3 mt-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(353, 82%, 49%)" }} /> 100 Level</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(42, 90%, 55%)" }} /> 200 Level</span>
