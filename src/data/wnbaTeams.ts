@@ -19,6 +19,7 @@ export const WNBA_TEAMS_CONFIG: WNBATeamConfig[] = [
   { slug: "dream", name: "Atlanta Dream", shortName: "Dream", venue: "Gateway Center Arena", city: "College Park", province: "GA", season: "2025 WNBA Season", searchTerm: "Dream", primaryColor: "hsl(0, 60%, 28%)", conference: "Eastern" },
   { slug: "mystics", name: "Washington Mystics", shortName: "Mystics", venue: "Entertainment & Sports Arena", city: "Washington", province: "DC", season: "2025 WNBA Season", searchTerm: "Mystics", primaryColor: "hsl(215, 60%, 25%)", conference: "Eastern" },
   { slug: "sky", name: "Chicago Sky", shortName: "Sky", venue: "Wintrust Arena", city: "Chicago", province: "IL", season: "2025 WNBA Season", searchTerm: "Sky", primaryColor: "hsl(200, 60%, 25%)", conference: "Eastern" },
+  { slug: "tempo", name: "Toronto Tempo", shortName: "Tempo", venue: "Scotiabank Arena", city: "Toronto", province: "ON", season: "2026 WNBA Season", searchTerm: "Tempo", primaryColor: "hsl(0, 70%, 30%)", conference: "Eastern" },
   // Western Conference
   { slug: "aces", name: "Las Vegas Aces", shortName: "Aces", venue: "Michelob Ultra Arena", city: "Las Vegas", province: "NV", season: "2025 WNBA Season", searchTerm: "Aces", primaryColor: "hsl(0, 0%, 12%)", conference: "Western" },
   { slug: "storm", name: "Seattle Storm", shortName: "Storm", venue: "Climate Pledge Arena", city: "Seattle", province: "WA", season: "2025 WNBA Season", searchTerm: "Storm", primaryColor: "hsl(140, 50%, 20%)", conference: "Western" },
