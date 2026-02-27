@@ -10,6 +10,21 @@ import citiFieldMap from "@/assets/venues/citi-field-seating.jpg";
 import oracleParkMap from "@/assets/venues/oracle-park-seating.jpg";
 import buschStadiumMap from "@/assets/venues/busch-stadium-seating.jpg";
 import petcoParkMap from "@/assets/venues/petco-park-seating.jpg";
+// WNBA / NBA arena maps
+import barclayCenterMap from "@/assets/venues/barclays-center-seating.jpg";
+import scotiabankarenaMap from "@/assets/venues/scotiabank-arena-seating.png";
+import gainbridgeFieldhouseMap from "@/assets/venues/gainbridge-fieldhouse-seating.jpg";
+import wintrustArenaMap from "@/assets/venues/wintrust-arena-seating.jpg";
+import moheganSunArenaMap from "@/assets/venues/mohegan-sun-arena-seating.jpg";
+import gatewayCenterArenaMap from "@/assets/venues/gateway-center-arena-seating.jpg";
+import esaMap from "@/assets/venues/esa-seating.jpg";
+import michelobUltraArenaMap from "@/assets/venues/michelob-ultra-arena-seating.jpg";
+import climatePledgeArenaMap from "@/assets/venues/climate-pledge-arena-seating.jpg";
+import footprintCenterMap from "@/assets/venues/footprint-center-seating.jpg";
+import cryptoArenaMap from "@/assets/venues/crypto-arena-seating.jpg";
+import targetCenterMap from "@/assets/venues/target-center-seating.jpg";
+import collegeParkCenterMap from "@/assets/venues/college-park-center-seating.jpg";
+import chaseCenterMap from "@/assets/venues/chase-center-seating.jpg";
 
 // Skydome specific section overlays
 const SKYDOME_SECTIONS = [
@@ -36,6 +51,21 @@ const VENUE_MAPS: Record<string, string> = {
   "Oracle Park": oracleParkMap,
   "Busch Stadium": buschStadiumMap,
   "Petco Park": petcoParkMap,
+  // WNBA & NBA arenas
+  "Barclays Center": barclayCenterMap,
+  "Scotiabank Arena": scotiabankarenaMap,
+  "Gainbridge Fieldhouse": gainbridgeFieldhouseMap,
+  "Wintrust Arena": wintrustArenaMap,
+  "Mohegan Sun Arena": moheganSunArenaMap,
+  "Gateway Center Arena": gatewayCenterArenaMap,
+  "Entertainment & Sports Arena": esaMap,
+  "Michelob Ultra Arena": michelobUltraArenaMap,
+  "Climate Pledge Arena": climatePledgeArenaMap,
+  "Footprint Center": footprintCenterMap,
+  "Crypto.com Arena": cryptoArenaMap,
+  "Target Center": targetCenterMap,
+  "College Park Center": collegeParkCenterMap,
+  "Chase Center": chaseCenterMap,
 };
 
 interface SeatingMapProps {
