@@ -15,6 +15,8 @@ import { MLS_TEAMS_CONFIG, MLS_CONFERENCES } from "@/data/mlsTeams";
 import { MLS_LOGOS } from "@/data/mlsLogos";
 import { CFL_TEAMS_CONFIG, CFL_DIVISIONS } from "@/data/cflTeams";
 import { CFL_LOGOS } from "@/data/cflLogos";
+import { WNBA_TEAMS_CONFIG, WNBA_CONFERENCES } from "@/data/wnbaTeams";
+import { WNBA_LOGOS } from "@/data/wnbaLogos";
 
 // Group teams by division for the dropdown
 const MLB_DIVISIONS = ["AL East", "AL Central", "AL West", "NL East", "NL Central", "NL West"] as const;
