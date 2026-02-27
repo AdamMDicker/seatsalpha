@@ -36,8 +36,10 @@ export const TEAMS_VENUES: TeamVenue[] = [
   { team: "Calgary Stampeders", venue: "McMahon Stadium", city: "Calgary", province: "AB", league: "CFL" },
   { team: "Edmonton Elks", venue: "Commonwealth Stadium", city: "Edmonton", province: "AB", league: "CFL" },
   { team: "BC Lions", venue: "BC Place", city: "Vancouver", province: "BC", league: "CFL" },
+  // WNBA
+  { team: "Toronto Tempo", venue: "Scotiabank Arena", city: "Toronto", province: "ON", league: "WNBA" },
 ];
 
 export const PROVINCES = ["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT", "NY"];
 
-export const LEAGUES_LIST = ["NHL", "NBA", "MLB", "NFL", "MLS", "CFL"];
+export const LEAGUES_LIST = ["NHL", "NBA", "WNBA", "MLB", "NFL", "MLS", "CFL"];
