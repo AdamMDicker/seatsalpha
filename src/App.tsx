@@ -14,6 +14,7 @@ import TeamNBAPage from "./pages/TeamNBAPage";
 import TeamNFLPage from "./pages/TeamNFLPage";
 import TeamMLSPage from "./pages/TeamMLSPage";
 import TeamCFLPage from "./pages/TeamCFLPage";
+import TeamWNBAPage from "./pages/TeamWNBAPage";
 import Membership from "./pages/Membership";
 import ResellerDashboard from "./pages/ResellerDashboard";
 import PaymentSuccess from "./pages/PaymentSuccess";
