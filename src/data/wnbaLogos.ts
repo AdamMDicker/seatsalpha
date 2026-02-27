@@ -11,6 +11,7 @@ import sparks from "@/assets/teams/wnba/sparks.png";
 import lynx from "@/assets/teams/wnba/lynx.png";
 import wings from "@/assets/teams/wnba/wings.png";
 import valkyries from "@/assets/teams/wnba/valkyries.png";
+import tempo from "@/assets/teams/wnba/tempo.png";
 
 export const WNBA_LOGOS: Record<string, string> = {
   "aces-ny": liberty,
@@ -19,6 +20,7 @@ export const WNBA_LOGOS: Record<string, string> = {
   dream,
   mystics,
   sky,
+  tempo,
   aces,
   storm,
   mercury,
