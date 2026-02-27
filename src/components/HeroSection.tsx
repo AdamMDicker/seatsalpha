@@ -47,6 +47,10 @@ const HeroSection = () => {
             <span className="text-sm font-medium text-primary">Pay No Fees — Click Here to Learn How</span>
           </Link>
 
+          <p className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-3 animate-fade-in" style={{ animationDelay: "0.05s" }}>
+            Canada's First No-Fee Ticket Platform
+          </p>
+
           <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight mb-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             Not Just a Seat,
             <br />
@@ -54,7 +58,7 @@ const HeroSection = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Zero fees. Real savings. The way buying tickets in Canada should be.
+            The price you see is the price you pay. No service fees, no surprises — ever. 🍁
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 max-w-lg mb-10 animate-fade-in relative" style={{ animationDelay: "0.3s" }} ref={resultsRef}>
