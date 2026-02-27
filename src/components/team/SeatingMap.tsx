@@ -11,8 +11,8 @@ import oracleParkMap from "@/assets/venues/oracle-park-seating.jpg";
 import buschStadiumMap from "@/assets/venues/busch-stadium-seating.jpg";
 import petcoParkMap from "@/assets/venues/petco-park-seating.jpg";
 
-// Rogers Centre specific section overlays
-const ROGERS_CENTRE_SECTIONS = [
+// Skydome specific section overlays
+const SKYDOME_SECTIONS = [
   { id: "100L", label: "100 Level Left (Sections 107-113)", color: "hsl(353, 82%, 49%)", left: 5, top: 45, width: 18, height: 22 },
   { id: "100R", label: "100 Level Right (Sections 115-121)", color: "hsl(353, 82%, 49%)", left: 77, top: 45, width: 18, height: 22 },
   { id: "200L", label: "200 Level Left (Sections 211-221)", color: "hsl(42, 90%, 55%)", left: 8, top: 28, width: 16, height: 16 },
