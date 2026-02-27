@@ -14,7 +14,7 @@ export interface MLBTeamConfig {
 
 export const MLB_TEAMS_CONFIG: MLBTeamConfig[] = [
   // AL East
-  { slug: "blue-jays", name: "Toronto Blue Jays", shortName: "Blue Jays", venue: "Rogers Centre", city: "Toronto", province: "ON", season: "2026 MLB Season", searchTerm: "Blue Jays", primaryColor: "hsl(220, 60%, 20%)", division: "AL East" },
+  { slug: "blue-jays", name: "Toronto Blue Jays", shortName: "Blue Jays", venue: "Skydome", city: "Toronto", province: "ON", season: "2026 MLB Season", searchTerm: "Blue Jays", primaryColor: "hsl(220, 60%, 20%)", division: "AL East" },
   { slug: "yankees", name: "New York Yankees", shortName: "Yankees", venue: "Yankee Stadium", city: "New York", province: "NY", season: "2026 MLB Season", searchTerm: "Yankees", primaryColor: "hsl(220, 30%, 18%)", division: "AL East" },
   { slug: "red-sox", name: "Boston Red Sox", shortName: "Red Sox", venue: "Fenway Park", city: "Boston", province: "MA", season: "2026 MLB Season", searchTerm: "Red Sox", primaryColor: "hsl(0, 70%, 30%)", division: "AL East" },
   { slug: "rays", name: "Tampa Bay Rays", shortName: "Rays", venue: "Tropicana Field", city: "St. Petersburg", province: "FL", season: "2026 MLB Season", searchTerm: "Rays", primaryColor: "hsl(220, 60%, 25%)", division: "AL East" },

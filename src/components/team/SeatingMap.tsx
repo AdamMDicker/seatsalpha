@@ -122,7 +122,7 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
           </div>
         )}
 
-        {isRogersCentre && (
+        {isSkydome && (
           <div className="flex flex-wrap gap-3 mt-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(353, 82%, 49%)" }} /> 100 Level</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(42, 90%, 55%)" }} /> 200 Level</span>

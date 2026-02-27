@@ -19,7 +19,7 @@ export const TEAMS_VENUES: TeamVenue[] = [
   // NBA
   { team: "Toronto Raptors", venue: "Scotiabank Arena", city: "Toronto", province: "ON", league: "NBA" },
   // MLB
-  { team: "Toronto Blue Jays", venue: "Rogers Centre", city: "Toronto", province: "ON", league: "MLB" },
+  { team: "Toronto Blue Jays", venue: "Skydome", city: "Toronto", province: "ON", league: "MLB" },
   // NFL – Canadian interest (away games)
   { team: "Buffalo Bills", venue: "Highmark Stadium", city: "Orchard Park", province: "NY", league: "NFL" },
   // MLS
