@@ -39,33 +39,32 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-// Giveaway detection keywords
 const GIVEAWAY_KEYWORDS = [
-  "bobblehead",
-  "jersey",
-  "hat",
-  "cap",
-  "shirt",
-  "t-shirt",
-  "tee",
-  "towel",
-  "blanket",
-  "poster",
-  "figurine",
-  "statue",
-  "replica",
-  "magnet",
-  "pennant",
-  "flag",
-  "bag",
-  "backpack",
-  "lunchbox",
-  "giveaway",
-  "crewneck",
-  "hoodie",
-  "toque",
-  "scarf",
+  "bobblehead", "jersey", "hat", "cap", "shirt", "t-shirt", "tee", "towel",
+  "blanket", "poster", "figurine", "statue", "replica", "magnet", "pennant",
+  "flag", "bag", "backpack", "lunchbox", "giveaway", "crewneck", "hoodie",
+  "toque", "scarf",
 ];
+
+function parseSeatTrim(seatTrim: string): { section: string; row: string | null } {
+  // Format: "133, row 3," or "22, row 1" or "4, row 2,"
+  const match = seatTrim.match(/^(\d+)\s*,?\s*(?:row\s*(\d+))?/i);
+  if (match) {
+    return { section: match[1], row: match[2] || null };
+  }
+  return { section: seatTrim.replace(/,/g, "").trim(), row: null };
+}
+
+function parseTime(timeStr: string): { hours: number; minutes: number } {
+  const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+  if (!match) return { hours: 19, minutes: 7 };
+  let hours = parseInt(match[1]);
+  const minutes = parseInt(match[2]);
+  const ampm = match[3]?.toUpperCase();
+  if (ampm === "PM" && hours !== 12) hours += 12;
+  if (ampm === "AM" && hours === 12) hours = 0;
+  return { hours, minutes };
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -79,154 +78,134 @@ Deno.serve(async (req) => {
 
     console.log("Fetching Google Sheet CSV...");
     const csvRes = await fetch(SHEET_CSV_URL);
-    if (!csvRes.ok) {
-      throw new Error(`Failed to fetch CSV: ${csvRes.status}`);
-    }
+    if (!csvRes.ok) throw new Error(`Failed to fetch CSV: ${csvRes.status}`);
     const csvText = await csvRes.text();
     const lines = csvText.split("\n").filter((l) => l.trim().length > 0);
 
-    if (lines.length < 2) {
+    // Find header row (contains "Date" and "Opponent")
+    let headerIdx = -1;
+    for (let i = 0; i < Math.min(5, lines.length); i++) {
+      const lower = lines[i].toLowerCase();
+      if (lower.includes("date") && lower.includes("opponent")) {
+        headerIdx = i;
+        break;
+      }
+    }
+    if (headerIdx === -1) {
       return new Response(
-        JSON.stringify({ success: true, message: "No data rows found" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: "Could not find header row" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const headers = parseCSVLine(lines[0]).map((h) => h.toLowerCase().trim());
-    console.log("CSV Headers:", headers);
+    const headers = parseCSVLine(lines[headerIdx]).map((h) => h.toLowerCase().trim());
+    console.log("Headers:", headers);
 
-    // Find column indices
+    // Map columns - specific to this sheet format
+    // Columns: "all tickets date" | "day" | "time" | "opponent" | "promo" | "seat trim" | "seats per row" | "total price" | "price per seat"
     const dateIdx = headers.findIndex((h) => h.includes("date"));
     const timeIdx = headers.findIndex((h) => h.includes("time"));
-    const opponentIdx = headers.findIndex((h) => h.includes("opponent") || h.includes("vs"));
-    const venueIdx = headers.findIndex((h) => h.includes("venue") || h.includes("stadium"));
-    const cityIdx = headers.findIndex((h) => h.includes("city"));
-    const provinceIdx = headers.findIndex((h) => h.includes("province") || h.includes("state"));
-    const sectionIdx = headers.findIndex((h) => h.includes("section"));
-    const rowIdx = headers.findIndex((h) => h.includes("row"));
-    const seatIdx = headers.findIndex((h) => h.includes("seat"));
-    const priceIdx = headers.findIndex((h) => h.includes("price"));
-    const qtyIdx = headers.findIndex((h) => h.includes("qty") || h.includes("quantity"));
-    const soldIdx = headers.findIndex((h) => h.includes("sold"));
-    const promoIdx = headers.findIndex((h) => h.includes("promo") || h.includes("giveaway") || h.includes("promotion"));
-    const homeAwayIdx = headers.findIndex((h) => h.includes("home") || h.includes("h/a") || h.includes("location"));
-    const notesIdx = headers.findIndex((h) => h.includes("note"));
-    const activeIdx = headers.findIndex((h) => h.includes("active") || h.includes("status"));
+    const opponentIdx = headers.findIndex((h) => h.includes("opponent"));
+    const promoIdx = headers.findIndex((h) => h.includes("promo"));
+    const seatTrimIdx = headers.findIndex((h) => h.includes("seat trim") || h.includes("seat"));
+    const seatsPerRowIdx = headers.findIndex((h) => h.includes("seats per row") || h.includes("seats"));
+    const pricePerSeatIdx = headers.findIndex((h) => h.includes("price per seat") || h.includes("per seat"));
+    const totalPriceIdx = headers.findIndex((h) => h.includes("total price"));
 
-    console.log(`Found columns: date=${dateIdx}, time=${timeIdx}, opponent=${opponentIdx}, section=${sectionIdx}, price=${priceIdx}, qty=${qtyIdx}, sold=${soldIdx}, promo=${promoIdx}`);
+    console.log(`Columns: date=${dateIdx}, time=${timeIdx}, opponent=${opponentIdx}, promo=${promoIdx}, seatTrim=${seatTrimIdx}, qty=${seatsPerRowIdx}, pricePerSeat=${pricePerSeatIdx}`);
 
-    // Group rows by game (date+opponent+venue)
+    // Parse data rows
+    const currentYear = new Date().getFullYear();
     const gameMap = new Map<string, { gameData: any; tickets: any[] }>();
 
-    for (let i = 1; i < lines.length; i++) {
+    for (let i = headerIdx + 1; i < lines.length; i++) {
       const cols = parseCSVLine(lines[i]);
-      if (cols.length < 3) continue;
 
-      const dateStr = dateIdx >= 0 ? cols[dateIdx] : "";
-      const timeStr = timeIdx >= 0 ? cols[timeIdx] : "";
-      const opponent = opponentIdx >= 0 ? cols[opponentIdx] : "";
-      const venue = venueIdx >= 0 ? cols[venueIdx] : "Skydome";
-      const city = cityIdx >= 0 ? cols[cityIdx] : "Toronto";
-      const province = provinceIdx >= 0 ? cols[provinceIdx] : "ON";
-      const section = sectionIdx >= 0 ? cols[sectionIdx] : "";
-      const row = rowIdx >= 0 ? cols[rowIdx] : null;
-      const seat = seatIdx >= 0 ? cols[seatIdx] : null;
-      const priceRaw = priceIdx >= 0 ? cols[priceIdx] : "0";
-      const qtyRaw = qtyIdx >= 0 ? cols[qtyIdx] : "1";
-      const soldRaw = soldIdx >= 0 ? cols[soldIdx] : "0";
-      const promo = promoIdx >= 0 ? cols[promoIdx] : "";
-      const homeAway = homeAwayIdx >= 0 ? cols[homeAwayIdx]?.toLowerCase() : "";
-      const notes = notesIdx >= 0 ? cols[notesIdx] : "";
-      const activeRaw = activeIdx >= 0 ? cols[activeIdx]?.toLowerCase() : "";
+      const dateStr = dateIdx >= 0 ? cols[dateIdx]?.trim() : "";
+      const timeStr = timeIdx >= 0 ? cols[timeIdx]?.trim() : "";
+      const opponent = opponentIdx >= 0 ? cols[opponentIdx]?.trim() : "";
+      const promo = promoIdx >= 0 ? cols[promoIdx]?.trim() : "";
+      const seatTrim = seatTrimIdx >= 0 ? cols[seatTrimIdx]?.trim() : "";
+      const seatsPerRow = seatsPerRowIdx >= 0 ? cols[seatsPerRowIdx]?.trim() : "2";
+      const pricePerSeatStr = pricePerSeatIdx >= 0 ? cols[pricePerSeatIdx]?.trim() : "";
 
-      // Skip invalid rows
-      if (!dateStr || !opponent || !section) continue;
+      // Skip empty/header rows
+      if (!dateStr || !opponent || !seatTrim) continue;
+      if (dateStr.toLowerCase().includes("date")) continue;
 
-      // Parse price
-      const price = parseFloat(priceRaw.replace(/[$,]/g, ""));
+      // Parse price per seat
+      const price = parseFloat(pricePerSeatStr.replace(/[$,]/g, ""));
       if (isNaN(price) || price <= 0) continue;
 
-      // Skip SWAP entries
-      if (notes?.toUpperCase().includes("SWAP") || opponent?.toUpperCase().includes("SWAP")) continue;
+      // Skip SWAP
+      if (opponent.toUpperCase().includes("SWAP") || promo.toUpperCase().includes("SWAP")) continue;
 
-      const qty = parseInt(qtyRaw) || 1;
-      const sold = parseInt(soldRaw) || 0;
+      // Parse quantity
+      const qty = parseInt(seatsPerRow) || 2;
 
-      // Check if inactive
-      const isActive = activeRaw !== "inactive" && activeRaw !== "false" && activeRaw !== "no";
+      // Parse section/row from seat trim
+      const { section, row } = parseSeatTrim(seatTrim);
+      if (!section) continue;
 
-      // Parse date
+      // Parse date: "March 27", "April 3", etc
       let eventDate: string;
       try {
-        const dateParts = dateStr.split(/[/-]/);
-        let year: number, month: number, day: number;
-        if (dateParts[0].length === 4) {
-          year = parseInt(dateParts[0]);
-          month = parseInt(dateParts[1]);
-          day = parseInt(dateParts[2]);
-        } else {
-          month = parseInt(dateParts[0]);
-          day = parseInt(dateParts[1]);
-          year = parseInt(dateParts[2]);
-          if (year < 100) year += 2000;
+        const { hours, minutes } = parseTime(timeStr);
+        // Handle "Month Day" format
+        const dateMatch = dateStr.match(/^(\w+)\s+(\d+)/);
+        if (!dateMatch) {
+          console.log(`Skipping row ${i}: can't parse date "${dateStr}"`);
+          continue;
+        }
+        const monthName = dateMatch[1];
+        const day = parseInt(dateMatch[2]);
+
+        const monthMap: Record<string, number> = {
+          january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+          july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+        };
+        const monthNum = monthMap[monthName.toLowerCase()];
+        if (monthNum === undefined) {
+          console.log(`Skipping row ${i}: unknown month "${monthName}"`);
+          continue;
         }
 
-        let hours = 19, minutes = 7;
-        if (timeStr) {
-          const timeParts = timeStr.match(/(\d+):(\d+)\s*(am|pm)?/i);
-          if (timeParts) {
-            hours = parseInt(timeParts[1]);
-            minutes = parseInt(timeParts[2]);
-            if (timeParts[3]?.toLowerCase() === "pm" && hours !== 12) hours += 12;
-            if (timeParts[3]?.toLowerCase() === "am" && hours === 12) hours = 0;
-          }
-        }
-
-        const d = new Date(year, month - 1, day, hours, minutes);
+        // Use 2026 for MLB season
+        const year = 2026;
+        const d = new Date(year, monthNum, day, hours, minutes);
         eventDate = d.toISOString();
       } catch {
-        console.log(`Skipping row ${i}: invalid date "${dateStr}"`);
+        console.log(`Skipping row ${i}: date parse error`);
         continue;
       }
 
-      // Determine home/away
-      const isHome = homeAway.includes("home") || homeAway === "h" ||
-        (!homeAway && (venue.toLowerCase().includes("skydome") || venue.toLowerCase().includes("rogers")));
-      const isAway = homeAway.includes("away") || homeAway === "a" ||
-        (!homeAway && !isHome);
-
-      // Build game title
-      const title = isAway
-        ? `Toronto Blue Jays @ ${opponent}`
-        : `Toronto Blue Jays vs ${opponent}`;
-
-      const description = isAway ? "MLB - Away Game" : "MLB - Home Game";
+      // All games in this sheet are home games at Skydome
+      const title = `Toronto Blue Jays vs ${opponent}`;
+      const description = "MLB - Home Game";
 
       // Detect giveaway
       const promoLower = promo.toLowerCase();
       const isGiveaway = GIVEAWAY_KEYWORDS.some((kw) => promoLower.includes(kw));
 
-      const gameKey = `${eventDate}|${opponent}|${venue}`;
+      const gameKey = `${eventDate}|${opponent}`;
 
       if (!gameMap.has(gameKey)) {
         gameMap.set(gameKey, {
           gameData: {
             title,
-            venue: isHome ? "Skydome" : venue,
-            city: isHome ? "Toronto" : city,
-            province: isHome ? "ON" : province,
+            venue: "Skydome",
+            city: "Toronto",
+            province: "ON",
             event_date: eventDate,
             description,
             category: "sports",
             is_giveaway: isGiveaway,
             giveaway_item: isGiveaway ? promo : null,
-            image_url:
-              "https://images.unsplash.com/photo-1529768167801-9173d94c2a42?w=600&h=400&fit=crop",
+            image_url: "https://images.unsplash.com/photo-1529768167801-9173d94c2a42?w=600&h=400&fit=crop",
           },
           tickets: [],
         });
       } else if (isGiveaway) {
-        // Update giveaway info if this row has it
         const existing = gameMap.get(gameKey)!;
         existing.gameData.is_giveaway = true;
         existing.gameData.giveaway_item = promo;
@@ -234,14 +213,14 @@ Deno.serve(async (req) => {
 
       gameMap.get(gameKey)!.tickets.push({
         section,
-        row_name: row || null,
-        seat_number: seat || null,
+        row_name: row,
+        seat_number: null,
         price,
         quantity: qty,
-        quantity_sold: sold,
-        is_active: isActive,
+        quantity_sold: 0,
+        is_active: true,
         is_reseller_ticket: false,
-        seat_notes: notes || null,
+        seat_notes: promo || null,
       });
     }
 
@@ -249,6 +228,7 @@ Deno.serve(async (req) => {
 
     let eventsUpserted = 0;
     let ticketsUpserted = 0;
+    let ticketsUpdated = 0;
 
     for (const [, { gameData, tickets }] of gameMap) {
       // Find or create event
@@ -263,13 +243,11 @@ Deno.serve(async (req) => {
 
       if (existingEvents && existingEvents.length > 0) {
         eventId = existingEvents[0].id;
-        // Update event metadata (giveaway status may change)
         await supabase
           .from("events")
           .update({
             is_giveaway: gameData.is_giveaway,
             giveaway_item: gameData.giveaway_item,
-            venue: gameData.venue,
           })
           .eq("id", eventId);
       } else {
@@ -286,14 +264,15 @@ Deno.serve(async (req) => {
       }
       eventsUpserted++;
 
-      // Sync tickets: match by event_id + section + row + price
+      // Sync tickets
       for (const ticket of tickets) {
         const matchQuery = supabase
           .from("tickets")
-          .select("id, quantity_sold")
+          .select("id, quantity, quantity_sold")
           .eq("event_id", eventId)
           .eq("section", ticket.section)
-          .eq("price", ticket.price);
+          .eq("price", ticket.price)
+          .eq("is_reseller_ticket", false);
 
         if (ticket.row_name) {
           matchQuery.eq("row_name", ticket.row_name);
@@ -302,19 +281,16 @@ Deno.serve(async (req) => {
         const { data: existingTickets } = await matchQuery.limit(1);
 
         if (existingTickets && existingTickets.length > 0) {
-          // Update existing ticket
-          await supabase
-            .from("tickets")
-            .update({
-              quantity: ticket.quantity,
-              quantity_sold: ticket.quantity_sold,
-              is_active: ticket.is_active,
-              seat_number: ticket.seat_number,
-              seat_notes: ticket.seat_notes,
-            })
-            .eq("id", existingTickets[0].id);
+          // Update quantity (in case sheet changed)
+          const existing = existingTickets[0];
+          if (existing.quantity !== ticket.quantity) {
+            await supabase
+              .from("tickets")
+              .update({ quantity: ticket.quantity })
+              .eq("id", existing.id);
+            ticketsUpdated++;
+          }
         } else {
-          // Insert new ticket
           await supabase.from("tickets").insert({
             event_id: eventId,
             section: ticket.section,
@@ -324,21 +300,22 @@ Deno.serve(async (req) => {
             quantity: ticket.quantity,
             quantity_sold: ticket.quantity_sold,
             is_active: ticket.is_active,
-            is_reseller_ticket: ticket.is_reseller_ticket,
+            is_reseller_ticket: false,
             seat_notes: ticket.seat_notes,
           });
+          ticketsUpserted++;
         }
-        ticketsUpserted++;
       }
     }
 
-    console.log(`Sync complete: ${eventsUpserted} events, ${ticketsUpserted} tickets`);
+    console.log(`Sync complete: ${eventsUpserted} events, ${ticketsUpserted} new tickets, ${ticketsUpdated} updated`);
 
     return new Response(
       JSON.stringify({
         success: true,
         events: eventsUpserted,
-        tickets: ticketsUpserted,
+        newTickets: ticketsUpserted,
+        updatedTickets: ticketsUpdated,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -349,10 +326,7 @@ Deno.serve(async (req) => {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
