@@ -129,7 +129,9 @@ Deno.serve(async (req) => {
       const monthNum = MONTH_MAP[dm[1].toLowerCase()];
       if (monthNum === undefined) continue;
       const { hours, minutes } = parseTime(timeStr);
-      const eventDate = new Date(2026, monthNum, parseInt(dm[2]), hours, minutes).toISOString();
+      // Store as UTC directly - the times in the sheet are ET, matching existing DB entries stored as UTC
+      const day = parseInt(dm[2]);
+      const eventDate = `${2026}-${String(monthNum + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00+00:00`;
 
       const title = `Toronto Blue Jays vs ${opponent}`;
       const promoLower = promo.toLowerCase();
