@@ -16,23 +16,13 @@ function parseCSVLine(line: string): string[] {
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (inQuotes) {
-      if (ch === '"' && line[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else if (ch === '"') {
-        inQuotes = false;
-      } else {
-        current += ch;
-      }
+      if (ch === '"' && line[i + 1] === '"') { current += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { current += ch; }
     } else {
-      if (ch === '"') {
-        inQuotes = true;
-      } else if (ch === ",") {
-        result.push(current.trim());
-        current = "";
-      } else {
-        current += ch;
-      }
+      if (ch === '"') inQuotes = true;
+      else if (ch === ",") { result.push(current.trim()); current = ""; }
+      else current += ch;
     }
   }
   result.push(current.trim());
@@ -40,31 +30,31 @@ function parseCSVLine(line: string): string[] {
 }
 
 const GIVEAWAY_KEYWORDS = [
-  "bobblehead", "jersey", "hat", "cap", "shirt", "t-shirt", "tee", "towel",
-  "blanket", "poster", "figurine", "statue", "replica", "magnet", "pennant",
-  "flag", "bag", "backpack", "lunchbox", "giveaway", "crewneck", "hoodie",
-  "toque", "scarf",
+  "bobblehead", "jersey", "hat", "cap", "shirt", "t-shirt", "towel",
+  "blanket", "poster", "figurine", "statue", "replica", "magnet",
+  "pennant", "flag", "bag", "backpack", "giveaway", "crewneck",
+  "hoodie", "toque", "scarf",
 ];
 
-function parseSeatTrim(seatTrim: string): { section: string; row: string | null } {
-  // Format: "133, row 3," or "22, row 1" or "4, row 2,"
-  const match = seatTrim.match(/^(\d+)\s*,?\s*(?:row\s*(\d+))?/i);
-  if (match) {
-    return { section: match[1], row: match[2] || null };
-  }
-  return { section: seatTrim.replace(/,/g, "").trim(), row: null };
+function parseSeatTrim(s: string): { section: string; row: string | null } {
+  const m = s.match(/^(\d+)\s*,?\s*(?:row\s*(\d+))?/i);
+  return m ? { section: m[1], row: m[2] || null } : { section: s.replace(/,/g, "").trim(), row: null };
 }
 
-function parseTime(timeStr: string): { hours: number; minutes: number } {
-  const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
-  if (!match) return { hours: 19, minutes: 7 };
-  let hours = parseInt(match[1]);
-  const minutes = parseInt(match[2]);
-  const ampm = match[3]?.toUpperCase();
-  if (ampm === "PM" && hours !== 12) hours += 12;
-  if (ampm === "AM" && hours === 12) hours = 0;
-  return { hours, minutes };
+function parseTime(t: string): { hours: number; minutes: number } {
+  const m = t.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+  if (!m) return { hours: 19, minutes: 7 };
+  let h = parseInt(m[1]);
+  const min = parseInt(m[2]);
+  if (m[3]?.toUpperCase() === "PM" && h !== 12) h += 12;
+  if (m[3]?.toUpperCase() === "AM" && h === 12) h = 0;
+  return { hours: h, minutes: min };
 }
+
+const MONTH_MAP: Record<string, number> = {
+  january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+  july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -72,260 +62,231 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    console.log("Fetching Google Sheet CSV...");
+    console.log("Fetching CSV...");
     const csvRes = await fetch(SHEET_CSV_URL);
-    if (!csvRes.ok) throw new Error(`Failed to fetch CSV: ${csvRes.status}`);
-    const csvText = await csvRes.text();
-    const lines = csvText.split("\n").filter((l) => l.trim().length > 0);
+    if (!csvRes.ok) throw new Error(`CSV fetch failed: ${csvRes.status}`);
+    const lines = (await csvRes.text()).split("\n").filter((l) => l.trim());
 
-    // Find header row (contains "Date" and "Opponent")
+    // Find header row
     let headerIdx = -1;
     for (let i = 0; i < Math.min(5, lines.length); i++) {
-      const lower = lines[i].toLowerCase();
-      if (lower.includes("date") && lower.includes("opponent")) {
+      if (lines[i].toLowerCase().includes("date") && lines[i].toLowerCase().includes("opponent")) {
         headerIdx = i;
         break;
       }
     }
     if (headerIdx === -1) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Could not find header row" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: false, error: "No header row" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const headers = parseCSVLine(lines[headerIdx]).map((h) => h.toLowerCase().trim());
-    console.log("Headers:", headers);
 
-    // Map columns - specific to this sheet format
-    // Columns: "all tickets date" | "day" | "time" | "opponent" | "promo" | "seat trim" | "seats per row" | "total price" | "price per seat"
-    const dateIdx = headers.findIndex((h) => h.includes("date"));
-    const timeIdx = headers.findIndex((h) => h.includes("time"));
-    const opponentIdx = headers.findIndex((h) => h.includes("opponent"));
-    const promoIdx = headers.findIndex((h) => h.includes("promo"));
-    const seatTrimIdx = headers.findIndex((h) => h.includes("seat trim") || h.includes("seat"));
-    const seatsPerRowIdx = headers.findIndex((h) => h.includes("seats per row") || h.includes("seats"));
-    const pricePerSeatIdx = headers.findIndex((h) => h.includes("price per seat") || h.includes("per seat"));
-    const totalPriceIdx = headers.findIndex((h) => h.includes("total price"));
+    // Column indices
+    const COL = {
+      date: headers.findIndex((h) => h.includes("date")),
+      time: headers.findIndex((h) => h === "time"),
+      opponent: headers.findIndex((h) => h.includes("opponent")),
+      promo: headers.findIndex((h) => h.includes("promo")),
+      seat: headers.findIndex((h) => h.includes("seat trim") || h.includes("seat")),
+      qty: headers.findIndex((h) => h.includes("seats per")),
+      price: headers.findIndex((h) => h.includes("per seat")),
+    };
 
-    console.log(`Columns: date=${dateIdx}, time=${timeIdx}, opponent=${opponentIdx}, promo=${promoIdx}, seatTrim=${seatTrimIdx}, qty=${seatsPerRowIdx}, pricePerSeat=${pricePerSeatIdx}`);
+    console.log("Columns:", JSON.stringify(COL));
 
-    // Parse data rows
-    const currentYear = new Date().getFullYear();
-    const gameMap = new Map<string, { gameData: any; tickets: any[] }>();
+    // Parse all rows into games
+    type GameInfo = { gameData: any; tickets: any[] };
+    const gameMap = new Map<string, GameInfo>();
 
     for (let i = headerIdx + 1; i < lines.length; i++) {
-      const cols = parseCSVLine(lines[i]);
+      const c = parseCSVLine(lines[i]);
+      const dateStr = c[COL.date]?.trim() || "";
+      const timeStr = c[COL.time]?.trim() || "";
+      const opponent = c[COL.opponent]?.trim() || "";
+      const promo = c[COL.promo]?.trim() || "";
+      const seatTrim = c[COL.seat]?.trim() || "";
+      const priceStr = c[COL.price]?.trim() || "";
 
-      const dateStr = dateIdx >= 0 ? cols[dateIdx]?.trim() : "";
-      const timeStr = timeIdx >= 0 ? cols[timeIdx]?.trim() : "";
-      const opponent = opponentIdx >= 0 ? cols[opponentIdx]?.trim() : "";
-      const promo = promoIdx >= 0 ? cols[promoIdx]?.trim() : "";
-      const seatTrim = seatTrimIdx >= 0 ? cols[seatTrimIdx]?.trim() : "";
-      const seatsPerRow = seatsPerRowIdx >= 0 ? cols[seatsPerRowIdx]?.trim() : "2";
-      const pricePerSeatStr = pricePerSeatIdx >= 0 ? cols[pricePerSeatIdx]?.trim() : "";
+      if (!dateStr || !opponent || !seatTrim || dateStr.toLowerCase().includes("date")) continue;
+      if (opponent.toUpperCase().includes("SWAP")) continue;
 
-      // Skip empty/header rows
-      if (!dateStr || !opponent || !seatTrim) continue;
-      if (dateStr.toLowerCase().includes("date")) continue;
-
-      // Parse price per seat
-      const price = parseFloat(pricePerSeatStr.replace(/[$,]/g, ""));
+      const price = parseFloat(priceStr.replace(/[$,]/g, ""));
       if (isNaN(price) || price <= 0) continue;
 
-      // Skip SWAP
-      if (opponent.toUpperCase().includes("SWAP") || promo.toUpperCase().includes("SWAP")) continue;
-
-      // Parse quantity
-      const qty = parseInt(seatsPerRow) || 2;
-
-      // Parse section/row from seat trim
+      const qty = parseInt(c[COL.qty]?.trim() || "2") || 2;
       const { section, row } = parseSeatTrim(seatTrim);
       if (!section) continue;
 
-      // Parse date: "March 27", "April 3", etc
-      let eventDate: string;
-      try {
-        const { hours, minutes } = parseTime(timeStr);
-        // Handle "Month Day" format
-        const dateMatch = dateStr.match(/^(\w+)\s+(\d+)/);
-        if (!dateMatch) {
-          console.log(`Skipping row ${i}: can't parse date "${dateStr}"`);
-          continue;
-        }
-        const monthName = dateMatch[1];
-        const day = parseInt(dateMatch[2]);
+      // Parse date
+      const dm = dateStr.match(/^(\w+)\s+(\d+)/);
+      if (!dm) continue;
+      const monthNum = MONTH_MAP[dm[1].toLowerCase()];
+      if (monthNum === undefined) continue;
+      const { hours, minutes } = parseTime(timeStr);
+      const eventDate = new Date(2026, monthNum, parseInt(dm[2]), hours, minutes).toISOString();
 
-        const monthMap: Record<string, number> = {
-          january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
-          july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
-        };
-        const monthNum = monthMap[monthName.toLowerCase()];
-        if (monthNum === undefined) {
-          console.log(`Skipping row ${i}: unknown month "${monthName}"`);
-          continue;
-        }
-
-        // Use 2026 for MLB season
-        const year = 2026;
-        const d = new Date(year, monthNum, day, hours, minutes);
-        eventDate = d.toISOString();
-      } catch {
-        console.log(`Skipping row ${i}: date parse error`);
-        continue;
-      }
-
-      // All games in this sheet are home games at Skydome
       const title = `Toronto Blue Jays vs ${opponent}`;
-      const description = "MLB - Home Game";
-
-      // Detect giveaway
       const promoLower = promo.toLowerCase();
       const isGiveaway = GIVEAWAY_KEYWORDS.some((kw) => promoLower.includes(kw));
-
       const gameKey = `${eventDate}|${opponent}`;
 
       if (!gameMap.has(gameKey)) {
         gameMap.set(gameKey, {
           gameData: {
-            title,
-            venue: "Skydome",
-            city: "Toronto",
-            province: "ON",
-            event_date: eventDate,
-            description,
-            category: "sports",
-            is_giveaway: isGiveaway,
+            title, venue: "Skydome", city: "Toronto", province: "ON",
+            event_date: eventDate, description: "MLB - Home Game",
+            category: "sports", is_giveaway: isGiveaway,
             giveaway_item: isGiveaway ? promo : null,
             image_url: "https://images.unsplash.com/photo-1529768167801-9173d94c2a42?w=600&h=400&fit=crop",
           },
           tickets: [],
         });
       } else if (isGiveaway) {
-        const existing = gameMap.get(gameKey)!;
-        existing.gameData.is_giveaway = true;
-        existing.gameData.giveaway_item = promo;
+        const g = gameMap.get(gameKey)!;
+        g.gameData.is_giveaway = true;
+        g.gameData.giveaway_item = promo;
       }
 
       gameMap.get(gameKey)!.tickets.push({
-        section,
-        row_name: row,
-        seat_number: null,
-        price,
-        quantity: qty,
-        quantity_sold: 0,
-        is_active: true,
-        is_reseller_ticket: false,
+        section, row_name: row, price, quantity: qty,
+        quantity_sold: 0, is_active: true, is_reseller_ticket: false,
         seat_notes: promo || null,
       });
     }
 
-    console.log(`Parsed ${gameMap.size} games from CSV`);
+    console.log(`Parsed ${gameMap.size} games`);
 
-    let eventsUpserted = 0;
-    let ticketsUpserted = 0;
-    let ticketsUpdated = 0;
+    // Step 1: Fetch all existing Blue Jays events in one query
+    const { data: allExistingEvents } = await supabase
+      .from("events")
+      .select("id, title, event_date")
+      .like("title", "%Toronto Blue Jays vs%")
+      .eq("venue", "Skydome");
+
+    const eventLookup = new Map<string, string>();
+    (allExistingEvents || []).forEach((e) => {
+      eventLookup.set(`${e.title}|${e.event_date}`, e.id);
+    });
+
+    // Step 2: Identify new events to insert in batch
+    const newEvents: any[] = [];
+    const existingEventUpdates: { id: string; data: any }[] = [];
+
+    for (const [, { gameData }] of gameMap) {
+      const key = `${gameData.title}|${gameData.event_date}`;
+      if (eventLookup.has(key)) {
+        existingEventUpdates.push({
+          id: eventLookup.get(key)!,
+          data: { is_giveaway: gameData.is_giveaway, giveaway_item: gameData.giveaway_item },
+        });
+      } else {
+        newEvents.push(gameData);
+      }
+    }
+
+    // Batch insert new events
+    if (newEvents.length > 0) {
+      const { data: inserted } = await supabase
+        .from("events")
+        .insert(newEvents)
+        .select("id, title, event_date");
+      (inserted || []).forEach((e) => {
+        eventLookup.set(`${e.title}|${e.event_date}`, e.id);
+      });
+    }
+
+    // Update existing events (batch updates - up to 5 concurrent)
+    const updateBatches = [];
+    for (let i = 0; i < existingEventUpdates.length; i += 5) {
+      const batch = existingEventUpdates.slice(i, i + 5);
+      updateBatches.push(
+        Promise.all(batch.map((u) =>
+          supabase.from("events").update(u.data).eq("id", u.id)
+        ))
+      );
+    }
+    for (const batch of updateBatches) await batch;
+
+    console.log(`Events: ${newEvents.length} new, ${existingEventUpdates.length} updated`);
+
+    // Step 3: Fetch ALL existing non-reseller tickets for these events
+    const allEventIds = [...new Set([...eventLookup.values()])];
+    const existingTicketsMap = new Map<string, { id: string; quantity: number }>();
+
+    // Fetch in batches of 50 event IDs
+    for (let i = 0; i < allEventIds.length; i += 50) {
+      const batch = allEventIds.slice(i, i + 50);
+      const { data: tickets } = await supabase
+        .from("tickets")
+        .select("id, event_id, section, row_name, price, quantity")
+        .in("event_id", batch)
+        .eq("is_reseller_ticket", false);
+      (tickets || []).forEach((t) => {
+        const key = `${t.event_id}|${t.section}|${t.row_name || ""}|${t.price}`;
+        existingTicketsMap.set(key, { id: t.id, quantity: t.quantity });
+      });
+    }
+
+    // Step 4: Diff tickets
+    const newTickets: any[] = [];
+    const ticketUpdates: { id: string; quantity: number }[] = [];
 
     for (const [, { gameData, tickets }] of gameMap) {
-      // Find or create event
-      const { data: existingEvents } = await supabase
-        .from("events")
-        .select("id")
-        .eq("title", gameData.title)
-        .eq("event_date", gameData.event_date)
-        .limit(1);
+      const eventKey = `${gameData.title}|${gameData.event_date}`;
+      const eventId = eventLookup.get(eventKey);
+      if (!eventId) continue;
 
-      let eventId: string;
-
-      if (existingEvents && existingEvents.length > 0) {
-        eventId = existingEvents[0].id;
-        await supabase
-          .from("events")
-          .update({
-            is_giveaway: gameData.is_giveaway,
-            giveaway_item: gameData.giveaway_item,
-          })
-          .eq("id", eventId);
-      } else {
-        const { data: newEvent, error } = await supabase
-          .from("events")
-          .insert(gameData)
-          .select("id")
-          .single();
-        if (error || !newEvent) {
-          console.error(`Failed to create event: ${gameData.title}`, error);
-          continue;
-        }
-        eventId = newEvent.id;
-      }
-      eventsUpserted++;
-
-      // Sync tickets
-      for (const ticket of tickets) {
-        const matchQuery = supabase
-          .from("tickets")
-          .select("id, quantity, quantity_sold")
-          .eq("event_id", eventId)
-          .eq("section", ticket.section)
-          .eq("price", ticket.price)
-          .eq("is_reseller_ticket", false);
-
-        if (ticket.row_name) {
-          matchQuery.eq("row_name", ticket.row_name);
-        }
-
-        const { data: existingTickets } = await matchQuery.limit(1);
-
-        if (existingTickets && existingTickets.length > 0) {
-          // Update quantity (in case sheet changed)
-          const existing = existingTickets[0];
-          if (existing.quantity !== ticket.quantity) {
-            await supabase
-              .from("tickets")
-              .update({ quantity: ticket.quantity })
-              .eq("id", existing.id);
-            ticketsUpdated++;
+      for (const t of tickets) {
+        const tKey = `${eventId}|${t.section}|${t.row_name || ""}|${t.price}`;
+        const existing = existingTicketsMap.get(tKey);
+        if (existing) {
+          if (existing.quantity !== t.quantity) {
+            ticketUpdates.push({ id: existing.id, quantity: t.quantity });
           }
         } else {
-          await supabase.from("tickets").insert({
-            event_id: eventId,
-            section: ticket.section,
-            row_name: ticket.row_name,
-            seat_number: ticket.seat_number,
-            price: ticket.price,
-            quantity: ticket.quantity,
-            quantity_sold: ticket.quantity_sold,
-            is_active: ticket.is_active,
-            is_reseller_ticket: false,
-            seat_notes: ticket.seat_notes,
-          });
-          ticketsUpserted++;
+          newTickets.push({ ...t, event_id: eventId });
         }
       }
     }
 
-    console.log(`Sync complete: ${eventsUpserted} events, ${ticketsUpserted} new tickets, ${ticketsUpdated} updated`);
+    // Batch insert new tickets (groups of 50)
+    let ticketsInserted = 0;
+    for (let i = 0; i < newTickets.length; i += 50) {
+      const batch = newTickets.slice(i, i + 50);
+      await supabase.from("tickets").insert(batch);
+      ticketsInserted += batch.length;
+    }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        events: eventsUpserted,
-        newTickets: ticketsUpserted,
-        updatedTickets: ticketsUpdated,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    // Batch update tickets (groups of 10 concurrent)
+    for (let i = 0; i < ticketUpdates.length; i += 10) {
+      const batch = ticketUpdates.slice(i, i + 10);
+      await Promise.all(batch.map((u) =>
+        supabase.from("tickets").update({ quantity: u.quantity }).eq("id", u.id)
+      ));
+    }
+
+    const result = {
+      success: true,
+      games: gameMap.size,
+      newEvents: newEvents.length,
+      updatedEvents: existingEventUpdates.length,
+      newTickets: ticketsInserted,
+      updatedTickets: ticketUpdates.length,
+    };
+    console.log("Sync complete:", JSON.stringify(result));
+
+    return new Response(JSON.stringify(result),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Sync error:", error);
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      }),
+      JSON.stringify({ success: false, error: error instanceof Error ? error.message : "Unknown" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
