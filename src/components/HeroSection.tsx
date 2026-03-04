@@ -27,6 +27,7 @@ const TEAMS = [
 const HeroSection = () => {
   const [search, setSearch] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [heroImage, setHeroImage] = useState(heroBaseball);
   const resultsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -47,10 +48,24 @@ const HeroSection = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  useEffect(() => {
+    const fetchHero = async () => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "hero_image")
+        .single();
+      if (data && HERO_IMAGES[data.value]) {
+        setHeroImage(HERO_IMAGES[data.value]);
+      }
+    };
+    fetchHero();
+  }, []);
+
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center transition-all duration-700"
         style={{ backgroundImage: `url(${heroImage})` }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
