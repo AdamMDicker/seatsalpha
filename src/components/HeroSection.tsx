@@ -2,7 +2,23 @@ import { Button } from "@/components/ui/button";
 import { Search, ShieldCheck } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import heroImage from "@/assets/hero-arena.jpg";
+import { supabase } from "@/integrations/supabase/client";
+
+import heroBaseball from "@/assets/hero-arena.jpg";
+import heroHockey from "@/assets/hero-hockey.jpg";
+import heroBasketball from "@/assets/hero-basketball.jpg";
+import heroFootball from "@/assets/hero-football.jpg";
+import heroSoccer from "@/assets/hero-soccer.jpg";
+import heroConcerts from "@/assets/hero-concerts.jpg";
+
+const HERO_IMAGES: Record<string, string> = {
+  baseball: heroBaseball,
+  hockey: heroHockey,
+  basketball: heroBasketball,
+  football: heroFootball,
+  soccer: heroSoccer,
+  concerts: heroConcerts,
+};
 
 const TEAMS = [
   { name: "Toronto Blue Jays", league: "MLB", path: "/teams/blue-jays" },
