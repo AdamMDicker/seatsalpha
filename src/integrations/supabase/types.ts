@@ -98,6 +98,24 @@ export type Database = {
         }
         Relationships: []
       }
+      league_visibility: {
+        Row: {
+          is_visible: boolean
+          league: string
+          updated_at: string
+        }
+        Insert: {
+          is_visible?: boolean
+          league: string
+          updated_at?: string
+        }
+        Update: {
+          is_visible?: boolean
+          league?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           created_at: string
