@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Image, Check } from "lucide-react";
 
-import heroBaseball from "@/assets/hero-arena.jpg";
+import heroCanada from "@/assets/hero-arena.jpg";
+import heroBaseball from "@/assets/hero-baseball.jpg";
 import heroHockey from "@/assets/hero-hockey.jpg";
 import heroBasketball from "@/assets/hero-basketball.jpg";
 import heroFootball from "@/assets/hero-football.jpg";
@@ -12,6 +13,7 @@ import heroSoccer from "@/assets/hero-soccer.jpg";
 import heroConcerts from "@/assets/hero-concerts.jpg";
 
 const HERO_OPTIONS = [
+  { id: "canada", label: "Canada", image: heroCanada },
   { id: "baseball", label: "Baseball", image: heroBaseball },
   { id: "hockey", label: "Hockey", image: heroHockey },
   { id: "basketball", label: "Basketball", image: heroBasketball },

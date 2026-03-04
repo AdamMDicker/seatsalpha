@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-import heroBaseball from "@/assets/hero-arena.jpg";
+import heroCanada from "@/assets/hero-arena.jpg";
+import heroBaseball from "@/assets/hero-baseball.jpg";
 import heroHockey from "@/assets/hero-hockey.jpg";
 import heroBasketball from "@/assets/hero-basketball.jpg";
 import heroFootball from "@/assets/hero-football.jpg";
@@ -12,6 +13,7 @@ import heroSoccer from "@/assets/hero-soccer.jpg";
 import heroConcerts from "@/assets/hero-concerts.jpg";
 
 const HERO_IMAGES: Record<string, string> = {
+  canada: heroCanada,
   baseball: heroBaseball,
   hockey: heroHockey,
   basketball: heroBasketball,
@@ -27,7 +29,7 @@ const TEAMS = [
 const HeroSection = () => {
   const [search, setSearch] = useState("");
   const [showResults, setShowResults] = useState(false);
-  const [heroImage, setHeroImage] = useState(heroBaseball);
+  const [heroImage, setHeroImage] = useState(heroCanada);
   const resultsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
