@@ -29,7 +29,7 @@ const TEAMS = [
 const HeroSection = () => {
   const [search, setSearch] = useState("");
   const [showResults, setShowResults] = useState(false);
-  const [heroImage, setHeroImage] = useState(heroBaseball);
+  const [heroImage, setHeroImage] = useState(heroCanada);
   const resultsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
