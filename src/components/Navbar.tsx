@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Ticket, LogOut, Shield, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { MLB_TEAMS_CONFIG } from "@/data/mlbTeams";
 import { MLB_LOGOS } from "@/data/mlbLogos";
 import { NHL_TEAMS_CONFIG, NHL_DIVISIONS } from "@/data/nhlTeams";
@@ -87,13 +88,24 @@ const LEAGUES_WITH_DROPDOWNS: Record<string, { teams: NavTeam[]; divisions: read
   WNBA: { teams: WNBA_TEAMS, divisions: WNBA_CONFERENCES },
 };
 
-const LEAGUES = ["NHL", "NBA", "WNBA", "MLB", "NFL", "MLS", "CFL", "Concerts", "Theatre"];
+const ALL_LEAGUES = ["NHL", "NBA", "WNBA", "MLB", "NFL", "MLS", "CFL", "Concerts", "Theatre"];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [visibleLeagues, setVisibleLeagues] = useState<Set<string>>(new Set(ALL_LEAGUES));
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAdmin, signOut } = useAuth();
+
+  useEffect(() => {
+    const fetchVisibility = async () => {
+      const { data } = await supabase.from("league_visibility").select("league, is_visible");
+      if (data) {
+        setVisibleLeagues(new Set(data.filter((r) => r.is_visible).map((r) => r.league)));
+      }
+    };
+    fetchVisibility();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -128,7 +140,7 @@ const Navbar = () => {
             <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               All Events
             </Link>
-            {LEAGUES.map((league) => {
+            {ALL_LEAGUES.filter((l) => visibleLeagues.has(l)).map((league) => {
               const config = LEAGUES_WITH_DROPDOWNS[league];
               if (config) {
                 const { teams, divisions } = config;
