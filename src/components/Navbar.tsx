@@ -188,8 +188,8 @@ const Navbar = () => {
                     </button>
                     {openDropdown === league && (
                       <div className="absolute top-full left-0 mt-2 w-64 max-h-[70vh] overflow-y-auto rounded-xl bg-card border border-border shadow-xl z-50 py-2 animate-fade-in">
-                        {divisions.map((div) => {
-                          const divTeams = teams.filter((t) => t.division === div);
+                {divisions.map((div) => {
+                          const divTeams = teams.filter((t) => t.division === div && (!teamsWithInventory || teamsWithInventory.has(t.path)));
                           if (divTeams.length === 0) return null;
                           return (
                             <div key={div}>
