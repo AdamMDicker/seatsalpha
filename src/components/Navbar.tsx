@@ -94,6 +94,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [visibleLeagues, setVisibleLeagues] = useState<Set<string>>(new Set(ALL_LEAGUES));
+  const [teamsWithInventory, setTeamsWithInventory] = useState<Set<string> | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAdmin, signOut } = useAuth();
 
@@ -104,7 +105,39 @@ const Navbar = () => {
         setVisibleLeagues(new Set(data.filter((r) => r.is_visible).map((r) => r.league)));
       }
     };
+
+    const fetchTeamsWithInventory = async () => {
+      // Get event IDs that have available tickets
+      const { data: tickets } = await supabase
+        .from("tickets")
+        .select("event_id")
+        .eq("is_active", true);
+
+      if (!tickets || tickets.length === 0) return;
+
+      const eventIds = [...new Set(tickets.map((t) => t.event_id))];
+
+      const { data: events } = await supabase
+        .from("events")
+        .select("title")
+        .in("id", eventIds);
+
+      if (!events) return;
+
+      const titles = events.map((e) => e.title.toLowerCase());
+      const allTeams = [...MLB_TEAMS, ...NHL_TEAMS, ...NBA_TEAMS, ...NFL_TEAMS, ...MLS_TEAMS, ...CFL_TEAMS_NAV, ...WNBA_TEAMS];
+      const paths = new Set<string>();
+
+      for (const team of allTeams) {
+        if (titles.some((t) => t.includes(team.name.toLowerCase()))) {
+          paths.add(team.path);
+        }
+      }
+      setTeamsWithInventory(paths);
+    };
+
     fetchVisibility();
+    fetchTeamsWithInventory();
   }, []);
 
   useEffect(() => {
