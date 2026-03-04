@@ -2,7 +2,23 @@ import { Button } from "@/components/ui/button";
 import { Search, ShieldCheck } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import heroImage from "@/assets/hero-arena.jpg";
+import { supabase } from "@/integrations/supabase/client";
+
+import heroBaseball from "@/assets/hero-arena.jpg";
+import heroHockey from "@/assets/hero-hockey.jpg";
+import heroBasketball from "@/assets/hero-basketball.jpg";
+import heroFootball from "@/assets/hero-football.jpg";
+import heroSoccer from "@/assets/hero-soccer.jpg";
+import heroConcerts from "@/assets/hero-concerts.jpg";
+
+const HERO_IMAGES: Record<string, string> = {
+  baseball: heroBaseball,
+  hockey: heroHockey,
+  basketball: heroBasketball,
+  football: heroFootball,
+  soccer: heroSoccer,
+  concerts: heroConcerts,
+};
 
 const TEAMS = [
   { name: "Toronto Blue Jays", league: "MLB", path: "/teams/blue-jays" },
@@ -11,6 +27,7 @@ const TEAMS = [
 const HeroSection = () => {
   const [search, setSearch] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [heroImage, setHeroImage] = useState(heroBaseball);
   const resultsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -31,10 +48,24 @@ const HeroSection = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  useEffect(() => {
+    const fetchHero = async () => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "hero_image")
+        .single();
+      if (data && HERO_IMAGES[data.value]) {
+        setHeroImage(HERO_IMAGES[data.value]);
+      }
+    };
+    fetchHero();
+  }, []);
+
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center transition-all duration-700"
         style={{ backgroundImage: `url(${heroImage})` }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
