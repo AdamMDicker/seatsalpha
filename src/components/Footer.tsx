@@ -48,7 +48,8 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-border/50 mt-8 pt-6 text-center text-xs text-muted-foreground">
-          © 2026 seats.ca — All rights reserved. Made in Canada 🍁
+          <p>© 2026 seats.ca — All rights reserved. Made in Canada 🍁</p>
+          <p className="mt-2">Site designed by <a href="https://nichewebsites.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">NicheWebsites.com</a></p>
         </div>
       </div>
     </footer>
