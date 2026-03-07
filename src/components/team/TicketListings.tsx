@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Camera, Gift, Star, ChevronDown, ChevronUp } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
+import FeeGateDialog from "./FeeGateDialog";
 
 interface TicketInfo {
   id: string;
@@ -49,7 +50,8 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [seatImages, setSeatImages] = useState<Record<string, SeatImage[]>>({});
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [buyingTicketId, setBuyingTicketId] = useState<string | null>(null);
-  const { user } = useAuth();
+  const [feeGateTicket, setFeeGateTicket] = useState<TicketInfo | null>(null);
+  const { user, isMember } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -69,13 +71,10 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     fetchImages();
   }, [tickets]);
 
-  const handleBuy = async (ticket: TicketInfo) => {
-    if (!user) {
-      window.location.href = "/auth";
-      return;
-    }
+  const processPayment = async (ticket: TicketInfo, includeFee: boolean) => {
     setBuyingTicketId(ticket.id);
     try {
+      const feeAmount = includeFee ? Math.round(ticket.price * 0.1 * 100) / 100 : 0;
       const { data, error } = await supabase.functions.invoke("create-payment", {
         body: {
           eventTitle: gameTitle ? expandTeamNames(gameTitle) : "Event Ticket",
@@ -85,6 +84,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           uberAdded: false,
           hotelAdded: false,
           flightAdded: false,
+          serviceFee: feeAmount,
         },
       });
       if (error) throw error;
@@ -93,6 +93,19 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       toast({ title: "Error", description: err.message || "Could not start checkout", variant: "destructive" });
     } finally {
       setBuyingTicketId(null);
+      setFeeGateTicket(null);
+    }
+  };
+
+  const handleBuy = (ticket: TicketInfo) => {
+    if (!user) {
+      window.location.href = "/auth";
+      return;
+    }
+    if (isMember) {
+      processPayment(ticket, false);
+    } else {
+      setFeeGateTicket(ticket);
     }
   };
 
@@ -245,6 +258,17 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         <div className="space-y-1">{resellerTickets.map((t) => <CompactTicketCard key={t.id} ticket={t} />)}</div>
       ) : (
         <p className="text-muted-foreground text-sm">No other tickets for this selection.</p>
+      )}
+      {feeGateTicket && (
+        <FeeGateDialog
+          open={!!feeGateTicket}
+          onOpenChange={(open) => { if (!open) setFeeGateTicket(null); }}
+          ticketPrice={feeGateTicket.price}
+          section={feeGateTicket.section}
+          rowName={feeGateTicket.row_name}
+          onProceedWithFees={() => processPayment(feeGateTicket, true)}
+          loading={buyingTicketId === feeGateTicket.id}
+        />
       )}
     </div>
   );

@@ -24,7 +24,7 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { eventTitle, totalAmount, quantity, tier, uberAdded, hotelAdded, flightAdded } = await req.json();
+    const { eventTitle, totalAmount, quantity, tier, uberAdded, hotelAdded, flightAdded, serviceFee } = await req.json();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -49,6 +49,20 @@ serve(async (req) => {
         quantity: 1,
       },
     ];
+
+    // Add service fee line item for non-members
+    if (serviceFee && serviceFee > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "cad",
+          product_data: {
+            name: "Service Fee (10%)",
+          },
+          unit_amount: Math.round(serviceFee * 100),
+        },
+        quantity: 1,
+      });
+    }
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
