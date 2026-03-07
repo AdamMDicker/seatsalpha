@@ -91,7 +91,7 @@ const HeroSection = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            The price you see is the price you pay. No service fees, no surprises — ever. 🍁
+            Join for $49.95/year and never pay a service fee again. Most fans save over $200 in their first year. 🍁
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 max-w-lg mb-10 animate-fade-in relative" style={{ animationDelay: "0.3s" }} ref={resultsRef}>
