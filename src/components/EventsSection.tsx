@@ -4,6 +4,7 @@ import EventCard from "@/components/EventCard";
 import { categories } from "@/data/mockEvents";
 import type { Event } from "@/data/mockEvents";
 import { MLB_LOGOS } from "@/data/mlbLogos";
+import { expandTeamNames } from "@/utils/teamNameUtils";
 
 // Map common team name keywords to their logo slugs
 const TEAM_KEYWORD_TO_SLUG: Record<string, string> = {
@@ -82,7 +83,7 @@ const EventsSection = () => {
 
           eventsWithInfo.push({
             id: ev.id,
-            title: ev.title,
+            title: expandTeamNames(ev.title),
             venue: ev.venue,
             city: `${ev.city}, ${ev.province}`,
             date: new Date(ev.event_date).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
