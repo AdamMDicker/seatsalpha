@@ -40,7 +40,7 @@ const savingsExamples = [
 ];
 
 const faqs = [
-  { q: "What is included with my seats.ca membership?", a: "Your $19.95/year membership eliminates all service fees, processing fees, and facility charges on every ticket you buy through seats.ca. You also get early access to presales, exclusive member pricing, and priority support." },
+  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees, processing fees, and facility charges on every ticket you buy through seats.ca. You also get early access to presales, exclusive member pricing, and priority support." },
   { q: "How much will I actually save?", a: "The average Canadian fan pays $300+ per year in hidden ticketing fees. Most members save 10–20x their membership cost in the first year alone." },
   { q: "Are there any hidden fees at checkout?", a: "Absolutely not. With a seats.ca membership, the price you see is the price you pay. No service fees, no processing fees, no facility charges." },
   { q: "Don't other sites just build fees into the ticket price?", a: "Yes — many platforms advertise 'no fees' but simply inflate the ticket's listed price. At seats.ca, our prices reflect the actual ticket value." },
@@ -115,7 +115,7 @@ const Membership = () => {
     ) : (
       <Button variant="gold" size="lg" onClick={handleJoin} disabled={loading} className={className}>
         <Zap className="h-5 w-5" />
-        {loading ? "Loading..." : "Join for $19.95/year"}
+        {loading ? "Loading..." : "Join for $49.95/year"}
       </Button>
     );
 
@@ -135,7 +135,7 @@ const Membership = () => {
             Stop Paying <span className="text-gold">Ridiculous Fees</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            For just <strong className="text-foreground">$19.95/year</strong>, eliminate every service fee on your ticket purchases.
+            For just <strong className="text-foreground">$49.95/year</strong>, eliminate every service fee on your ticket purchases.
           </p>
           <JoinButton />
         </div>
@@ -211,8 +211,8 @@ const Membership = () => {
           <div className="text-center glass rounded-2xl p-8 max-w-md mx-auto glow-gold">
             <p className="text-sm text-muted-foreground mb-1">Total annual savings on just 4 events</p>
             <p className="font-display text-5xl font-bold text-gold">${totalSaved}</p>
-            <p className="text-sm text-muted-foreground mt-2">Membership cost: <strong className="text-foreground">$19.95</strong></p>
-            <p className="text-primary font-semibold mt-1">That's a {Math.round(totalSaved / 19.95)}x return</p>
+            <p className="text-sm text-muted-foreground mt-2">Membership cost: <strong className="text-foreground">$49.95</strong></p>
+            <p className="text-primary font-semibold mt-1">That's a {Math.round(totalSaved / 49.95)}x return</p>
           </div>
         </div>
       </section>
@@ -223,7 +223,7 @@ const Membership = () => {
           <div className="max-w-3xl mx-auto glass rounded-2xl p-8 md:p-12">
             <div className="flex flex-col md:flex-row gap-10 items-center">
               <div className="flex-1 space-y-6">
-                <h2 className="font-display text-3xl font-bold">Everything You Get for <span className="text-gold">$19.95/year</span></h2>
+                <h2 className="font-display text-3xl font-bold">Everything You Get for <span className="text-gold">$49.95/year</span></h2>
                 <ul className="space-y-4">
                   {memberBenefits.map((b, i) => (
                     <li key={i} className="flex items-start gap-3">
@@ -236,7 +236,7 @@ const Membership = () => {
               </div>
               <div className="flex-shrink-0">
                 <div className="w-44 h-44 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center glow-gold">
-                  <span className="font-display text-4xl font-bold text-gold">$19.95</span>
+                  <span className="font-display text-4xl font-bold text-gold">$49.95</span>
                   <span className="text-sm text-muted-foreground mt-1">per year</span>
                 </div>
               </div>
@@ -260,7 +260,7 @@ const Membership = () => {
               ["Processing Fees", "None", "$5–$10"],
               ["Facility Charges", "None", "$3–$5"],
               ["Hidden Checkout Fees", "Never", "Common"],
-              ["Membership Cost", "$19.95/yr", "N/A"],
+              ["Membership Cost", "$49.95/yr", "N/A"],
               ["Guaranteed Authentic", "Always", "Varies"],
               ["Travel Bundles", "Included", "Rare"],
             ].map(([feature, us, them], i) => (

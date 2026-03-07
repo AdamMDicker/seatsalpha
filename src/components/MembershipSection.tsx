@@ -34,7 +34,7 @@ const MembershipSection = () => {
                 </h2>
 
                 <p className="text-muted-foreground">
-                  Join for just $20/year and never pay a service fee again. Most members save over $200 in their first year.
+                  Join for just $49.95/year and never pay a service fee again. Most members save over $200 in their first year.
                 </p>
 
                 <ul className="space-y-3">
@@ -49,14 +49,14 @@ const MembershipSection = () => {
                 <Link to="/membership">
                   <Button variant="gold" size="lg" className="w-full sm:w-auto">
                     <Zap className="h-4 w-4" />
-                    Learn More — $19.95/year
+                    Learn More — $49.95/year
                   </Button>
                 </Link>
               </div>
 
               <div className="flex-shrink-0 text-center">
                 <div className="w-48 h-48 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center glow-gold">
-                  <span className="font-display text-4xl font-bold text-gold">$19.95</span>
+                  <span className="font-display text-4xl font-bold text-gold">$49.95</span>
                   <span className="text-sm text-muted-foreground mt-1">per year</span>
                   <span className="text-xs text-gold/70 mt-0.5">Save $200+ avg</span>
                 </div>
