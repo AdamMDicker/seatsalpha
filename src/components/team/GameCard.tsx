@@ -1,4 +1,5 @@
 import { Gift, Home, Plane } from "lucide-react";
+import { expandTeamNames } from "@/utils/teamNameUtils";
 
 interface GameCardProps {
   game: {
@@ -69,7 +70,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       </div>
 
       <p className="text-sm font-medium text-foreground mt-1.5 line-clamp-2">
-        {isAway ? "@ " : "vs "}{opponent || game.title}
+        {isAway ? "@ " : "vs "}{opponent ? expandTeamNames(opponent) : expandTeamNames(game.title)}
       </p>
       <p className="text-xs text-muted-foreground mt-0.5">{game.venue}</p>
 
