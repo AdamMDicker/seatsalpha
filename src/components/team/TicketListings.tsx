@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Camera, Gift, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { expandTeamNames } from "@/utils/teamNameUtils";
 
 interface TicketInfo {
   id: string;
