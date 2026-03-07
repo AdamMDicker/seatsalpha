@@ -91,7 +91,7 @@ const HeroSection = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Join for $49.95/year and never pay a service fee again. Most fans save over $200 in their first year. 🍁
+            With a seats.ca membership, you skip the service fees that other platforms charge you. 🍁
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 max-w-lg mb-10 animate-fade-in relative" style={{ animationDelay: "0.3s" }} ref={resultsRef}>
