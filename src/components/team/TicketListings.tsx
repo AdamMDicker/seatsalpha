@@ -78,7 +78,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     try {
       const { data, error } = await supabase.functions.invoke("create-payment", {
         body: {
-          eventTitle: gameTitle || "Event Ticket",
+          eventTitle: gameTitle ? expandTeamNames(gameTitle) : "Event Ticket",
           totalAmount: ticket.price,
           quantity: 1,
           tier: `Section ${ticket.section}${ticket.row_name ? ` Row ${ticket.row_name}` : ""}`,
