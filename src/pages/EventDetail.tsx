@@ -3,7 +3,8 @@ import { mockEvents } from "@/data/mockEvents";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, ArrowLeft, Car, Plane, Hotel, Crown } from "lucide-react";
+import { Calendar, MapPin, ArrowLeft, Car, Plane, Hotel, Crown, ExternalLink } from "lucide-react";
+import { getUberDeepLink } from "@/utils/uberDeepLink";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +21,6 @@ const EventDetail = () => {
   const event = mockEvents.find((e) => e.id === id);
   const [selectedTier, setSelectedTier] = useState("upper");
   const [quantity, setQuantity] = useState(2);
-  const [uberSelected, setUberSelected] = useState(false);
   const [hotelSelected, setHotelSelected] = useState(false);
   const [flightSelected, setFlightSelected] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,8 @@ const EventDetail = () => {
 
   const tier = ticketTiers.find((t) => t.id === selectedTier)!;
   const ticketPrice = event.priceFrom + tier.price;
-  const total = ticketPrice * quantity + (uberSelected ? 25 : 0) + (hotelSelected ? 189 : 0) + (flightSelected ? 299 : 0);
+  const uberLink = getUberDeepLink(event.venue);
+  const total = ticketPrice * quantity + (hotelSelected ? 189 : 0) + (flightSelected ? 299 : 0);
 
   const handleBuy = async () => {
     if (!user) {
@@ -52,7 +53,6 @@ const EventDetail = () => {
           totalAmount: total,
           quantity,
           tier: tier.label,
-          uberAdded: uberSelected,
           hotelAdded: hotelSelected,
           flightAdded: flightSelected,
         },
@@ -121,12 +121,20 @@ const EventDetail = () => {
               <div>
                 <h3 className="font-display font-semibold text-lg mb-4">Enhance Your Experience</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button onClick={() => setUberSelected(!uberSelected)} className={`p-4 rounded-xl border text-left transition-all ${uberSelected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
-                    <Car className="h-5 w-5 text-primary mb-2" />
-                    <p className="font-semibold text-sm">Uber Ride</p>
-                    <p className="text-xs text-muted-foreground">Round trip to venue</p>
-                    <p className="font-display font-bold mt-2 text-gold">+$25</p>
-                  </button>
+                  {uberLink ? (
+                    <a href={uberLink} target="_blank" rel="noopener noreferrer" className="p-4 rounded-xl border border-border bg-card hover:border-primary/40 text-left transition-all block">
+                      <Car className="h-5 w-5 text-primary mb-2" />
+                      <p className="font-semibold text-sm">Uber to the Game</p>
+                      <p className="text-xs text-muted-foreground">Open Uber with venue pre-filled</p>
+                      <p className="font-display font-bold mt-2 text-primary flex items-center gap-1">Free <ExternalLink className="h-3 w-3" /></p>
+                    </a>
+                  ) : (
+                    <div className="p-4 rounded-xl border border-border bg-card text-left opacity-50">
+                      <Car className="h-5 w-5 text-primary mb-2" />
+                      <p className="font-semibold text-sm">Uber Ride</p>
+                      <p className="text-xs text-muted-foreground">Not available for this venue</p>
+                    </div>
+                  )}
                   <button onClick={() => setHotelSelected(!hotelSelected)} className={`p-4 rounded-xl border text-left transition-all ${hotelSelected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
                     <Hotel className="h-5 w-5 text-primary mb-2" />
                     <p className="font-semibold text-sm">Hotel Stay</p>
@@ -156,7 +164,7 @@ const EventDetail = () => {
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-muted-foreground">{quantity}x {tier.label}</span><span>${ticketPrice * quantity}</span></div>
-                  {uberSelected && <div className="flex justify-between"><span className="text-muted-foreground">Uber Ride</span><span>$25</span></div>}
+                  
                   {hotelSelected && <div className="flex justify-between"><span className="text-muted-foreground">Hotel Stay</span><span>$189</span></div>}
                   {flightSelected && <div className="flex justify-between"><span className="text-muted-foreground">Flight</span><span>$299</span></div>}
                   <div className="flex justify-between text-sm text-success font-medium pt-1"><span>Service Fees</span><span>$0.00</span></div>
