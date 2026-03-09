@@ -34,6 +34,7 @@ interface TicketListingsProps {
   isGiveaway?: boolean;
   giveawayItem?: string | null;
   gameTitle?: string;
+  venueName?: string;
 }
 
 const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
