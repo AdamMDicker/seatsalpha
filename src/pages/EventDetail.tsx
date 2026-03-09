@@ -164,7 +164,7 @@ const EventDetail = () => {
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-muted-foreground">{quantity}x {tier.label}</span><span>${ticketPrice * quantity}</span></div>
-                  {uberSelected && <div className="flex justify-between"><span className="text-muted-foreground">Uber Ride</span><span>$25</span></div>}
+                  
                   {hotelSelected && <div className="flex justify-between"><span className="text-muted-foreground">Hotel Stay</span><span>$189</span></div>}
                   {flightSelected && <div className="flex justify-between"><span className="text-muted-foreground">Flight</span><span>$299</span></div>}
                   <div className="flex justify-between text-sm text-success font-medium pt-1"><span>Service Fees</span><span>$0.00</span></div>
