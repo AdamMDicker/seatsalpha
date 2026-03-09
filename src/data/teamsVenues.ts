@@ -5,6 +5,8 @@ export interface TeamVenue {
   city: string;
   province: string;
   league: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export const TEAMS_VENUES: TeamVenue[] = [
