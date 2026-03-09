@@ -56,8 +56,8 @@ serve(async (req) => {
         price_data: {
           currency: "cad",
           product_data: {
-            name: "Service Fee (10%)",
-          },
+             name: "GST (13%)",
+           },
           unit_amount: Math.round(serviceFee * 100),
         },
         quantity: 1,
