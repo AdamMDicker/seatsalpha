@@ -91,7 +91,7 @@ const FeeGateDialog = ({
               </div>
             </div>
             <div className="p-4 space-y-3">
-              <h3 className="font-display font-bold text-lg">Buy a Membership & Save the GST</h3>
+              <h3 className="font-display font-bold text-lg">Buy a Membership & Save the HST</h3>
               <p className="text-sm text-muted-foreground">
                 For <strong className="text-foreground">$49.95/year</strong>, save the{" "}
                 <strong className="text-destructive">${feeAmount.toFixed(2)} GST</strong> on this ticket
