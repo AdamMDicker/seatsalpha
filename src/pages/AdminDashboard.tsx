@@ -12,7 +12,8 @@ import AdminCsvImport from "@/components/admin/AdminCsvImport";
 import AdminBannedUsers from "@/components/admin/AdminBannedUsers";
 import AdminLeagueVisibility from "@/components/admin/AdminLeagueVisibility";
 import AdminHeroImage from "@/components/admin/AdminHeroImage";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image } from "lucide-react";
+import AdminNewsletter from "@/components/admin/AdminNewsletter";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail } from "lucide-react";
 
 const tabs = [
   { id: "events", label: "Events", icon: Calendar },
@@ -24,6 +25,7 @@ const tabs = [
   { id: "banned", label: "Banned", icon: Ban },
   { id: "visibility", label: "Visibility", icon: Eye },
   { id: "hero", label: "Hero Image", icon: Image },
+  { id: "newsletter", label: "Newsletter", icon: Mail },
 ];
 
 const AdminDashboard = () => {
@@ -87,6 +89,7 @@ const AdminDashboard = () => {
         {activeTab === "banned" && <AdminBannedUsers />}
         {activeTab === "visibility" && <AdminLeagueVisibility />}
         {activeTab === "hero" && <AdminHeroImage />}
+        {activeTab === "newsletter" && <AdminNewsletter />}
       </div>
     </div>
   );
