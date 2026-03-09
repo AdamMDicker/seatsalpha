@@ -131,7 +131,7 @@ const ResellerDashboard = () => {
           ) : !isApproved ? (
             <div id="apply" className="max-w-xl mx-auto">
               <div className="glass rounded-xl p-8">
-                <h2 className="font-display text-2xl font-bold text-center mb-2">Apply to Become a Reseller</h2>
+                <h2 className="font-display text-2xl font-bold text-center mb-2">Apply to Become a Seller</h2>
                 <p className="text-sm text-muted-foreground text-center mb-8">
                   {user ? "Fill out the form below and our team will review your application." : "Create an account first, then fill out the form below."}
                 </p>
