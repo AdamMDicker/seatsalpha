@@ -105,7 +105,7 @@ const ResellerDashboard = () => {
           {/* Benefits */}
           <div className="mb-16">
             <h2 className="font-display text-2xl font-bold text-center mb-10">
-              Why Resell on seats.ca?
+              Why sell on seats.ca?
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {benefits.map((b) => (
