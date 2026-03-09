@@ -134,7 +134,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             </div>
             <p className="text-sm text-muted-foreground">
               {ticket.row_name && `Row ${ticket.row_name}`}
-              {ticket.seat_number && ` · Seats ${ticket.seat_number}`}
+              {!ticket.hide_seat_numbers && ticket.seat_number && ` · Seats ${ticket.seat_number}`}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
             {perks.length > 0 && (
