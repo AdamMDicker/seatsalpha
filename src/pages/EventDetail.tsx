@@ -21,7 +21,6 @@ const EventDetail = () => {
   const event = mockEvents.find((e) => e.id === id);
   const [selectedTier, setSelectedTier] = useState("upper");
   const [quantity, setQuantity] = useState(2);
-  const [uberSelected, setUberSelected] = useState(false);
   const [hotelSelected, setHotelSelected] = useState(false);
   const [flightSelected, setFlightSelected] = useState(false);
   const [loading, setLoading] = useState(false);
