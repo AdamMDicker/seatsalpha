@@ -11,15 +11,11 @@ const EventCard = ({ event }: EventCardProps) => {
   return (
     <Link to={`/event/${event.id}`} className="group block">
       <div className="glass rounded-xl overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
-        <div className="relative h-48 overflow-hidden bg-card flex items-center justify-center">
-          <img
-            src={event.image}
-            alt={event.title}
-            className={`transition-transform duration-500 group-hover:scale-110 ${
-              event.image?.includes("/assets/teams/") ? "w-28 h-28 object-contain" : "w-full h-full object-cover"
-            }`}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+        <div className="relative h-48 overflow-hidden bg-card flex items-center justify-center p-6">
+          <h2 className="font-display text-xl font-bold text-foreground text-center leading-snug">
+            {event.title}
+          </h2>
+          <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent pointer-events-none" />
           <div className="absolute top-3 left-3">
             <span className="px-2 py-1 rounded-md bg-primary/90 text-primary-foreground text-xs font-semibold uppercase tracking-wide">
               {event.category}
