@@ -32,7 +32,7 @@ const FeeGateDialog = ({
 }: FeeGateDialogProps) => {
   const [membershipLoading, setMembershipLoading] = useState(false);
   const { toast } = useToast();
-  const feeAmount = Math.round(ticketPrice * 0.1 * 100) / 100;
+  const feeAmount = Math.round(ticketPrice * 0.13 * 100) / 100;
   const totalWithFees = Math.round((ticketPrice + feeAmount) * 100) / 100;
 
   const handleBuyMembership = async () => {
