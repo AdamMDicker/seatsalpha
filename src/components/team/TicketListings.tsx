@@ -269,6 +269,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           rowName={feeGateTicket.row_name}
           onProceedWithFees={() => processPayment(feeGateTicket, true)}
           loading={buyingTicketId === feeGateTicket.id}
+          venueName={venueName}
         />
       )}
     </div>
