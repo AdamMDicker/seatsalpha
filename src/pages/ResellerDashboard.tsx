@@ -223,7 +223,7 @@ const ResellerDashboard = () => {
                 </form>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
