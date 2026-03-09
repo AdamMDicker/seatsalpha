@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Store, DollarSign, Eye, Zap, Shield, Users, CheckCircle } from "lucide-react";
+import ResellerCsvUpload from "@/components/reseller/ResellerCsvUpload";
 
 const benefits = [
   { icon: DollarSign, title: "Zero Listing Fees", description: "List your tickets for free — we only take a small commission on completed sales." },
@@ -20,8 +21,9 @@ const ResellerDashboard = () => {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
+  const [resellerStatus, setResellerStatus] = useState<string | null>(null);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -31,6 +33,17 @@ const ResellerDashboard = () => {
     ticketCount: "",
   });
 
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!user) { setLoading(false); return; }
+      const { data } = await supabase.from("resellers").select("status").eq("user_id", user.id).maybeSingle();
+      setResellerStatus(data?.status || null);
+      setLoading(false);
+    };
+    checkStatus();
+  }, [user]);
+
+  const isApproved = resellerStatus === "live";
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,10 +116,17 @@ const ResellerDashboard = () => {
             </div>
           </div>
 
+          {/* Upload section for approved resellers */}
+          {isApproved && (
+            <div className="mb-16 max-w-2xl mx-auto">
+              <ResellerCsvUpload />
+            </div>
+          )}
+
           {/* Application / Status */}
           {isLoading || loading ? (
             <div className="text-center text-muted-foreground py-8">Loading...</div>
-          ) : (
+          ) : !isApproved ? (
             <div id="apply" className="max-w-xl mx-auto">
               <div className="glass rounded-xl p-8">
                 <h2 className="font-display text-2xl font-bold text-center mb-2">Apply to Become a Reseller</h2>
@@ -203,7 +223,7 @@ const ResellerDashboard = () => {
                 </form>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 

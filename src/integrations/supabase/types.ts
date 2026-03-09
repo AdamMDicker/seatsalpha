@@ -391,50 +391,71 @@ export type Database = {
         Row: {
           created_at: string
           event_id: string
+          hide_seat_numbers: boolean
           id: string
           is_active: boolean
           is_reseller_ticket: boolean
+          order_number: string | null
           perks: string[] | null
           price: number
           quantity: number
           quantity_sold: number
           row_name: string | null
+          sales_tax_paid: boolean
           seat_notes: string | null
           seat_number: string | null
+          seat_type: string | null
           section: string
           seller_id: string | null
+          split_type: string | null
+          stock_type: string | null
+          ticket_group_account: string | null
         }
         Insert: {
           created_at?: string
           event_id: string
+          hide_seat_numbers?: boolean
           id?: string
           is_active?: boolean
           is_reseller_ticket?: boolean
+          order_number?: string | null
           perks?: string[] | null
           price: number
           quantity?: number
           quantity_sold?: number
           row_name?: string | null
+          sales_tax_paid?: boolean
           seat_notes?: string | null
           seat_number?: string | null
+          seat_type?: string | null
           section: string
           seller_id?: string | null
+          split_type?: string | null
+          stock_type?: string | null
+          ticket_group_account?: string | null
         }
         Update: {
           created_at?: string
           event_id?: string
+          hide_seat_numbers?: boolean
           id?: string
           is_active?: boolean
           is_reseller_ticket?: boolean
+          order_number?: string | null
           perks?: string[] | null
           price?: number
           quantity?: number
           quantity_sold?: number
           row_name?: string | null
+          sales_tax_paid?: boolean
           seat_notes?: string | null
           seat_number?: string | null
+          seat_type?: string | null
           section?: string
           seller_id?: string | null
+          split_type?: string | null
+          stock_type?: string | null
+          ticket_group_account?: string | null
         }
         Relationships: [
           {

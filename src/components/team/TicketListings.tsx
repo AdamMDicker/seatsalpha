@@ -18,6 +18,7 @@ interface TicketInfo {
   is_reseller_ticket: boolean;
   perks?: string[] | null;
   seat_notes?: string | null;
+  hide_seat_numbers?: boolean;
 }
 
 interface SeatImage {
@@ -133,7 +134,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             </div>
             <p className="text-sm text-muted-foreground">
               {ticket.row_name && `Row ${ticket.row_name}`}
-              {ticket.seat_number && ` · Seats ${ticket.seat_number}`}
+              {!ticket.hide_seat_numbers && ticket.seat_number && ` · Seats ${ticket.seat_number}`}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
             {perks.length > 0 && (
@@ -214,7 +215,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         {isExpanded && (
           <div className="px-3 pb-3 pt-0 border-t border-border/50 animate-fade-in">
             <div className="flex flex-wrap gap-1 mt-2">
-              {ticket.seat_number && <span className="text-xs text-muted-foreground">Seats {ticket.seat_number}</span>}
+              {!ticket.hide_seat_numbers && ticket.seat_number && <span className="text-xs text-muted-foreground">Seats {ticket.seat_number}</span>}
               {perks.map((p) => {
                 const info = PERK_LABELS[p];
                 return info ? (<span key={p} className="px-1.5 py-0.5 rounded bg-secondary text-[10px] text-muted-foreground">{info.emoji} {info.label}</span>) : null;
