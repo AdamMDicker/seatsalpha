@@ -18,6 +18,7 @@ interface TicketInfo {
   is_reseller_ticket: boolean;
   perks?: string[] | null;
   seat_notes?: string | null;
+  hide_seat_numbers?: boolean;
 }
 
 interface SeatImage {
