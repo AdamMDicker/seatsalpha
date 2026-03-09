@@ -5,6 +5,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 const Footer = () => {
+  const [footerEmail, setFooterEmail] = useState("");
+  const [footerStatus, setFooterStatus] = useState<"idle" | "loading" | "done">("idle");
+
+  const handleFooterSub = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = footerEmail.trim().toLowerCase();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return;
+    setFooterStatus("loading");
+    const { error } = await supabase
+      .from("newsletter_subscribers")
+      .upsert({ email: trimmed, is_active: true }, { onConflict: "email" });
+    if (!error) {
+      toast({ title: "Subscribed! 🎉" });
+      setFooterStatus("done");
+      setFooterEmail("");
+    } else {
+      setFooterStatus("idle");
+    }
+  };
+
   return (
     <footer className="border-t border-border/50 py-12">
       <div className="container mx-auto px-4">
