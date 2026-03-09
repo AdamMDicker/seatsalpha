@@ -74,7 +74,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const processPayment = async (ticket: TicketInfo, includeFee: boolean) => {
     setBuyingTicketId(ticket.id);
     try {
-      const feeAmount = includeFee ? Math.round(ticket.price * 0.1 * 100) / 100 : 0;
+      const feeAmount = includeFee ? Math.round(ticket.price * 0.13 * 100) / 100 : 0;
       const { data, error } = await supabase.functions.invoke("create-payment", {
         body: {
           eventTitle: gameTitle ? expandTeamNames(gameTitle) : "Event Ticket",

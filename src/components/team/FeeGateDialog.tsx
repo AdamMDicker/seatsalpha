@@ -32,7 +32,7 @@ const FeeGateDialog = ({
 }: FeeGateDialogProps) => {
   const [membershipLoading, setMembershipLoading] = useState(false);
   const { toast } = useToast();
-  const feeAmount = Math.round(ticketPrice * 0.1 * 100) / 100;
+  const feeAmount = Math.round(ticketPrice * 0.13 * 100) / 100;
   const totalWithFees = Math.round((ticketPrice + feeAmount) * 100) / 100;
 
   const handleBuyMembership = async () => {
@@ -71,8 +71,8 @@ const FeeGateDialog = ({
               <span className="text-foreground font-medium">${ticketPrice.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-destructive flex items-center gap-1.5">
-                <X className="h-3.5 w-3.5" /> Service Fee (10%)
+               <span className="text-destructive flex items-center gap-1.5">
+                 <X className="h-3.5 w-3.5" /> GST (13%)
               </span>
               <span className="text-destructive font-medium">+${feeAmount.toFixed(2)}</span>
             </div>
@@ -91,10 +91,10 @@ const FeeGateDialog = ({
               </div>
             </div>
             <div className="p-4 space-y-3">
-              <h3 className="font-display font-bold text-lg">Buy a Membership & Pay $0 Fees</h3>
+              <h3 className="font-display font-bold text-lg">Buy a Membership & Save the GST</h3>
               <p className="text-sm text-muted-foreground">
-                For <strong className="text-foreground">$49.95/year</strong>, skip the{" "}
-                <strong className="text-destructive">${feeAmount.toFixed(2)} fee</strong> on this ticket
+                For <strong className="text-foreground">$49.95/year</strong>, save the{" "}
+                <strong className="text-destructive">${feeAmount.toFixed(2)} GST</strong> on this ticket
                 and <strong className="text-foreground">every future ticket</strong> you buy.
               </p>
 
@@ -104,8 +104,8 @@ const FeeGateDialog = ({
                   <span>${ticketPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-primary flex items-center gap-1">
-                    <Check className="h-3.5 w-3.5" /> Service Fee
+                   <span className="text-primary flex items-center gap-1">
+                     <Check className="h-3.5 w-3.5" /> GST
                   </span>
                   <span className="text-primary font-medium">$0.00</span>
                 </div>
@@ -123,7 +123,7 @@ const FeeGateDialog = ({
 
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                <span>Zero fees on every ticket for 12 months. Cancel anytime.</span>
+                <span>Save the GST on every ticket for 12 months. Cancel anytime.</span>
               </div>
 
               <Button
@@ -134,7 +134,7 @@ const FeeGateDialog = ({
                 disabled={membershipLoading}
               >
                 <Zap className="h-4 w-4" />
-                {membershipLoading ? "Loading..." : `Get Membership — Save $${feeAmount.toFixed(2)} Now`}
+                {membershipLoading ? "Loading..." : `Get Membership — Save $${feeAmount.toFixed(2)} GST`}
               </Button>
             </div>
           </div>
@@ -147,7 +147,7 @@ const FeeGateDialog = ({
             <div className="p-4 space-y-3">
               <h3 className="font-display font-semibold">Continue Without Membership</h3>
               <p className="text-sm text-muted-foreground">
-                Pay the 10% service fee (<strong className="text-destructive">${feeAmount.toFixed(2)}</strong>) on this purchase.
+                Pay the 13% GST (<strong className="text-destructive">${feeAmount.toFixed(2)}</strong>) on this purchase.
               </p>
               <Button
                 variant="outline"
