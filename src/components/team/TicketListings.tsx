@@ -87,6 +87,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           hotelAdded: false,
           flightAdded: false,
           serviceFee: feeAmount,
+          venue: venueName || "",
         },
       });
       if (error) throw error;
