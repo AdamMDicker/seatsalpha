@@ -128,8 +128,11 @@ const HeroSection = () => {
             </Button>
           </div>
 
-          <div className="flex flex-wrap gap-6 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-4 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+            <div className="px-5 py-2.5 rounded-lg bg-primary/10 border border-primary/20 text-sm text-primary font-medium">
+              🚀 We're in beta — currently offering Toronto Blue Jays tickets only. More teams coming soon!
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ShieldCheck className="h-4 w-4 text-success" />
               <span>100% Guaranteed Tickets</span>
             </div>
