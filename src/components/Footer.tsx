@@ -1,5 +1,8 @@
-import { Ticket } from "lucide-react";
+import { Ticket, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const Footer = () => {
   return (
