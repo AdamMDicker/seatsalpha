@@ -22,6 +22,7 @@ import PaymentCanceled from "./pages/PaymentCanceled";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import LiveChat from "./components/LiveChat";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <LiveChat />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/event/:id" element={<EventDetail />} />
