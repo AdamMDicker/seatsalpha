@@ -53,7 +53,6 @@ const EventDetail = () => {
           totalAmount: total,
           quantity,
           tier: tier.label,
-          uberAdded: uberSelected,
           hotelAdded: hotelSelected,
           flightAdded: flightSelected,
         },
