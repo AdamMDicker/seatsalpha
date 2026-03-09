@@ -134,7 +134,7 @@ const FeeGateDialog = ({
                 disabled={membershipLoading}
               >
                 <Zap className="h-4 w-4" />
-                {membershipLoading ? "Loading..." : `Get Membership — Save $${feeAmount.toFixed(2)} GST`}
+                {membershipLoading ? "Loading..." : `Get Membership — Save $${feeAmount.toFixed(2)} HST`}
               </Button>
             </div>
           </div>
