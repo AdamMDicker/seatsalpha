@@ -94,7 +94,7 @@ const HeroSection = () => {
             Tickets without the fees. 🍁
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 max-w-lg mb-10 animate-fade-in relative" style={{ animationDelay: "0.3s" }} ref={resultsRef}>
+          <div className="flex flex-col sm:flex-row gap-3 max-w-2xl w-full mb-10 animate-fade-in relative" style={{ animationDelay: "0.3s" }} ref={resultsRef}>
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
