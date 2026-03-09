@@ -1,7 +1,7 @@
 import { TEAMS_VENUES } from "@/data/teamsVenues";
 
 export function getUberDeepLink(venueName: string): string | null {
-  const venue = TEAMS_VENUES.find((tv) => tv.venue === venueName);
+  const venue = TEAMS_VENUES.find((tv) => tv.venue.toLowerCase() === venueName.toLowerCase());
   if (!venue?.latitude || !venue?.longitude) return null;
 
   const params = new URLSearchParams({
