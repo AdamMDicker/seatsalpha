@@ -123,7 +123,7 @@ const FeeGateDialog = ({
 
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                <span>Save the GST on every ticket for 12 months. Cancel anytime.</span>
+                <span>Save the HST on every ticket for 12 months. Cancel anytime.</span>
               </div>
 
               <Button
