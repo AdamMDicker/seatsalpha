@@ -21,8 +21,9 @@ const ResellerDashboard = () => {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
+  const [resellerStatus, setResellerStatus] = useState<string | null>(null);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
