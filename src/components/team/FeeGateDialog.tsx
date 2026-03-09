@@ -6,10 +6,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Crown, Zap, ArrowRight, Check, X, ShieldCheck } from "lucide-react";
+import { Crown, Zap, ArrowRight, Check, X, ShieldCheck, Car, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getUberDeepLink } from "@/utils/uberDeepLink";
 
 interface FeeGateDialogProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface FeeGateDialogProps {
   rowName?: string | null;
   onProceedWithFees: () => void;
   loading: boolean;
+  venueName?: string;
 }
 
 const FeeGateDialog = ({
@@ -29,11 +31,13 @@ const FeeGateDialog = ({
   rowName,
   onProceedWithFees,
   loading,
+  venueName,
 }: FeeGateDialogProps) => {
   const [membershipLoading, setMembershipLoading] = useState(false);
   const { toast } = useToast();
   const feeAmount = Math.round(ticketPrice * 0.13 * 100) / 100;
   const totalWithFees = Math.round((ticketPrice + feeAmount) * 100) / 100;
+  const uberLink = venueName ? getUberDeepLink(venueName) : null;
 
   const handleBuyMembership = async () => {
     setMembershipLoading(true);
@@ -81,6 +85,27 @@ const FeeGateDialog = ({
               <span>${totalWithFees.toFixed(2)}</span>
             </div>
           </div>
+
+          {/* Uber deep link */}
+          {uberLink && (
+            <a
+              href={uberLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass rounded-xl p-3 flex items-center gap-3 hover:border-primary/40 transition-all block"
+            >
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Car className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">Uber to the Game</p>
+                <p className="text-xs text-muted-foreground">Open Uber with venue pre-filled</p>
+              </div>
+              <span className="text-xs font-semibold text-primary flex items-center gap-1">
+                Free <ExternalLink className="h-3 w-3" />
+              </span>
+            </a>
+          )}
 
           {/* Option 1: Buy membership */}
           <div className="glass rounded-xl border-gold/30 bg-gold/5 overflow-hidden">

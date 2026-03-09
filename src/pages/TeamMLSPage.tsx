@@ -201,6 +201,7 @@ const TeamMLSPage = () => {
                 setSelectedSection={setSelectedSection}
                 isGiveaway={selectedGame.is_giveaway}
                 giveawayItem={selectedGame.giveaway_item}
+                venueName={selectedGame.venue}
               />
             </div>
           )}
