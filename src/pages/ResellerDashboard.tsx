@@ -33,6 +33,17 @@ const ResellerDashboard = () => {
     ticketCount: "",
   });
 
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!user) { setLoading(false); return; }
+      const { data } = await supabase.from("resellers").select("status").eq("user_id", user.id).maybeSingle();
+      setResellerStatus(data?.status || null);
+      setLoading(false);
+    };
+    checkStatus();
+  }, [user]);
+
+  const isApproved = resellerStatus === "live";
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
