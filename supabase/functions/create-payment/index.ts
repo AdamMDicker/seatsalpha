@@ -69,7 +69,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success`,
+      success_url: `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(venue || "")}&event=${encodeURIComponent(eventTitle || "")}`,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
       metadata: {
         event_title: eventTitle,
