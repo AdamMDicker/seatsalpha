@@ -36,7 +36,7 @@ const ResellerDashboard = () => {
   useEffect(() => {
     const checkStatus = async () => {
       if (!user) { setLoading(false); return; }
-      const { data } = await supabase.from("resellers").select("status").eq("user_id", user.id).maybeSingle();
+      const { data } = await supabase.from("resellers").select("status").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).single();
       setResellerStatus(data?.status || null);
       setLoading(false);
     };
