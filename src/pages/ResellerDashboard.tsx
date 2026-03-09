@@ -116,10 +116,17 @@ const ResellerDashboard = () => {
             </div>
           </div>
 
+          {/* Upload section for approved resellers */}
+          {isApproved && (
+            <div className="mb-16 max-w-2xl mx-auto">
+              <ResellerCsvUpload />
+            </div>
+          )}
+
           {/* Application / Status */}
           {isLoading || loading ? (
             <div className="text-center text-muted-foreground py-8">Loading...</div>
-          ) : (
+          ) : !isApproved ? (
             <div id="apply" className="max-w-xl mx-auto">
               <div className="glass rounded-xl p-8">
                 <h2 className="font-display text-2xl font-bold text-center mb-2">Apply to Become a Reseller</h2>
