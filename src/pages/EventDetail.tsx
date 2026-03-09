@@ -121,12 +121,20 @@ const EventDetail = () => {
               <div>
                 <h3 className="font-display font-semibold text-lg mb-4">Enhance Your Experience</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button onClick={() => setUberSelected(!uberSelected)} className={`p-4 rounded-xl border text-left transition-all ${uberSelected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
-                    <Car className="h-5 w-5 text-primary mb-2" />
-                    <p className="font-semibold text-sm">Uber Ride</p>
-                    <p className="text-xs text-muted-foreground">Round trip to venue</p>
-                    <p className="font-display font-bold mt-2 text-gold">+$25</p>
-                  </button>
+                  {uberLink ? (
+                    <a href={uberLink} target="_blank" rel="noopener noreferrer" className="p-4 rounded-xl border border-border bg-card hover:border-primary/40 text-left transition-all block">
+                      <Car className="h-5 w-5 text-primary mb-2" />
+                      <p className="font-semibold text-sm">Uber to the Game</p>
+                      <p className="text-xs text-muted-foreground">Open Uber with venue pre-filled</p>
+                      <p className="font-display font-bold mt-2 text-primary flex items-center gap-1">Free <ExternalLink className="h-3 w-3" /></p>
+                    </a>
+                  ) : (
+                    <div className="p-4 rounded-xl border border-border bg-card text-left opacity-50">
+                      <Car className="h-5 w-5 text-primary mb-2" />
+                      <p className="font-semibold text-sm">Uber Ride</p>
+                      <p className="text-xs text-muted-foreground">Not available for this venue</p>
+                    </div>
+                  )}
                   <button onClick={() => setHotelSelected(!hotelSelected)} className={`p-4 rounded-xl border text-left transition-all ${hotelSelected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
                     <Hotel className="h-5 w-5 text-primary mb-2" />
                     <p className="font-semibold text-sm">Hotel Stay</p>
