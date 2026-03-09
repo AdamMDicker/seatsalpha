@@ -147,7 +147,7 @@ const FeeGateDialog = ({
             <div className="p-4 space-y-3">
               <h3 className="font-display font-semibold">Continue Without Membership</h3>
               <p className="text-sm text-muted-foreground">
-                Pay the 13% GST (<strong className="text-destructive">${feeAmount.toFixed(2)}</strong>) on this purchase.
+                Pay the 13% HST (<strong className="text-destructive">${feeAmount.toFixed(2)}</strong>) on this purchase.
               </p>
               <Button
                 variant="outline"
