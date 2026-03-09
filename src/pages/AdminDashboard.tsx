@@ -25,6 +25,7 @@ const tabs = [
   { id: "banned", label: "Banned", icon: Ban },
   { id: "visibility", label: "Visibility", icon: Eye },
   { id: "hero", label: "Hero Image", icon: Image },
+  { id: "newsletter", label: "Newsletter", icon: Mail },
 ];
 
 const AdminDashboard = () => {
