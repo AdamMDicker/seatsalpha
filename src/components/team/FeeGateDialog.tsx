@@ -71,8 +71,8 @@ const FeeGateDialog = ({
               <span className="text-foreground font-medium">${ticketPrice.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-destructive flex items-center gap-1.5">
-                <X className="h-3.5 w-3.5" /> Service Fee (10%)
+               <span className="text-destructive flex items-center gap-1.5">
+                 <X className="h-3.5 w-3.5" /> GST (13%)
               </span>
               <span className="text-destructive font-medium">+${feeAmount.toFixed(2)}</span>
             </div>
