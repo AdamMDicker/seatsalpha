@@ -37,7 +37,8 @@ const EventDetail = () => {
 
   const tier = ticketTiers.find((t) => t.id === selectedTier)!;
   const ticketPrice = event.priceFrom + tier.price;
-  const total = ticketPrice * quantity + (uberSelected ? 25 : 0) + (hotelSelected ? 189 : 0) + (flightSelected ? 299 : 0);
+  const uberLink = getUberDeepLink(event.venue);
+  const total = ticketPrice * quantity + (hotelSelected ? 189 : 0) + (flightSelected ? 299 : 0);
 
   const handleBuy = async () => {
     if (!user) {
