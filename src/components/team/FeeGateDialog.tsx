@@ -72,7 +72,7 @@ const FeeGateDialog = ({
             </div>
             <div className="flex justify-between text-sm">
                <span className="text-destructive flex items-center gap-1.5">
-                 <X className="h-3.5 w-3.5" /> GST (13%)
+                 <X className="h-3.5 w-3.5" /> HST (13%)
               </span>
               <span className="text-destructive font-medium">+${feeAmount.toFixed(2)}</span>
             </div>
