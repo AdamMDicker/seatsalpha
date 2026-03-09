@@ -91,7 +91,7 @@ const HeroSection = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            With a seats.ca membership, you skip the service fees that other platforms charge you. 🍁
+            Tickets without the fees. 🍁
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 max-w-lg mb-10 animate-fade-in relative" style={{ animationDelay: "0.3s" }} ref={resultsRef}>
