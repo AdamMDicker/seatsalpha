@@ -89,6 +89,7 @@ const AdminDashboard = () => {
         {activeTab === "banned" && <AdminBannedUsers />}
         {activeTab === "visibility" && <AdminLeagueVisibility />}
         {activeTab === "hero" && <AdminHeroImage />}
+        {activeTab === "newsletter" && <AdminNewsletter />}
       </div>
     </div>
   );

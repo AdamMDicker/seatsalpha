@@ -68,6 +68,28 @@ const Footer = () => {
               <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
               <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
             </ul>
+            <div className="mt-4">
+              <h4 className="font-display font-semibold mb-2 text-sm text-foreground flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5 text-primary" /> Newsletter
+              </h4>
+              {footerStatus === "done" ? (
+                <p className="text-xs text-primary">Subscribed ✓</p>
+              ) : (
+                <form onSubmit={handleFooterSub} className="flex gap-2">
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    value={footerEmail}
+                    onChange={(e) => setFooterEmail(e.target.value)}
+                    className="flex-1 px-3 py-1.5 rounded-md bg-card/80 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 text-xs"
+                    disabled={footerStatus === "loading"}
+                  />
+                  <button type="submit" className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors" disabled={footerStatus === "loading"}>
+                    Go
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </div>
 
