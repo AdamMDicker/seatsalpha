@@ -27,49 +27,70 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const team = url.searchParams.get('team') || 'blue-jays';
-    
-    // Use MLB.com RSS feed for Blue Jays
-    const feedUrls: Record<string, string> = {
-      'blue-jays': 'https://rss.app/feed/0u6Xk4rUZEEuFzRj',
-    };
+    // Try multiple RSS sources for Blue Jays news
+    const feedUrls = [
+      'https://www.mlb.com/feeds/news/rss.xml',
+      'https://www.sportsnet.ca/feed/',
+    ];
 
-    const feedUrl = feedUrls[team] || feedUrls['blue-jays'];
-    
-    const response = await fetch(feedUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
-    });
+    let items: NewsItem[] = [];
 
-    if (!response.ok) {
-      throw new Error(`RSS fetch failed: ${response.status}`);
-    }
-
-    const xml = await response.text();
-    
-    // Parse XML items
-    const items: NewsItem[] = [];
-    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-    let match;
-
-    while ((match = itemRegex.exec(xml)) !== null && items.length < 8) {
-      const itemXml = match[1];
+    for (const feedUrl of feedUrls) {
+      if (items.length >= 8) break;
       
-      const titleMatch = itemXml.match(/<title>([\s\S]*?)<\/title>/);
-      const linkMatch = itemXml.match(/<link>([\s\S]*?)<\/link>/);
-      const pubDateMatch = itemXml.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
-      const descMatch = itemXml.match(/<description>([\s\S]*?)<\/description>/);
-
-      const title = titleMatch ? extractCDATA(titleMatch[1]) : '';
-      const description = descMatch ? stripHtml(extractCDATA(descMatch[1])) : '';
-
-      if (title) {
-        items.push({
-          title,
-          link: linkMatch ? extractCDATA(linkMatch[1]) : '',
-          pubDate: pubDateMatch ? extractCDATA(pubDateMatch[1]) : '',
-          description: description.substring(0, 200),
+      try {
+        const response = await fetch(feedUrl, {
+          headers: { 
+            'User-Agent': 'Mozilla/5.0 (compatible; SeatsCA/1.0)',
+            'Accept': 'application/rss+xml, application/xml, text/xml',
+          },
         });
+
+        if (!response.ok) {
+          console.log(`Feed ${feedUrl} returned ${response.status}, skipping`);
+          continue;
+        }
+
+        const xml = await response.text();
+        
+        const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+        let match;
+
+        while ((match = itemRegex.exec(xml)) !== null && items.length < 8) {
+          const itemXml = match[1];
+          
+          const titleMatch = itemXml.match(/<title>([\s\S]*?)<\/title>/);
+          const linkMatch = itemXml.match(/<link>([\s\S]*?)<\/link>/);
+          const pubDateMatch = itemXml.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
+          const descMatch = itemXml.match(/<description>([\s\S]*?)<\/description>/);
+
+          const title = titleMatch ? extractCDATA(titleMatch[1]) : '';
+          const description = descMatch ? stripHtml(extractCDATA(descMatch[1])) : '';
+
+          // Filter for Blue Jays related content
+          const isBlueJaysRelated = 
+            title.toLowerCase().includes('blue jay') ||
+            title.toLowerCase().includes('jays') ||
+            title.toLowerCase().includes('toronto') ||
+            description.toLowerCase().includes('blue jay') ||
+            description.toLowerCase().includes('jays');
+
+          // From MLB.com feed, filter for Blue Jays. From Sportsnet, take baseball content.
+          const isRelevant = feedUrl.includes('mlb.com') 
+            ? isBlueJaysRelated 
+            : isBlueJaysRelated;
+
+          if (title && isRelevant) {
+            items.push({
+              title,
+              link: linkMatch ? extractCDATA(linkMatch[1]) : '',
+              pubDate: pubDateMatch ? extractCDATA(pubDateMatch[1]) : '',
+              description: description.substring(0, 200),
+            });
+          }
+        }
+      } catch (feedError) {
+        console.error(`Error fetching feed ${feedUrl}:`, feedError);
       }
     }
 

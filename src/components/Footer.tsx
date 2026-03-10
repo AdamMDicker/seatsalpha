@@ -45,16 +45,14 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold mb-3 text-sm">Events</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/events" className="hover:text-foreground transition-colors">Sports</Link></li>
-              <li><Link to="/events" className="hover:text-foreground transition-colors">Concerts</Link></li>
-              <li><Link to="/events" className="hover:text-foreground transition-colors">Theatre</Link></li>
+              <li><Link to="/teams/mlb/blue-jays" className="hover:text-foreground transition-colors">Toronto Blue Jays</Link></li>
+              <li><span className="text-muted-foreground/50 italic text-xs">More teams coming soon</span></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-display font-semibold mb-3 text-sm">Company</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/about" className="hover:text-foreground transition-colors">About Us</Link></li>
               <li><Link to="/membership" className="hover:text-foreground transition-colors">Membership</Link></li>
               <li><Link to="/reseller" className="hover:text-foreground transition-colors">Become a Seller</Link></li>
             </ul>
@@ -63,8 +61,7 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold mb-3 text-sm">Support</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
-              <li><Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link></li>
+              <li><a href="mailto:support@seats.ca" className="hover:text-foreground transition-colors">Contact Us</a></li>
               <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
               <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
             </ul>
