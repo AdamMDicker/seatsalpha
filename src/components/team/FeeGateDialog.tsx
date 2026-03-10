@@ -180,7 +180,7 @@ const FeeGateDialog = ({
                 onClick={onProceedWithFees}
                 disabled={loading}
               >
-                {loading ? "Processing..." : `Pay $${totalWithFees.toFixed(2)} with fees`}
+                {loading ? "Processing..." : `Pay $${totalWithFees.toFixed(2)} with HST`}
               </Button>
             </div>
           </div>

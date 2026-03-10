@@ -10,7 +10,7 @@ const QUICK_QUESTIONS = [
   "Are the tickets guaranteed authentic?",
   "Do I need a membership to buy tickets?",
   "What types of events can I buy tickets for?",
-  "Are there service fees?",
+  "Do members really pay no taxes?",
   "What is your refund policy?",
   "How do I become a seller?",
 ];

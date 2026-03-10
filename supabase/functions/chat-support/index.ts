@@ -33,11 +33,11 @@ IMPORTANT KNOWLEDGE BASE:
 4. Payment is processed securely via Stripe.
 5. After purchase, tickets are delivered electronically.
 
-**Service Fees**
-- seats.ca has the lowest fees in the industry.
-- Members pay $0 in service fees.
-- Non-members still pay significantly less than competitors.
-- Competitors like StubHub charge 25-30% fees, Ticketmaster 20-25%, SeatGeek 15-20%.
+**HST & Taxes**
+- seats.ca does NOT charge service fees, processing fees, or facility charges — ever.
+- Non-members pay 13% HST (Harmonized Sales Tax) on ticket purchases at checkout.
+- Members pay $0 in HST — the membership covers it.
+- This is the key value: competitors charge 20-30% in fees ON TOP of taxes. seats.ca charges zero fees, and members avoid HST too.
 
 **Authenticity Guarantee**
 - 100%. Every ticket sold on seats.ca is backed by our authenticity guarantee.
