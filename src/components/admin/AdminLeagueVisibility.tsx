@@ -2,8 +2,16 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Ticket } from "lucide-react";
+import { Eye, EyeOff, Ticket, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MLB_TEAMS_CONFIG } from "@/data/mlbTeams";
+import { NHL_TEAMS_CONFIG } from "@/data/nhlTeams";
+import { NBA_TEAMS_CONFIG } from "@/data/nbaTeams";
+import { NFL_TEAMS_CONFIG } from "@/data/nflTeams";
+import { MLS_TEAMS_CONFIG } from "@/data/mlsTeams";
+import { CFL_TEAMS_CONFIG } from "@/data/cflTeams";
+import { WNBA_TEAMS_CONFIG } from "@/data/wnbaTeams";
 
 interface LeagueRow {
   league: string;
@@ -11,14 +19,24 @@ interface LeagueRow {
   ticketCount?: number;
 }
 
+const LEAGUE_TEAMS: Record<string, { slug: string; name: string }[]> = {
+  MLB: MLB_TEAMS_CONFIG.map((t) => ({ slug: t.slug, name: t.name })),
+  NHL: NHL_TEAMS_CONFIG.map((t) => ({ slug: t.slug, name: t.name })),
+  NBA: NBA_TEAMS_CONFIG.map((t) => ({ slug: t.slug, name: t.name })),
+  NFL: NFL_TEAMS_CONFIG.map((t) => ({ slug: t.slug, name: t.name })),
+  MLS: MLS_TEAMS_CONFIG.map((t) => ({ slug: t.slug, name: t.name })),
+  CFL: CFL_TEAMS_CONFIG.map((t) => ({ slug: t.slug, name: t.name })),
+  WNBA: WNBA_TEAMS_CONFIG.map((t) => ({ slug: t.slug, name: t.name })),
+};
+
 const AdminLeagueVisibility = () => {
   const [leagues, setLeagues] = useState<LeagueRow[]>([]);
+  const [singleTeamSettings, setSingleTeamSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const fetchData = async () => {
     setLoading(true);
-    // Fetch visibility settings
     const { data: visData } = await supabase
       .from("league_visibility")
       .select("*")
@@ -26,7 +44,19 @@ const AdminLeagueVisibility = () => {
 
     if (!visData) { setLoading(false); return; }
 
-    // Fetch ticket counts per league by checking events with active tickets
+    // Fetch single-team settings
+    const { data: settings } = await supabase
+      .from("site_settings")
+      .select("key, value")
+      .like("key", "%_single_team");
+
+    const stSettings: Record<string, string> = {};
+    settings?.forEach((s) => {
+      const league = s.key.replace("_single_team", "").toUpperCase();
+      stSettings[league] = s.value;
+    });
+    setSingleTeamSettings(stSettings);
+
     const { data: events } = await supabase
       .from("events")
       .select("id, title");
@@ -36,14 +66,12 @@ const AdminLeagueVisibility = () => {
       .select("event_id, quantity, quantity_sold")
       .eq("is_active", true);
 
-    // Map event IDs to available ticket count
     const eventTickets: Record<string, number> = {};
     tickets?.forEach((t) => {
       const avail = t.quantity - t.quantity_sold;
       if (avail > 0) eventTickets[t.event_id] = (eventTickets[t.event_id] || 0) + avail;
     });
 
-    // Determine league by team name keywords in event titles
     const leagueKeywords: Record<string, string[]> = {
       MLB: ["Blue Jays", "Yankees", "Red Sox", "Dodgers", "Cubs", "Mets", "Braves", "Astros", "Phillies", "Padres", "Cardinals", "Giants", "Guardians", "Orioles", "Twins", "Mariners", "Rangers", "Rays", "Tigers", "Royals", "Brewers", "Diamondbacks", "Pirates", "Reds", "Rockies", "Angels", "Athletics", "White Sox", "Marlins", "Nationals"],
       NHL: ["Maple Leafs", "Canadiens", "Senators", "Jets", "Flames", "Oilers", "Canucks", "Bruins", "Rangers", "Penguins", "Blackhawks", "Lightning", "Panthers", "Hurricanes", "Devils", "Islanders", "Capitals", "Flyers", "Blue Jackets", "Red Wings", "Sabres", "Predators", "Stars", "Wild", "Blues", "Avalanche", "Golden Knights", "Kraken", "Kings", "Ducks", "Sharks", "Utah HC"],
@@ -54,7 +82,6 @@ const AdminLeagueVisibility = () => {
       WNBA: ["Liberty", "Aces", "Storm", "Sun", "Lynx", "Fever", "Mercury", "Wings", "Sky", "Mystics", "Sparks", "Dream", "Valkyries", "Tempo"],
     };
 
-    // Count tickets per league
     const leagueCounts: Record<string, number> = {};
     events?.forEach((ev) => {
       const count = eventTickets[ev.id] || 0;
@@ -90,6 +117,22 @@ const AdminLeagueVisibility = () => {
       fetchData();
     } else {
       toast({ title: `${league} ${visible ? "shown" : "hidden"}` });
+    }
+  };
+
+  const setSingleTeam = async (league: string, slug: string) => {
+    const key = `${league.toLowerCase()}_single_team`;
+    const value = slug === "all" ? "" : slug;
+    setSingleTeamSettings((prev) => ({ ...prev, [league]: value }));
+
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: value ? `${league} showing single team` : `${league} showing all teams` });
     }
   };
 
@@ -135,23 +178,50 @@ const AdminLeagueVisibility = () => {
         {leagues.map((l) => (
           <div
             key={l.league}
-            className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+            className={`p-4 rounded-xl border transition-all space-y-3 ${
               l.is_visible ? "bg-card border-border" : "bg-muted/50 border-border/50 opacity-60"
             }`}
           >
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col">
-                <span className="font-semibold text-sm">{l.league}</span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Ticket className="h-3 w-3" />
-                  {l.ticketCount} tickets available
-                </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm">{l.league}</span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Ticket className="h-3 w-3" />
+                    {l.ticketCount} tickets available
+                  </span>
+                </div>
               </div>
+              <Switch
+                checked={l.is_visible}
+                onCheckedChange={(v) => toggleLeague(l.league, v)}
+              />
             </div>
-            <Switch
-              checked={l.is_visible}
-              onCheckedChange={(v) => toggleLeague(l.league, v)}
-            />
+
+            {/* Single-team mode selector */}
+            {LEAGUE_TEAMS[l.league] && l.is_visible && (
+              <div className="pt-1">
+                <label className="text-[11px] text-muted-foreground flex items-center gap-1 mb-1">
+                  <Users className="h-3 w-3" /> Menu display
+                </label>
+                <Select
+                  value={singleTeamSettings[l.league] || "all"}
+                  onValueChange={(v) => setSingleTeam(l.league, v)}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Teams (dropdown)</SelectItem>
+                    {LEAGUE_TEAMS[l.league].map((t) => (
+                      <SelectItem key={t.slug} value={t.slug}>
+                        {t.name} only
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
         ))}
       </div>
