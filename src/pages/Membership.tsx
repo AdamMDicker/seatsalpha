@@ -37,7 +37,7 @@ const savingsExamples = [
 ];
 
 const faqs = [
-  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees on every ticket you buy through seats.ca. You also get access to bundle savings on travel and ride packages." },
+  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees on every ticket you buy through seats.ca. HST is included in all tickets. You also get access to bundle savings on travel and ride packages." },
   { q: "How much will I actually save?", a: "The average Canadian fan pays $300+ per year in hidden ticketing fees. Most members save 10–20x their membership cost in the first year alone." },
   { q: "Are there any hidden fees at checkout?", a: "Absolutely not. With a seats.ca membership, the price you see is the price you pay. No service fees, no processing fees, no facility charges." },
   { q: "Don't other sites just build fees into the ticket price?", a: "Yes — many platforms advertise 'no fees' but simply inflate the ticket's listed price. At seats.ca, our prices reflect the actual ticket value." },
