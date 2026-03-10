@@ -252,8 +252,19 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             </div>
             {ticket.seat_notes && <p className="text-xs text-muted-foreground mt-1">{ticket.seat_notes}</p>}
             {images.length > 0 && (
-              <div className="mt-2 flex gap-2 overflow-x-auto">
-                {images.map((img) => (<img key={img.id} src={img.image_url} alt={img.caption || "Seat view"} className="w-16 h-12 object-cover rounded border border-border" />))}
+              <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                {images.map((img, idx) => (
+                  <button
+                    key={img.id}
+                    onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
+                    className="relative group flex-shrink-0 rounded overflow-hidden border border-border hover:border-primary/40 transition-all"
+                  >
+                    <img src={img.image_url} alt={img.caption || "Seat view"} className="w-20 h-14 object-cover" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                      <Camera className="h-3 w-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
