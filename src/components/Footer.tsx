@@ -61,7 +61,7 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold mb-3 text-sm">Support</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="mailto:support@seats.ca" className="hover:text-foreground transition-colors">Contact Us</a></li>
+              <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact Us</Link></li>
               <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
               <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
             </ul>
