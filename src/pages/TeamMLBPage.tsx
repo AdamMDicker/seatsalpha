@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BlueJaysNews from "@/components/BlueJaysNews";
@@ -10,32 +9,7 @@ import SeatingMap from "@/components/team/SeatingMap";
 import TicketListings from "@/components/team/TicketListings";
 import { getMLBTeamBySlug } from "@/data/mlbTeams";
 import { getMLBLogo } from "@/data/mlbLogos";
-
-interface TicketInfo {
-  id: string;
-  section: string;
-  row_name: string | null;
-  seat_number: string | null;
-  price: number;
-  quantity: number;
-  quantity_sold: number;
-  is_reseller_ticket: boolean;
-  perks: string[] | null;
-  seat_notes: string | null;
-}
-
-interface GameEvent {
-  id: string;
-  title: string;
-  venue: string;
-  city: string;
-  province: string;
-  event_date: string;
-  description: string | null;
-  is_giveaway: boolean;
-  giveaway_item: string | null;
-  tickets: TicketInfo[];
-}
+import { useTeamGames } from "@/hooks/useTeamGames";
 
 const TeamMLBPage = () => {
   const { slug: routeSlug } = useParams<{ slug: string }>();
@@ -43,51 +17,15 @@ const TeamMLBPage = () => {
   const team = slug ? getMLBTeamBySlug(slug) : undefined;
   const teamLogo = slug ? getMLBLogo(slug) : undefined;
 
-  const [games, setGames] = useState<GameEvent[]>([]);
-  const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
-  const [selectedSection, setSelectedSection] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "home" | "away">("all");
-  const [selectedMonth, setSelectedMonth] = useState("all");
-  const [selectedOpponent, setSelectedOpponent] = useState("all");
-  const [maxBudget, setMaxBudget] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!team) return;
-    setLoading(true);
-    setGames([]);
-    setSelectedGame(null);
-    setSelectedSection(null);
-    setFilter("all");
-    setSelectedMonth("all");
-    setSelectedOpponent("all");
-    setMaxBudget(null);
-
-    const fetchGames = async () => {
-      const { data } = await supabase
-        .from("events")
-        .select("id, title, venue, city, province, event_date, description, is_giveaway, giveaway_item")
-        .like("title", `%${team.searchTerm}%`)
-        .order("event_date", { ascending: true });
-
-      if (data) {
-        const gamesWithTickets: GameEvent[] = [];
-        for (const game of data) {
-          const { data: tickets } = await supabase
-            .from("tickets")
-            .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes")
-            .eq("event_id", game.id)
-            .eq("is_active", true);
-          const sorted = (tickets || []).sort((a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0));
-          gamesWithTickets.push({ ...game, tickets: sorted } as GameEvent);
-        }
-        setGames(gamesWithTickets);
-        if (gamesWithTickets.length > 0) setSelectedGame(gamesWithTickets[0]);
-      }
-      setLoading(false);
-    };
-    fetchGames();
-  }, [team?.slug]);
+  const {
+    games, selectedGame, setSelectedGame,
+    selectedSection, setSelectedSection,
+    filter, setFilter,
+    selectedMonth, setSelectedMonth,
+    selectedOpponent, setSelectedOpponent,
+    maxBudget, setMaxBudget,
+    loading, resetFilters,
+  } = useTeamGames(team?.searchTerm);
 
   const filteredGames = useMemo(() => {
     return games.filter((g) => {
@@ -179,7 +117,7 @@ const TeamMLBPage = () => {
               </p>
               {games.length > 0 && (
                 <button
-                  onClick={() => { setFilter("all"); setSelectedMonth("all"); setSelectedOpponent("all"); setMaxBudget(null); }}
+                  onClick={resetFilters}
                   className="text-primary text-sm mt-2 hover:underline"
                 >
                   Clear all filters
