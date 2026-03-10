@@ -173,10 +173,30 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           </div>
         </div>
         {images.length > 0 ? (
-          <div className="mt-3 flex gap-2 overflow-x-auto">
-            {images.map((img) => (
-              <img key={img.id} src={img.image_url} alt={img.caption || "Seat view"} className="w-20 h-14 object-cover rounded-lg border border-border" />
-            ))}
+          <div className="mt-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Eye className="h-3 w-3 text-primary/70" />
+              <span className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider">Seat View</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {images.map((img, idx) => (
+                <button
+                  key={img.id}
+                  onClick={() => openLightbox(images, idx)}
+                  className="relative group flex-shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all"
+                >
+                  <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                    <Camera className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  {img.caption && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5">
+                      <span className="text-[9px] text-white/90 line-clamp-1">{img.caption}</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground/50">
