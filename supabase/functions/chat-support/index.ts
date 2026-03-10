@@ -21,7 +21,7 @@ IMPORTANT KNOWLEDGE BASE:
 - Members pay ZERO service fees on all ticket purchases.
 
 **Membership**
-- seats.ca offers a membership for $20/year (CAD).
+- seats.ca offers a membership for $49.95/year (CAD).
 - Members pay ZERO service fees on all ticket purchases.
 - Non-members pay standard service fees (still lower than competitors like StubHub, Ticketmaster, SeatGeek, Vivid Seats).
 - Membership can be purchased on the /membership page.
