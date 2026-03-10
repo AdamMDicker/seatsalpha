@@ -25,10 +25,7 @@ const competitorFees = [
 
 const memberBenefits = [
   "Zero service fees on every ticket purchase for a full year",
-  "Early access to presale events before the general public",
-  "Exclusive member-only pricing on select events",
-  "Priority customer support — skip the queue",
-  "Free cancellation on eligible events",
+  "Save hundreds compared to competitors like StubHub & Ticketmaster",
   "Bundle savings on travel and ride packages",
 ];
 
@@ -40,14 +37,14 @@ const savingsExamples = [
 ];
 
 const faqs = [
-  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees, processing fees, and facility charges on every ticket you buy through seats.ca. You also get early access to presales, exclusive member pricing, and priority support." },
+  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees on every ticket you buy through seats.ca. You also get access to bundle savings on travel and ride packages." },
   { q: "How much will I actually save?", a: "The average Canadian fan pays $300+ per year in hidden ticketing fees. Most members save 10–20x their membership cost in the first year alone." },
   { q: "Are there any hidden fees at checkout?", a: "Absolutely not. With a seats.ca membership, the price you see is the price you pay. No service fees, no processing fees, no facility charges." },
   { q: "Don't other sites just build fees into the ticket price?", a: "Yes — many platforms advertise 'no fees' but simply inflate the ticket's listed price. At seats.ca, our prices reflect the actual ticket value." },
   { q: "Can I cancel my membership?", a: "Yes. You can cancel anytime. Your membership benefits remain active until the end of your billing period." },
   { q: "Do I need a membership to buy tickets?", a: "No. Anyone can browse and purchase tickets. However, non-members will pay standard service fees at checkout." },
-  { q: "Are the tickets guaranteed authentic?", a: "100%. Every ticket sold on seats.ca is backed by our authenticity guarantee." },
-  { q: "What types of events can I buy tickets for?", a: "We cover all major sports leagues (NHL, NBA, MLB, NFL, MLS, CFL), plus concerts, comedy shows, theatre, and more." },
+  { q: "Are the tickets guaranteed authentic?", a: "100%. Every ticket sold on seats.ca is backed by our authenticity guarantee. All tickets are sourced from verified resellers and validated before listing. If a ticket is found to be invalid, you receive a full refund — no questions asked." },
+  { q: "What types of events can I buy tickets for?", a: "During our beta launch, we are focused exclusively on Toronto Blue Jays (MLB) tickets. More teams across NHL, NBA, NFL, MLS, CFL, and WNBA — plus concerts, comedy shows, and theatre — are coming soon." },
 ];
 
 const platformLogos: Record<string, string> = { Ticketmaster: "TM", StubHub: "SH", "Vivid Seats": "VS" };
@@ -123,8 +120,8 @@ const Membership = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero */}
-      <section className="pt-28 pb-16 relative overflow-hidden">
+      {/* Hero — explanation first */}
+      <section id="membership-hero" className="pt-28 pb-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-background to-background" />
         <div className="container mx-auto px-4 relative z-10 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/15 border border-gold/30 mb-6">
@@ -134,93 +131,20 @@ const Membership = () => {
           <h1 className="font-display text-4xl md:text-6xl font-bold mb-4">
             Stop Paying <span className="text-gold">Ridiculous Fees</span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
             For just <strong className="text-foreground">$49.95/year</strong>, eliminate every service fee on your ticket purchases.
+          </p>
+          <p className="text-muted-foreground max-w-xl mx-auto mb-8">
+            Non-members pay standard service fees at checkout. Members pay <strong className="text-gold">$0 in fees</strong> — saving hundreds every year on tickets to games, concerts, and more.
           </p>
           <JoinButton />
         </div>
       </section>
 
-      {/* Competitor fees table */}
+      {/* Benefits — right after hero, before the chart */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-3">
-            The Fees They <span className="text-destructive">Don't</span> Want You to Notice
-          </h2>
-          <p className="text-muted-foreground text-center max-w-xl mx-auto mb-10">
-            Every major ticketing platform adds layers of hidden fees at checkout.
-          </p>
-          <div className="max-w-3xl mx-auto glass rounded-2xl overflow-hidden">
-            <div className="grid grid-cols-4 gap-2 p-4 border-b border-border text-sm font-semibold text-muted-foreground">
-              <span>Platform</span><span>Fee Type</span><span>Rate</span><span>On a $150 Ticket</span>
-            </div>
-            {competitorFees.map((fee, i) => (
-              <div key={i} className="grid grid-cols-4 gap-2 p-4 border-b border-border/50 text-sm items-center">
-                <span className="font-medium text-foreground flex items-center gap-2">
-                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-[10px] font-bold text-white ${platformColors[fee.platform]}`}>{platformLogos[fee.platform]}</span>
-                  {fee.platform}
-                </span>
-                <span className="text-muted-foreground">{fee.fee}</span>
-                <span className="text-destructive font-semibold">{fee.percent}</span>
-                <span className="text-destructive">{fee.example}</span>
-              </div>
-            ))}
-            <div className="grid grid-cols-4 gap-2 p-4 bg-primary/5 items-center">
-              <span className="font-bold text-primary">seats.ca Member</span>
-              <span className="text-muted-foreground">All Fees</span>
-              <span className="font-bold text-primary">0%</span>
-              <span className="font-bold text-primary flex items-center gap-1">$0.00 <Check className="h-4 w-4" /></span>
-            </div>
-          </div>
-          <div className="max-w-3xl mx-auto mt-6 glass rounded-xl p-5 border-l-4 border-gold">
-            <p className="text-sm text-foreground/90">
-              <strong className="text-gold">⚠️ Watch out for "no-fee" claims.</strong>{" "}
-              Some platforms advertise no service fees but simply bake the cost into the ticket price.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Savings */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-3">
-            Real Savings, <span className="text-gold">Real Events</span>
-          </h2>
-          <p className="text-muted-foreground text-center max-w-lg mx-auto mb-10">See how much a typical fan saves per year.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto mb-8">
-            {savingsExamples.map((item, i) => (
-              <div key={i} className="glass rounded-xl overflow-hidden hover:border-gold/40 transition-all">
-                <div className="bg-primary/10 border-b border-border px-4 py-2.5 flex items-center justify-center gap-2">
-                  <span className="text-xl">{item.sport}</span>
-                  <span className="text-sm font-bold text-primary tracking-wide">{item.sportLabel}</span>
-                </div>
-                <div className="p-5 text-center">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">{item.event}</p>
-                  <p className="text-xs text-muted-foreground">Face value: ${item.faceValue}</p>
-                  <div className="my-3 flex items-center justify-center gap-2">
-                    <span className="text-destructive line-through text-sm">${item.competitorFees} fees</span>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-primary font-bold">$0</span>
-                  </div>
-                  <p className="text-gold font-bold text-lg">You save ${item.saved}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="text-center glass rounded-2xl p-8 max-w-md mx-auto glow-gold">
-            <p className="text-sm text-muted-foreground mb-1">Total annual savings on just 4 events</p>
-            <p className="font-display text-5xl font-bold text-gold">${totalSaved}</p>
-            <p className="text-sm text-muted-foreground mt-2">Membership cost: <strong className="text-foreground">$49.95</strong></p>
-            <p className="text-primary font-semibold mt-1">That's a {Math.round(totalSaved / 49.95)}x return</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto glass rounded-2xl p-8 md:p-12">
+          <div className="max-w-3xl mx-auto bg-card border border-border rounded-2xl p-8 md:p-12 shadow-lg">
             <div className="flex flex-col md:flex-row gap-10 items-center">
               <div className="flex-1 space-y-6">
                 <h2 className="font-display text-3xl font-bold">Everything You Get for <span className="text-gold">$49.95/year</span></h2>
@@ -245,11 +169,87 @@ const Membership = () => {
         </div>
       </section>
 
+      {/* Competitor fees table */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-3">
+            The Fees They <span className="text-destructive">Don't</span> Want You to Notice
+          </h2>
+          <p className="text-muted-foreground text-center max-w-xl mx-auto mb-10">
+            Every major ticketing platform adds layers of hidden fees at checkout.
+          </p>
+          <div className="max-w-3xl mx-auto bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
+            <div className="grid grid-cols-4 gap-2 p-4 border-b border-border text-sm font-semibold text-muted-foreground">
+              <span>Platform</span><span>Fee Type</span><span>Rate</span><span>On a $150 Ticket</span>
+            </div>
+            {competitorFees.map((fee, i) => (
+              <div key={i} className="grid grid-cols-4 gap-2 p-4 border-b border-border/50 text-sm items-center">
+                <span className="font-medium text-foreground flex items-center gap-2">
+                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-[10px] font-bold text-white ${platformColors[fee.platform]}`}>{platformLogos[fee.platform]}</span>
+                  {fee.platform}
+                </span>
+                <span className="text-muted-foreground">{fee.fee}</span>
+                <span className="text-destructive font-semibold">{fee.percent}</span>
+                <span className="text-destructive">{fee.example}</span>
+              </div>
+            ))}
+            <div className="grid grid-cols-4 gap-2 p-4 bg-primary/5 items-center">
+              <span className="font-bold text-primary">seats.ca Member</span>
+              <span className="text-muted-foreground">All Fees</span>
+              <span className="font-bold text-primary">0%</span>
+              <span className="font-bold text-primary flex items-center gap-1">$0.00 <Check className="h-4 w-4" /></span>
+            </div>
+          </div>
+          <div className="max-w-3xl mx-auto mt-6 bg-card border border-border rounded-xl p-5 border-l-4 border-l-gold shadow-lg">
+            <p className="text-sm text-foreground/90">
+              <strong className="text-gold">⚠️ Watch out for "no-fee" claims.</strong>{" "}
+              Some platforms advertise no service fees but simply bake the cost into the ticket price.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Savings */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-3">
+            Real Savings, <span className="text-gold">Real Events</span>
+          </h2>
+          <p className="text-muted-foreground text-center max-w-lg mx-auto mb-10">See how much a typical fan saves per year.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto mb-8">
+            {savingsExamples.map((item, i) => (
+              <div key={i} className="bg-card border border-border rounded-xl overflow-hidden shadow-lg hover:border-gold/40 transition-all">
+                <div className="bg-primary/10 border-b border-border px-4 py-2.5 flex items-center justify-center gap-2">
+                  <span className="text-xl">{item.sport}</span>
+                  <span className="text-sm font-bold text-primary tracking-wide">{item.sportLabel}</span>
+                </div>
+                <div className="p-5 text-center">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">{item.event}</p>
+                  <p className="text-xs text-muted-foreground">Face value: ${item.faceValue}</p>
+                  <div className="my-3 flex items-center justify-center gap-2">
+                    <span className="text-destructive line-through text-sm">${item.competitorFees} fees</span>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-primary font-bold">$0</span>
+                  </div>
+                  <p className="text-gold font-bold text-lg">You save ${item.saved}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center bg-card border border-border rounded-2xl p-8 max-w-md mx-auto shadow-lg glow-gold">
+            <p className="text-sm text-muted-foreground mb-1">Total annual savings on just 4 events</p>
+            <p className="font-display text-5xl font-bold text-gold">${totalSaved}</p>
+            <p className="text-sm text-muted-foreground mt-2">Membership cost: <strong className="text-foreground">$49.95</strong></p>
+            <p className="text-primary font-semibold mt-1">That's a {Math.round(totalSaved / 49.95)}x return</p>
+          </div>
+        </div>
+      </section>
+
       {/* Comparison */}
       <section className="py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-10">seats.ca vs <span className="text-muted-foreground">Everyone Else</span></h2>
-          <div className="max-w-2xl mx-auto glass rounded-2xl overflow-hidden">
+          <div className="max-w-2xl mx-auto bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
             <div className="grid grid-cols-3 gap-2 p-4 border-b border-border font-semibold text-sm">
               <span className="text-left text-muted-foreground">Feature</span>
               <span className="text-gold">seats.ca</span>
@@ -287,7 +287,7 @@ const Membership = () => {
             </div>
             <Accordion type="single" collapsible className="space-y-3">
               {faqs.map((faq, i) => (
-                <AccordionItem key={i} value={`faq-${i}`} className="glass rounded-xl border border-border px-5">
+                <AccordionItem key={i} value={`faq-${i}`} className="bg-card border border-border rounded-xl px-5 shadow-lg">
                   <AccordionTrigger className="text-sm font-semibold text-foreground hover:text-primary text-left">{faq.q}</AccordionTrigger>
                   <AccordionContent className="text-sm text-muted-foreground leading-relaxed">{faq.a}</AccordionContent>
                 </AccordionItem>
