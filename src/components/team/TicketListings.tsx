@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Camera, Gift, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import FeeGateDialog from "./FeeGateDialog";
 
