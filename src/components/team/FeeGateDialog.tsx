@@ -21,6 +21,7 @@ interface FeeGateDialogProps {
   onProceedWithFees: () => void;
   loading: boolean;
   venueName?: string;
+  gameTitle?: string;
 }
 
 type CheckoutOption = "hst" | "membership";
@@ -33,6 +34,8 @@ const FeeGateDialog = ({
   rowName,
   onProceedWithFees,
   loading,
+  venueName,
+  gameTitle,
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>("membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
@@ -47,11 +50,19 @@ const FeeGateDialog = ({
   const handleBuyMembership = async () => {
     setMembershipLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout");
+      const tier = `Section ${section}${rowName ? ` Row ${rowName}` : ""}`;
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
+          ticketAmount: ticketPrice,
+          eventTitle: gameTitle || "Event Ticket",
+          tier,
+          venue: venueName || "",
+        },
+      });
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Could not start membership checkout", variant: "destructive" });
+      toast({ title: "Error", description: err.message || "Could not start checkout", variant: "destructive" });
     } finally {
       setMembershipLoading(false);
     }
