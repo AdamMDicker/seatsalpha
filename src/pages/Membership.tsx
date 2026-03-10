@@ -45,6 +45,17 @@ const faqs = [
   { q: "Do I need a membership to buy tickets?", a: "No. Anyone can browse and purchase tickets. However, non-members will pay standard service fees at checkout." },
   { q: "Are the tickets guaranteed authentic?", a: "100%. Every ticket sold on seats.ca is backed by our authenticity guarantee. All tickets are sourced from verified resellers and validated before listing. If a ticket is found to be invalid, you receive a full refund — no questions asked." },
   { q: "What types of events can I buy tickets for?", a: "During our beta launch, we are focused exclusively on Toronto Blue Jays (MLB) tickets. More teams across NHL, NBA, NFL, MLS, CFL, and WNBA — plus concerts, comedy shows, and theatre — are coming soon." },
+  // Seller / reseller FAQs
+  { q: "How do I become a seller on seats.ca?", a: "Visit the 'Become a Seller' page and fill out the application form with your details. Our team reviews every application and you'll be notified once approved. Once live, you can start listing tickets right away." },
+  { q: "How do I list my tickets for sale?", a: "Once your seller account is approved, you can upload tickets individually or in bulk via CSV through your seller dashboard. Include section, row, seat numbers, and pricing — your listings go live instantly." },
+  { q: "What does it cost to sell on seats.ca?", a: "There are no upfront listing fees. Seller commission details are provided during the onboarding process. Contact us at info@seats.ca for more information." },
+  { q: "How do I get paid after a sale?", a: "Payouts are processed after the event takes place to ensure buyer protection. You'll receive payment directly to your account on file." },
+  // General platform FAQs
+  { q: "How are tickets delivered?", a: "All tickets are delivered electronically. After purchase, you'll receive your tickets via email and they'll also be available in your account." },
+  { q: "Is my payment information secure?", a: "Absolutely. All payments are processed securely through Stripe, a PCI-compliant payment processor. We never store your credit card details." },
+  { q: "Do I need an account to buy tickets?", a: "Yes, you'll need to create a free account to complete a purchase. This allows us to deliver your tickets and provide buyer protection." },
+  { q: "Can I buy tickets on my phone?", a: "Yes! seats.ca is fully mobile-friendly. Browse events, purchase tickets, and access your orders from any device." },
+  { q: "How do I contact support?", a: "You can reach us at info@seats.ca, use the live chat widget on any page, or visit our Contact page. We aim to respond within 24 hours." },
 ];
 
 const platformLogos: Record<string, string> = { Ticketmaster: "TM", StubHub: "SH", "Vivid Seats": "VS" };
