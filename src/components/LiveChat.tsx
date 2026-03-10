@@ -7,11 +7,11 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 const QUICK_QUESTIONS = [
   "How do I buy tickets?",
+  "Are the tickets guaranteed authentic?",
   "Do I need a membership to buy tickets?",
-  "What is the membership and how much does it cost?",
+  "What types of events can I buy tickets for?",
   "Are there service fees?",
   "What is your refund policy?",
-  "Which teams are available?",
   "How do I become a seller?",
 ];
 
