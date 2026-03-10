@@ -54,6 +54,8 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [buyingTicketId, setBuyingTicketId] = useState<string | null>(null);
   const [feeGateTicket, setFeeGateTicket] = useState<TicketInfo | null>(null);
+  const [lightboxImages, setLightboxImages] = useState<SeatImage[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const { user, isMember } = useAuth();
   const { toast } = useToast();
 
@@ -73,6 +75,11 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     };
     fetchImages();
   }, [tickets]);
+
+  const openLightbox = (images: SeatImage[], startIndex: number) => {
+    setLightboxImages(images);
+    setLightboxIndex(startIndex);
+  };
 
   const processPayment = async (ticket: TicketInfo, includeFee: boolean) => {
     setBuyingTicketId(ticket.id);
