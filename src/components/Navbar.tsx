@@ -202,6 +202,21 @@ const Navbar = () => {
               All Events
             </Link>
             {ALL_LEAGUES.filter((l) => visibleLeagues.has(l)).map((league) => {
+              // Check for single-team override
+              const singleSlug = singleTeamOverrides[league];
+              if (singleSlug && SINGLE_TEAM_MAP[league]?.[singleSlug]) {
+                const team = SINGLE_TEAM_MAP[league][singleSlug];
+                return (
+                  <Link
+                    key={league}
+                    to={team.path}
+                    className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                  >
+                    {team.name} Tickets
+                  </Link>
+                );
+              }
+
               const config = LEAGUES_WITH_DROPDOWNS[league];
               if (config) {
                 const { teams, divisions } = config;
