@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Camera, Gift, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import FeeGateDialog from "./FeeGateDialog";
 
@@ -53,6 +54,8 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [buyingTicketId, setBuyingTicketId] = useState<string | null>(null);
   const [feeGateTicket, setFeeGateTicket] = useState<TicketInfo | null>(null);
+  const [lightboxImages, setLightboxImages] = useState<SeatImage[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const { user, isMember } = useAuth();
   const { toast } = useToast();
 
@@ -72,6 +75,11 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     };
     fetchImages();
   }, [tickets]);
+
+  const openLightbox = (images: SeatImage[], startIndex: number) => {
+    setLightboxImages(images);
+    setLightboxIndex(startIndex);
+  };
 
   const processPayment = async (ticket: TicketInfo, includeFee: boolean) => {
     setBuyingTicketId(ticket.id);
@@ -165,10 +173,30 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           </div>
         </div>
         {images.length > 0 ? (
-          <div className="mt-3 flex gap-2 overflow-x-auto">
-            {images.map((img) => (
-              <img key={img.id} src={img.image_url} alt={img.caption || "Seat view"} className="w-20 h-14 object-cover rounded-lg border border-border" />
-            ))}
+          <div className="mt-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Eye className="h-3 w-3 text-primary/70" />
+              <span className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider">Seat View</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {images.map((img, idx) => (
+                <button
+                  key={img.id}
+                  onClick={() => openLightbox(images, idx)}
+                  className="relative group flex-shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all"
+                >
+                  <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                    <Camera className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  {img.caption && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5">
+                      <span className="text-[9px] text-white/90 line-clamp-1">{img.caption}</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground/50">
@@ -224,8 +252,19 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             </div>
             {ticket.seat_notes && <p className="text-xs text-muted-foreground mt-1">{ticket.seat_notes}</p>}
             {images.length > 0 && (
-              <div className="mt-2 flex gap-2 overflow-x-auto">
-                {images.map((img) => (<img key={img.id} src={img.image_url} alt={img.caption || "Seat view"} className="w-16 h-12 object-cover rounded border border-border" />))}
+              <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                {images.map((img, idx) => (
+                  <button
+                    key={img.id}
+                    onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
+                    className="relative group flex-shrink-0 rounded overflow-hidden border border-border hover:border-primary/40 transition-all"
+                  >
+                    <img src={img.image_url} alt={img.caption || "Seat view"} className="w-20 h-14 object-cover" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                      <Camera className="h-3 w-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -274,6 +313,70 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           venueName={venueName}
         />
       )}
+
+      {/* Seat View Lightbox */}
+      <Dialog open={lightboxImages.length > 0} onOpenChange={(open) => { if (!open) setLightboxImages([]); }}>
+        <DialogContent className="max-w-3xl p-0 bg-black/95 border-border overflow-hidden">
+          {lightboxImages.length > 0 && (
+            <div className="relative">
+              <img
+                src={lightboxImages[lightboxIndex].image_url}
+                alt={lightboxImages[lightboxIndex].caption || "Seat view"}
+                className="w-full max-h-[75vh] object-contain"
+              />
+
+              {/* Caption overlay */}
+              {lightboxImages[lightboxIndex].caption && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-8">
+                  <p className="text-white text-sm">{lightboxImages[lightboxIndex].caption}</p>
+                </div>
+              )}
+
+              {/* Navigation arrows */}
+              {lightboxImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length)}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => setLightboxIndex((prev) => (prev + 1) % lightboxImages.length)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+
+              {/* Counter */}
+              {lightboxImages.length > 1 && (
+                <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                  {lightboxIndex + 1} / {lightboxImages.length}
+                </div>
+              )}
+
+              {/* Thumbnail strip */}
+              {lightboxImages.length > 1 && (
+                <div className="flex gap-2 p-3 justify-center bg-black/80">
+                  {lightboxImages.map((img, idx) => (
+                    <button
+                      key={img.id}
+                      onClick={() => setLightboxIndex(idx)}
+                      className={`w-14 h-10 rounded overflow-hidden border-2 transition-all ${
+                        idx === lightboxIndex ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
