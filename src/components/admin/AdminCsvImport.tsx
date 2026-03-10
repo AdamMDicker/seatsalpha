@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileSpreadsheet, Check, AlertCircle } from "lucide-react";
+import { Upload, FileSpreadsheet, Check, AlertCircle, Download, HelpCircle, X } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CsvRow {
   title?: string;
@@ -21,6 +22,50 @@ interface CsvRow {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ROWS = 1000;
+
+const COLUMN_DESCRIPTIONS: Record<string, string> = {
+  title: "Full event title, e.g. 'Toronto Blue Jays vs Yankees'. Must match or create an event.",
+  venue: "Venue name, e.g. 'Skydome', 'Scotiabank Arena'. Used to match existing events.",
+  city: "City where the event takes place, e.g. 'Toronto'. Required for new events.",
+  province: "Province or state code, e.g. 'ON', 'BC', 'NY'. Required for new events.",
+  event_date: "Date and time in ISO format: YYYY-MM-DDTHH:MM or YYYY-MM-DD HH:MM. e.g. '2026-06-15T19:07'.",
+  category: "Event category. Options: sports, concerts, theatre. Defaults to 'sports' if blank.",
+  section: "Seating section number or name, e.g. '118', 'W11', 'GA'. Required for ticket rows.",
+  row: "Row within the section, e.g. '5', 'A', 'AA'. Optional.",
+  seat: "Seat number(s), e.g. '1-4', '12'. Optional — leave blank for GA.",
+  price: "Ticket price per seat in CAD, e.g. '85.00'. Must be a positive number.",
+  quantity: "Number of tickets available, e.g. '2'. Defaults to 1 if blank.",
+};
+
+const ADMIN_CSV_HEADERS = ["title", "venue", "city", "province", "event_date", "category", "section", "row", "seat", "price", "quantity"];
+
+function generateAdminCsvTemplate(): string {
+  const example = [
+    "Toronto Blue Jays vs Yankees",
+    "Skydome",
+    "Toronto",
+    "ON",
+    "2026-06-15T19:07",
+    "sports",
+    "118",
+    "5",
+    "1-2",
+    "85.00",
+    "2",
+  ];
+  return [ADMIN_CSV_HEADERS.join(","), example.join(",")].join("\n");
+}
+
+function downloadAdminTemplate() {
+  const csv = generateAdminCsvTemplate();
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "seats_ca_admin_import_template.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const AdminCsvImport = () => {
   const [csvData, setCsvData] = useState<CsvRow[]>([]);
@@ -106,21 +151,70 @@ const AdminCsvImport = () => {
     toast({ title: `Import complete: ${success} succeeded, ${errors} failed` });
   };
 
+  const clearFile = () => {
+    setCsvData([]);
+    setFileName("");
+    setResults(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   return (
     <div>
-      <h2 className="font-display text-xl font-semibold mb-4">CSV Import</h2>
-      <p className="text-sm text-muted-foreground mb-6">
-        Upload a CSV file with columns: <code className="text-primary">title, venue, city, province, event_date, category, section, row, seat, price, quantity</code>
-      </p>
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h2 className="font-display text-xl font-semibold">CSV Import</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Import events and tickets in bulk. Download our template to get started.
+          </p>
+        </div>
+        <Button variant="glass" size="sm" onClick={downloadAdminTemplate}>
+          <Download className="h-4 w-4" /> Download Template
+        </Button>
+      </div>
+
+      {/* Column reference */}
+      <div className="glass rounded-xl p-4 mb-6">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Required Columns</p>
+        <TooltipProvider delayDuration={100}>
+          <div className="flex flex-wrap gap-2">
+            {ADMIN_CSV_HEADERS.map((col) => (
+              <Tooltip key={col}>
+                <TooltipTrigger asChild>
+                  <button className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-secondary border border-border text-xs font-mono text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all cursor-help">
+                    {col}
+                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs text-xs">
+                  <p>{COLUMN_DESCRIPTIONS[col] || col}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </TooltipProvider>
+      </div>
+
       <div className="glass rounded-xl p-6 space-y-6">
         <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
           <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
           <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground mb-3">{fileName || "Drop your CSV file or click to browse"}</p>
-          <Button variant="glass" size="sm" onClick={() => fileInputRef.current?.click()}>
-            <Upload className="h-4 w-4" /> Choose File
-          </Button>
+          {fileName ? (
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <p className="text-sm text-foreground font-medium">{fileName}</p>
+              <button onClick={clearFile} className="text-muted-foreground hover:text-destructive">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground mb-3">Drop your CSV file or click to browse</p>
+          )}
+          <div className="flex gap-2 justify-center">
+            <Button variant="glass" size="sm" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="h-4 w-4" /> {fileName ? "Choose Different File" : "Choose File"}
+            </Button>
+          </div>
         </div>
+
         {csvData.length > 0 && (
           <div>
             <p className="text-sm text-foreground mb-3">{csvData.length} rows ready to import</p>
@@ -149,6 +243,7 @@ const AdminCsvImport = () => {
             </Button>
           </div>
         )}
+
         {results && (
           <div className="flex gap-4">
             <div className="flex items-center gap-2 text-sm text-green-500">

@@ -2,9 +2,21 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Upload, X, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Upload, X, Search, Ticket, ChevronDown, ChevronUp } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { TEAMS_VENUES, LEAGUES_LIST } from "@/data/teamsVenues";
+
+interface TicketForEvent {
+  id: string;
+  section: string;
+  row_name: string | null;
+  seat_number: string | null;
+  price: number;
+  quantity: number;
+  quantity_sold: number;
+  is_active: boolean;
+  is_reseller_ticket: boolean;
+}
 
 const AdminEvents = () => {
   const [events, setEvents] = useState<Tables<"events">[]>([]);
@@ -20,6 +32,13 @@ const AdminEvents = () => {
   const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterLeague, setFilterLeague] = useState("all");
+
+  // Event tickets
+  const [eventTickets, setEventTickets] = useState<TicketForEvent[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
+  const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
+  const [expandedTickets, setExpandedTickets] = useState<Record<string, TicketForEvent[]>>({});
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -30,6 +49,33 @@ const AdminEvents = () => {
   };
 
   useEffect(() => { fetchEvents(); }, []);
+
+  const fetchTicketsForEvent = async (eventId: string) => {
+    if (expandedEventId === eventId) {
+      setExpandedEventId(null);
+      return;
+    }
+    setExpandedEventId(eventId);
+    if (expandedTickets[eventId]) return;
+
+    setLoadingTickets(true);
+    const { data } = await supabase
+      .from("tickets")
+      .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_active, is_reseller_ticket")
+      .eq("event_id", eventId)
+      .order("section", { ascending: true });
+    setExpandedTickets((prev) => ({ ...prev, [eventId]: data || [] }));
+    setLoadingTickets(false);
+  };
+
+  const fetchTicketsForEdit = async (eventId: string) => {
+    const { data } = await supabase
+      .from("tickets")
+      .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_active, is_reseller_ticket")
+      .eq("event_id", eventId)
+      .order("section", { ascending: true });
+    setEventTickets(data || []);
+  };
 
   const handleTeamSelect = (teamName: string) => {
     setSelectedTeam(teamName);
@@ -96,6 +142,7 @@ const AdminEvents = () => {
     setEditingEvent(null);
     setSelectedTeam("");
     setOpponent("");
+    setEventTickets([]);
     setForm({ title: "", venue: "", city: "", province: "", event_date: "", category: "sports", description: "", image_url: "" });
   };
 
@@ -106,7 +153,7 @@ const AdminEvents = () => {
     fetchEvents();
   };
 
-  const startEdit = (event: Tables<"events">) => {
+  const startEdit = async (event: Tables<"events">) => {
     setEditingEvent(event);
     setForm({
       title: event.title, venue: event.venue, city: event.city, province: event.province,
@@ -116,6 +163,7 @@ const AdminEvents = () => {
     setSelectedTeam("");
     setOpponent("");
     setShowForm(true);
+    await fetchTicketsForEdit(event.id);
   };
 
   const filteredEvents = events.filter((e) => {
@@ -267,6 +315,62 @@ const AdminEvents = () => {
             </div>
           </div>
 
+          {/* Tickets for this event (shown when editing) */}
+          {editingEvent && (
+            <div className="space-y-3 border-t border-border pt-4">
+              <div className="flex items-center gap-2">
+                <Ticket className="h-4 w-4 text-primary" />
+                <h4 className="font-display font-semibold text-sm">Tickets for this Event ({eventTickets.length})</h4>
+              </div>
+              {eventTickets.length > 0 ? (
+                <div className="max-h-64 overflow-y-auto rounded-lg border border-border">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border bg-secondary sticky top-0">
+                        <th className="text-left p-2 font-medium text-muted-foreground">Section</th>
+                        <th className="text-left p-2 font-medium text-muted-foreground">Row</th>
+                        <th className="text-left p-2 font-medium text-muted-foreground">Seats</th>
+                        <th className="text-right p-2 font-medium text-muted-foreground">Price</th>
+                        <th className="text-right p-2 font-medium text-muted-foreground">Qty</th>
+                        <th className="text-right p-2 font-medium text-muted-foreground">Sold</th>
+                        <th className="text-center p-2 font-medium text-muted-foreground">Type</th>
+                        <th className="text-center p-2 font-medium text-muted-foreground">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {eventTickets.map((t) => (
+                        <tr key={t.id} className="border-b border-border/50 hover:bg-secondary/50">
+                          <td className="p-2 text-foreground font-medium">{t.section}</td>
+                          <td className="p-2 text-foreground">{t.row_name || "—"}</td>
+                          <td className="p-2 text-foreground">{t.seat_number || "—"}</td>
+                          <td className="p-2 text-foreground text-right">${t.price}</td>
+                          <td className="p-2 text-foreground text-right">{t.quantity}</td>
+                          <td className="p-2 text-foreground text-right">{t.quantity_sold}</td>
+                          <td className="p-2 text-center">
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                              t.is_reseller_ticket ? "bg-amber-500/15 text-amber-400" : "bg-primary/15 text-primary"
+                            }`}>
+                              {t.is_reseller_ticket ? "Reseller" : "Featured"}
+                            </span>
+                          </td>
+                          <td className="p-2 text-center">
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                              t.is_active ? "bg-emerald-500/15 text-emerald-400" : "bg-destructive/15 text-destructive"
+                            }`}>
+                              {t.is_active ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No tickets listed for this event yet.</p>
+              )}
+            </div>
+          )}
+
           <div className="flex gap-2">
             <Button variant="hero" size="sm" onClick={handleSave}>Save</Button>
             <Button variant="glass" size="sm" onClick={resetForm}>Cancel</Button>
@@ -275,21 +379,70 @@ const AdminEvents = () => {
       )}
 
       <div className="space-y-3">
-        {filteredEvents.map((event) => (
-          <div key={event.id} className="glass rounded-xl p-4 flex items-center justify-between gap-3">
-            {event.image_url && (
-              <img src={event.image_url} alt="" className="w-14 h-10 rounded-lg object-cover flex-shrink-0" />
-            )}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground truncate">{event.title}</h3>
-              <p className="text-sm text-muted-foreground">{event.venue}, {event.city} · {new Date(event.event_date).toLocaleDateString()}</p>
+        {filteredEvents.map((event) => {
+          const isExpanded = expandedEventId === event.id;
+          const tickets = expandedTickets[event.id] || [];
+
+          return (
+            <div key={event.id} className="glass rounded-xl overflow-hidden">
+              <div className="p-4 flex items-center justify-between gap-3">
+                {event.image_url && (
+                  <img src={event.image_url} alt="" className="w-14 h-10 rounded-lg object-cover flex-shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground truncate">{event.title}</h3>
+                  <p className="text-sm text-muted-foreground">{event.venue}, {event.city} · {new Date(event.event_date).toLocaleDateString()}</p>
+                </div>
+                <div className="flex gap-1 flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => fetchTicketsForEvent(event.id)}
+                    className={isExpanded ? "text-primary" : ""}
+                    title="View tickets"
+                  >
+                    <Ticket className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => startEdit(event)}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(event.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              </div>
+
+              {/* Inline ticket list */}
+              {isExpanded && (
+                <div className="border-t border-border bg-secondary/30 px-4 py-3 animate-fade-in">
+                  {loadingTickets && !expandedTickets[event.id] ? (
+                    <p className="text-xs text-muted-foreground">Loading tickets...</p>
+                  ) : tickets.length > 0 ? (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-semibold text-muted-foreground mb-2">{tickets.length} ticket{tickets.length !== 1 ? "s" : ""} listed</p>
+                      {tickets.map((t) => (
+                        <div key={t.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded bg-background/50">
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium text-foreground">Sec {t.section}</span>
+                            {t.row_name && <span className="text-muted-foreground">Row {t.row_name}</span>}
+                            {t.seat_number && <span className="text-muted-foreground">Seats {t.seat_number}</span>}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium text-foreground">${t.price}</span>
+                            <span className="text-muted-foreground">{t.quantity - t.quantity_sold} remaining</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                              t.is_reseller_ticket ? "bg-amber-500/15 text-amber-400" : "bg-primary/15 text-primary"
+                            }`}>
+                              {t.is_reseller_ticket ? "Reseller" : "Featured"}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No tickets listed for this event.</p>
+                  )}
+                </div>
+              )}
             </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Button variant="ghost" size="icon" onClick={() => startEdit(event)}><Pencil className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => handleDelete(event.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
         {filteredEvents.length === 0 && <p className="text-muted-foreground text-center py-8">No events found.</p>}
       </div>
     </div>
