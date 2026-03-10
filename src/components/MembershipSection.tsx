@@ -32,7 +32,7 @@ const MembershipSection = () => {
                 </h2>
 
                 <p className="text-muted-foreground">
-                  Join for just $49.95/year and never pay a service fee again. Most members save over $200 in their first year.
+                  Join for just $49.95/year and never pay HST on tickets again. Most members save over $200 in their first year.
                 </p>
 
                 <ul className="space-y-3">

@@ -4,7 +4,7 @@ const features = [
   {
     icon: Banknote,
     title: "Zero Fees",
-    description: "What you see is what you pay — taxes included, no service fees added.",
+    description: "Members pay the ticket price — no HST, no hidden charges, no surprises at checkout.",
   },
   {
     icon: ShieldCheck,
