@@ -4,7 +4,7 @@ const features = [
   {
     icon: Banknote,
     title: "Zero Fees",
-    description: "The price you see is the price you pay. No hidden charges, no surprises at checkout.",
+    description: "What you see is what you pay — taxes included, no service fees added.",
   },
   {
     icon: ShieldCheck,
@@ -19,7 +19,7 @@ const features = [
   {
     icon: Car,
     title: "Ride to the Venue",
-    description: "Add an Uber ride is available to and from your event at checkout for a seamless experience.",
+    description: "Add an Uber ride to and from your event at checkout for a seamless experience.",
   },
 ];
 
@@ -41,10 +41,10 @@ const FeaturesSection = () => {
           {features.map((feature, i) => (
             <div
               key={i}
-              className="glass rounded-xl p-6 text-center hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 animate-fade-in"
+              className="rounded-xl p-6 text-center bg-card border border-border shadow-lg hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 animate-fade-in"
               style={{ animationDelay: `${i * 0.1}s` }}
             >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
                 <feature.icon className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-display font-semibold text-lg mb-2">{feature.title}</h3>

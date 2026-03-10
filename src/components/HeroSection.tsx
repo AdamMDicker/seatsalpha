@@ -3,6 +3,12 @@ import { Search, ShieldCheck } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import heroCanada from "@/assets/hero-arena.jpg";
 import heroBaseball from "@/assets/hero-baseball.jpg";
@@ -70,30 +76,36 @@ const HeroSection = () => {
         className="absolute inset-0 bg-cover bg-center transition-all duration-700"
         style={{ backgroundImage: `url(${heroImage})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
-      <div className="absolute inset-0 bg-gradient-to-r from-background/60 to-transparent" />
+      {/* Lighter overlays so hero image is visible */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-background/20" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent" />
 
       <div className="container mx-auto px-4 relative z-10 pt-20 flex flex-col items-center text-center">
         <div className="max-w-3xl flex flex-col items-center">
-          <Link to="/membership" className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/15 border border-primary/30 mb-6 animate-fade-in hover:bg-primary/25 transition-colors cursor-pointer group">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Pay No Fees — Click Here to Learn How</span>
+          {/* Pay No Fees badge — solid, bright, with pulse glow */}
+          <Link
+            to="/membership"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground mb-6 animate-pulse-glow hover:brightness-110 transition-all cursor-pointer group shadow-lg"
+          >
+            <ShieldCheck className="h-5 w-5" />
+            <span className="text-sm font-bold tracking-wide">Pay No Fees — Click Here to Learn How</span>
           </Link>
 
-          <p className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-3 animate-fade-in" style={{ animationDelay: "0.05s" }}>
+          <p className="text-sm uppercase tracking-[0.3em] text-foreground font-semibold mb-3 animate-fade-in drop-shadow-lg" style={{ animationDelay: "0.05s" }}>
             Canada's First No-Fee Ticket Platform
           </p>
 
-          <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight mb-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+          <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight mb-4 animate-fade-in drop-shadow-lg" style={{ animationDelay: "0.1s" }}>
             Not Just a Seat,
             <br />
             <span className="text-gradient">An Experience.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+          <p className="text-lg md:text-xl text-foreground/80 max-w-xl mb-8 animate-fade-in drop-shadow-md" style={{ animationDelay: "0.2s" }}>
             Tickets without the fees. 🍁
           </p>
 
+          {/* Search bar — solid light background for visibility */}
           <div className="flex flex-col sm:flex-row gap-3 max-w-2xl w-full mb-10 animate-fade-in relative" style={{ animationDelay: "0.3s" }} ref={resultsRef}>
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -103,7 +115,7 @@ const HeroSection = () => {
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setShowResults(true); }}
                 onFocus={() => setShowResults(true)}
-                className="w-full pl-10 pr-4 py-3 rounded-lg bg-card/80 backdrop-blur border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                className="w-full pl-10 pr-4 py-3 rounded-lg bg-foreground/95 text-background placeholder:text-background/50 border-2 border-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-medium shadow-xl"
               />
               {showResults && filtered.length > 0 && (
                 <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl shadow-xl z-50 py-2 animate-fade-in">
@@ -129,13 +141,22 @@ const HeroSection = () => {
           </div>
 
           <div className="flex flex-col items-center gap-4 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <div className="px-5 py-2.5 rounded-lg bg-primary/10 border border-primary/20 text-sm text-primary font-medium">
+            <div className="px-5 py-2.5 rounded-lg bg-card border border-border text-sm text-foreground font-medium shadow-lg">
               🚀 We're in beta — currently offering Toronto Blue Jays tickets only. More teams coming soon!
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <ShieldCheck className="h-4 w-4 text-success" />
-              <span>100% Guaranteed Tickets</span>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-2 text-sm text-foreground/90 cursor-help">
+                    <ShieldCheck className="h-4 w-4 text-success" />
+                    <span className="underline decoration-dotted underline-offset-4">100% Guaranteed Tickets</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs text-center">
+                  <p>Every ticket is verified authentic. You're covered by our buyer protection — if an event is cancelled, you get a full refund.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </div>
