@@ -7,6 +7,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 const QUICK_QUESTIONS = [
   "How do I buy tickets?",
+  "Do I need a membership to buy tickets?",
   "What is the membership and how much does it cost?",
   "Are there service fees?",
   "What is your refund policy?",
