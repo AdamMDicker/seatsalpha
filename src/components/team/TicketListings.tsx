@@ -311,6 +311,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           onProceedWithFees={() => processPayment(feeGateTicket, true)}
           loading={buyingTicketId === feeGateTicket.id}
           venueName={venueName}
+          gameTitle={gameTitle}
         />
       )}
 

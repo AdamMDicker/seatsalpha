@@ -24,6 +24,17 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
+    // Parse optional ticket info from body
+    let ticketInfo = null;
+    try {
+      const body = await req.json();
+      if (body && body.ticketAmount) {
+        ticketInfo = body;
+      }
+    } catch {
+      // No body or invalid JSON — membership-only checkout
+    }
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -34,18 +45,40 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    // Build line items: always include membership subscription
+    const lineItems: any[] = [
+      {
+        price: "price_1T94FDCLZKdkEf5NxVKaPzEh",
+        quantity: 1,
+      },
+    ];
+
+    // If ticket info provided, add ticket as a one-time line item
+    if (ticketInfo) {
+      lineItems.push({
+        price_data: {
+          currency: "cad",
+          product_data: {
+            name: ticketInfo.eventTitle || "Event Ticket",
+            description: ticketInfo.tier || undefined,
+          },
+          unit_amount: Math.round(ticketInfo.ticketAmount * 100),
+        },
+        quantity: 1,
+      });
+    }
+
+    const successUrl = ticketInfo?.venue
+      ? `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(ticketInfo.venue)}&event=${encodeURIComponent(ticketInfo.eventTitle || "")}`
+      : `${req.headers.get("origin")}/membership?success=true`;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price: "price_1T94FDCLZKdkEf5NxVKaPzEh",
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/membership?success=true`,
-      cancel_url: `${req.headers.get("origin")}/membership?canceled=true`,
+      success_url: successUrl,
+      cancel_url: `${req.headers.get("origin")}/payment-canceled`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
