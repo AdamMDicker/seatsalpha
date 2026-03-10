@@ -22,6 +22,7 @@ import PaymentCanceled from "./pages/PaymentCanceled";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import Contact from "./pages/Contact";
 import LiveChat from "./components/LiveChat";
 
 const queryClient = new QueryClient();
