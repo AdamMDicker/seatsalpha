@@ -313,6 +313,70 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           venueName={venueName}
         />
       )}
+
+      {/* Seat View Lightbox */}
+      <Dialog open={lightboxImages.length > 0} onOpenChange={(open) => { if (!open) setLightboxImages([]); }}>
+        <DialogContent className="max-w-3xl p-0 bg-black/95 border-border overflow-hidden">
+          {lightboxImages.length > 0 && (
+            <div className="relative">
+              <img
+                src={lightboxImages[lightboxIndex].image_url}
+                alt={lightboxImages[lightboxIndex].caption || "Seat view"}
+                className="w-full max-h-[75vh] object-contain"
+              />
+
+              {/* Caption overlay */}
+              {lightboxImages[lightboxIndex].caption && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-8">
+                  <p className="text-white text-sm">{lightboxImages[lightboxIndex].caption}</p>
+                </div>
+              )}
+
+              {/* Navigation arrows */}
+              {lightboxImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length)}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => setLightboxIndex((prev) => (prev + 1) % lightboxImages.length)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+
+              {/* Counter */}
+              {lightboxImages.length > 1 && (
+                <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                  {lightboxIndex + 1} / {lightboxImages.length}
+                </div>
+              )}
+
+              {/* Thumbnail strip */}
+              {lightboxImages.length > 1 && (
+                <div className="flex gap-2 p-3 justify-center bg-black/80">
+                  {lightboxImages.map((img, idx) => (
+                    <button
+                      key={img.id}
+                      onClick={() => setLightboxIndex(idx)}
+                      className={`w-14 h-10 rounded overflow-hidden border-2 transition-all ${
+                        idx === lightboxIndex ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
