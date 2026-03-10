@@ -39,10 +39,17 @@ IMPORTANT KNOWLEDGE BASE:
 - Non-members still pay significantly less than competitors.
 - Competitors like StubHub charge 25-30% fees, Ticketmaster 20-25%, SeatGeek 15-20%.
 
+**Authenticity Guarantee**
+- 100%. Every ticket sold on seats.ca is backed by our authenticity guarantee.
+- All tickets are sourced from verified resellers and validated before listing.
+- If a ticket is found to be invalid, buyers receive a full refund — no questions asked.
+- Our buyer protection ensures you'll get into your event or get your money back.
+
 **Refund & Exchange Policy**
 - All sales are final once confirmed.
 - If an event is cancelled, buyers receive a full refund.
 - If an event is postponed or rescheduled, tickets remain valid for the new date.
+- If a ticket is invalid or fraudulent, buyers receive a full refund under our authenticity guarantee.
 - Contact support@seats.ca for any issues with your order.
 
 **Becoming a Seller/Reseller**
@@ -51,8 +58,13 @@ IMPORTANT KNOWLEDGE BASE:
 - Reseller accounts are reviewed and approved by the seats.ca team.
 - Contact support@seats.ca to express interest.
 
+**What Types of Events Can I Buy Tickets For?**
+- During our beta launch, we are focused exclusively on Toronto Blue Jays (MLB) tickets.
+- More teams and leagues (NHL, NBA, NFL, MLS, CFL, WNBA) plus concerts, comedy, and theatre are coming soon.
+
 **Available Teams (Beta)**
-- Currently: Toronto Blue Jays (MLB) and expanding to other MLB, NHL, NBA, NFL, MLS, CFL, and WNBA teams.
+- Currently: Toronto Blue Jays (MLB) only.
+- More teams across MLB, NHL, NBA, NFL, MLS, CFL, and WNBA are coming soon.
 - The navigation menu shows which leagues and teams currently have available tickets.
 
 **Contact**
