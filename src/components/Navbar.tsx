@@ -90,11 +90,23 @@ const LEAGUES_WITH_DROPDOWNS: Record<string, { teams: NavTeam[]; divisions: read
 
 const ALL_LEAGUES = ["NHL", "NBA", "WNBA", "MLB", "NFL", "MLS", "CFL", "Concerts", "Theatre"];
 
+// Map of league -> { slug, name, path } for single-team overrides
+const SINGLE_TEAM_MAP: Record<string, Record<string, { name: string; path: string }>> = {
+  MLB: Object.fromEntries(MLB_TEAMS_CONFIG.map((t) => [t.slug, { name: t.name, path: `/teams/mlb/${t.slug}` }])),
+  NHL: Object.fromEntries(NHL_TEAMS_CONFIG.map((t) => [t.slug, { name: t.name, path: `/teams/nhl/${t.slug}` }])),
+  NBA: Object.fromEntries(NBA_TEAMS_CONFIG.map((t) => [t.slug, { name: t.name, path: `/teams/nba/${t.slug}` }])),
+  NFL: Object.fromEntries(NFL_TEAMS_CONFIG.map((t) => [t.slug, { name: t.name, path: `/teams/nfl/${t.slug}` }])),
+  MLS: Object.fromEntries(MLS_TEAMS_CONFIG.map((t) => [t.slug, { name: t.name, path: `/teams/mls/${t.slug}` }])),
+  CFL: Object.fromEntries(CFL_TEAMS_CONFIG.map((t) => [t.slug, { name: t.name, path: `/teams/cfl/${t.slug}` }])),
+  WNBA: Object.fromEntries(WNBA_TEAMS_CONFIG.map((t) => [t.slug, { name: t.name, path: `/teams/wnba/${t.slug}` }])),
+};
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [visibleLeagues, setVisibleLeagues] = useState<Set<string>>(new Set(ALL_LEAGUES));
   const [teamsWithInventory, setTeamsWithInventory] = useState<Set<string> | null>(null);
+  const [singleTeamOverrides, setSingleTeamOverrides] = useState<Record<string, string>>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAdmin, signOut } = useAuth();
 
@@ -106,8 +118,23 @@ const Navbar = () => {
       }
     };
 
+    const fetchSingleTeamSettings = async () => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("key, value")
+        .like("key", "%_single_team");
+      if (data) {
+        const overrides: Record<string, string> = {};
+        data.forEach((s) => {
+          // key format: mlb_single_team -> league = MLB
+          const league = s.key.replace("_single_team", "").toUpperCase();
+          if (s.value) overrides[league] = s.value;
+        });
+        setSingleTeamOverrides(overrides);
+      }
+    };
+
     const fetchTeamsWithInventory = async () => {
-      // Get event IDs that have available tickets
       const { data: tickets } = await supabase
         .from("tickets")
         .select("event_id")
@@ -137,6 +164,7 @@ const Navbar = () => {
     };
 
     fetchVisibility();
+    fetchSingleTeamSettings();
     fetchTeamsWithInventory();
   }, []);
 
@@ -174,6 +202,21 @@ const Navbar = () => {
               All Events
             </Link>
             {ALL_LEAGUES.filter((l) => visibleLeagues.has(l)).map((league) => {
+              // Check for single-team override
+              const singleSlug = singleTeamOverrides[league];
+              if (singleSlug && SINGLE_TEAM_MAP[league]?.[singleSlug]) {
+                const team = SINGLE_TEAM_MAP[league][singleSlug];
+                return (
+                  <Link
+                    key={league}
+                    to={team.path}
+                    className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                  >
+                    {team.name} Tickets
+                  </Link>
+                );
+              }
+
               const config = LEAGUES_WITH_DROPDOWNS[league];
               if (config) {
                 const { teams, divisions } = config;
