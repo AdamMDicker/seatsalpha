@@ -15,6 +15,11 @@ IMPORTANT KNOWLEDGE BASE:
 - Currently in beta, primarily featuring Toronto Blue Jays (MLB) tickets. More teams and leagues are being added soon.
 - The platform connects buyers with verified resellers.
 
+**Do I Need a Membership to Buy Tickets?**
+- No. Anyone can browse and purchase tickets without a membership.
+- However, non-members will pay standard service fees at checkout.
+- Members pay ZERO service fees on all ticket purchases.
+
 **Membership**
 - seats.ca offers a membership for $20/year (CAD).
 - Members pay ZERO service fees on all ticket purchases.
