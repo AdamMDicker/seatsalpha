@@ -117,7 +117,7 @@ const TeamMLBPage = () => {
               </p>
               {games.length > 0 && (
                 <button
-                  onClick={() => { setFilter("all"); setSelectedMonth("all"); setSelectedOpponent("all"); setMaxBudget(null); }}
+                  onClick={resetFilters}
                   className="text-primary text-sm mt-2 hover:underline"
                 >
                   Clear all filters
