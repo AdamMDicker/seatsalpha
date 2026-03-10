@@ -6,11 +6,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Crown, Zap, ArrowRight, Check, X, ShieldCheck, Car, ExternalLink } from "lucide-react";
+import { Crown, Zap, Check, ShieldCheck, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { getUberDeepLink } from "@/utils/uberDeepLink";
+import { Link } from "react-router-dom";
 
 interface FeeGateDialogProps {
   open: boolean;
@@ -23,6 +23,8 @@ interface FeeGateDialogProps {
   venueName?: string;
 }
 
+type CheckoutOption = "hst" | "membership";
+
 const FeeGateDialog = ({
   open,
   onOpenChange,
@@ -31,13 +33,16 @@ const FeeGateDialog = ({
   rowName,
   onProceedWithFees,
   loading,
-  venueName,
 }: FeeGateDialogProps) => {
+  const [selectedOption, setSelectedOption] = useState<CheckoutOption>("membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
   const { toast } = useToast();
-  const feeAmount = Math.round(ticketPrice * 0.13 * 100) / 100;
-  const totalWithFees = Math.round((ticketPrice + feeAmount) * 100) / 100;
-  const uberLink = venueName ? getUberDeepLink(venueName) : null;
+
+  const hstAmount = Math.round(ticketPrice * 0.13 * 100) / 100;
+  const totalWithHST = Math.round((ticketPrice + hstAmount) * 100) / 100;
+  const totalWithMembership = Math.round((ticketPrice + 49.95) * 100) / 100;
+
+  const currentTotal = selectedOption === "hst" ? totalWithHST : totalWithMembership;
 
   const handleBuyMembership = async () => {
     setMembershipLoading(true);
@@ -52,137 +57,158 @@ const FeeGateDialog = ({
     }
   };
 
+  const handleProceed = () => {
+    if (selectedOption === "membership") {
+      handleBuyMembership();
+    } else {
+      onProceedWithFees();
+    }
+  };
+
+  const isLoading = selectedOption === "membership" ? membershipLoading : loading;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-gold/10 to-gold/5 border-b border-gold/20 px-6 pt-6 pb-4">
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-6 pt-6 pb-4">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl">Your Ticket Summary</DialogTitle>
+            <DialogTitle className="font-display text-2xl text-foreground">Checkout</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Review your order before proceeding to checkout.
+              Section {section}{rowName ? ` · Row ${rowName}` : ""}
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <div className="px-6 pb-6 space-y-5">
-          {/* Ticket breakdown */}
-          <div className="glass rounded-xl p-4 space-y-2.5">
-            <div className="flex justify-between text-sm">
-              <span className="text-foreground font-medium">
-                Section {section}{rowName ? ` · Row ${rowName}` : ""}
-              </span>
-              <span className="text-foreground font-medium">${ticketPrice.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-               <span className="text-destructive flex items-center gap-1.5">
-                 <X className="h-3.5 w-3.5" /> HST (13%)
-              </span>
-              <span className="text-destructive font-medium">+${feeAmount.toFixed(2)}</span>
-            </div>
-            <div className="border-t border-border pt-2.5 flex justify-between font-bold text-base">
-              <span>Total without membership</span>
-              <span>${totalWithFees.toFixed(2)}</span>
-            </div>
+        <div className="px-6 pb-6 space-y-4">
+          {/* Ticket base price */}
+          <div className="flex justify-between items-center py-3 border-b border-border">
+            <span className="text-foreground font-medium text-base">Ticket Price</span>
+            <span className="text-foreground font-bold text-lg">${ticketPrice.toFixed(2)}</span>
           </div>
 
-          {/* Uber deep link */}
-          {uberLink && (
-            <a
-              href={uberLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="glass rounded-xl p-3 flex items-center gap-3 hover:border-primary/40 transition-all block"
+          {/* Option cards */}
+          <div className="space-y-3">
+            {/* Option: No membership (pay HST) */}
+            <button
+              onClick={() => setSelectedOption("hst")}
+              className={`w-full text-left rounded-xl border-2 p-4 transition-all ${
+                selectedOption === "hst"
+                  ? "border-destructive bg-destructive/5"
+                  : "border-border bg-card hover:border-muted-foreground/30"
+              }`}
             >
-              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Car className="h-4 w-4 text-primary" />
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3 flex-1">
+                  <div className={`mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    selectedOption === "hst" ? "border-destructive bg-destructive" : "border-muted-foreground/40"
+                  }`}>
+                    {selectedOption === "hst" && <Check className="h-3 w-3 text-destructive-foreground" />}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">No Membership</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Add 13% HST <span className="text-destructive font-semibold">(+${hstAmount.toFixed(2)})</span>
+                    </p>
+                  </div>
+                </div>
+                <span className="text-foreground font-bold text-lg whitespace-nowrap">
+                  ${totalWithHST.toFixed(2)}
+                </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">Uber to the Game</p>
-                <p className="text-xs text-muted-foreground">Open Uber with venue pre-filled</p>
-              </div>
-              <span className="text-xs font-semibold text-primary flex items-center gap-1">
-                Free <ExternalLink className="h-3 w-3" />
-              </span>
-            </a>
-          )}
+            </button>
 
-          {/* Option 1: Buy membership */}
-          <div className="glass rounded-xl border-gold/30 bg-gold/5 overflow-hidden">
-            <div className="bg-gold/10 px-4 py-2 border-b border-gold/20">
-              <div className="flex items-center gap-2">
-                <Crown className="h-4 w-4 text-gold" />
-                <span className="text-sm font-bold text-gold">OPTION 1 — RECOMMENDED</span>
-              </div>
-            </div>
-            <div className="p-4 space-y-3">
-              <h3 className="font-display font-bold text-lg">Buy a Membership & Save the HST</h3>
-              <p className="text-sm text-muted-foreground">
-                For <strong className="text-foreground">$49.95/year</strong>, save the{" "}
-                <strong className="text-destructive">${feeAmount.toFixed(2)} HST</strong> on this ticket
-                and <strong className="text-foreground">every future ticket</strong> you buy.
-              </p>
-
-              <div className="glass rounded-lg p-3 space-y-1.5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Ticket</span>
-                  <span>${ticketPrice.toFixed(2)}</span>
+            {/* Option: Add membership (no HST) */}
+            <button
+              onClick={() => setSelectedOption("membership")}
+              className={`w-full text-left rounded-xl border-2 p-4 transition-all ${
+                selectedOption === "membership"
+                  ? "border-gold bg-gold/5"
+                  : "border-border bg-card hover:border-muted-foreground/30"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3 flex-1">
+                  <div className={`mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    selectedOption === "membership" ? "border-gold bg-gold" : "border-muted-foreground/40"
+                  }`}>
+                    {selectedOption === "membership" && <Check className="h-3 w-3 text-gold-foreground" />}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-foreground">Add Membership</p>
+                      <span className="text-[10px] font-bold bg-gold/20 text-gold px-1.5 py-0.5 rounded uppercase tracking-wide">
+                        Recommended
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      $49.95/year — <span className="text-primary font-semibold">no HST</span> on all seats.ca purchases
+                    </p>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                   <span className="text-primary flex items-center gap-1">
-                     <Check className="h-3.5 w-3.5" /> HST
-                  </span>
-                  <span className="text-primary font-medium">$0.00</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gold flex items-center gap-1">
-                    <Crown className="h-3.5 w-3.5" /> Annual Membership
-                  </span>
-                  <span className="text-gold font-medium">$49.95</span>
-                </div>
-                <div className="border-t border-border pt-1.5 flex justify-between font-bold">
-                  <span>Today's Total</span>
-                  <span>${(ticketPrice + 49.95).toFixed(2)}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                <span>Save the HST on every ticket for 12 months. Cancel anytime.</span>
+                <span className="text-foreground font-bold text-lg whitespace-nowrap">
+                  ${totalWithMembership.toFixed(2)}
+                </span>
               </div>
 
-              <Button
-                variant="gold"
-                size="lg"
-                className="w-full"
-                onClick={handleBuyMembership}
-                disabled={membershipLoading}
-              >
-                <Zap className="h-4 w-4" />
-                {membershipLoading ? "Loading..." : `Get Membership — Save $${feeAmount.toFixed(2)} HST`}
-              </Button>
-            </div>
+              {/* Savings callout when selected */}
+              {selectedOption === "membership" && (
+                <div className="mt-3 ml-8 flex items-center gap-2 text-xs text-muted-foreground">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                  <span>Save the HST on every ticket for 12 months. Cancel anytime.</span>
+                </div>
+              )}
+            </button>
+
+            {/* Membership info link */}
+            {selectedOption === "membership" && (
+              <div className="text-center">
+                <Link
+                  to="/membership"
+                  target="_blank"
+                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                >
+                  <Crown className="h-3 w-3" />
+                  Why buy a membership?
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
+            )}
           </div>
 
-          {/* Option 2: Pay with fees */}
-          <div className="glass rounded-xl overflow-hidden">
-            <div className="bg-muted/30 px-4 py-2 border-b border-border">
-              <span className="text-sm font-bold text-muted-foreground">OPTION 2</span>
+          {/* Total + CTA */}
+          <div className="border-t border-border pt-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-foreground font-bold text-lg">Total</span>
+              <span className="text-foreground font-display font-bold text-2xl">
+                ${currentTotal.toFixed(2)}
+              </span>
             </div>
-            <div className="p-4 space-y-3">
-              <h3 className="font-display font-semibold">Continue Without Membership</h3>
-              <p className="text-sm text-muted-foreground">
-                Pay the 13% HST (<strong className="text-destructive">${feeAmount.toFixed(2)}</strong>) on this purchase.
+
+            <Button
+              variant={selectedOption === "membership" ? "gold" : "hero"}
+              size="lg"
+              className="w-full text-base h-12"
+              onClick={handleProceed}
+              disabled={isLoading}
+            >
+              {selectedOption === "membership" ? (
+                <>
+                  <Zap className="h-4 w-4" />
+                  {isLoading ? "Processing..." : `Get Membership & Pay $${currentTotal.toFixed(2)}`}
+                </>
+              ) : (
+                <>
+                  {isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)}`}
+                </>
+              )}
+            </Button>
+
+            {selectedOption === "hst" && (
+              <p className="text-center text-xs text-muted-foreground">
+                Includes ${hstAmount.toFixed(2)} HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
               </p>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={onProceedWithFees}
-                disabled={loading}
-              >
-                {loading ? "Processing..." : `Pay $${totalWithFees.toFixed(2)} with HST`}
-              </Button>
-            </div>
+            )}
           </div>
         </div>
       </DialogContent>
