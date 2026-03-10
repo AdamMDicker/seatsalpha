@@ -4,10 +4,8 @@ import { Link } from "react-router-dom";
 
 const benefits = [
   "Zero fees on all ticket purchases for 12 months",
-  "Early access to presale events",
-  "Exclusive member-only deals",
-  "Priority customer support",
-  "Free cancellation on select events",
+  "Save hundreds compared to StubHub & Ticketmaster",
+  "Bundle savings on travel and ride packages",
 ];
 
 const MembershipSection = () => {
@@ -17,7 +15,7 @@ const MembershipSection = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto">
-          <div className="glass rounded-2xl p-8 md:p-12 glow-gold relative overflow-hidden">
+          <div className="bg-card border border-border rounded-2xl p-8 md:p-12 shadow-lg glow-gold relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl" />
 
             <div className="flex flex-col md:flex-row gap-10 items-center">
