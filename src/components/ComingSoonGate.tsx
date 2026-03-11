@@ -10,6 +10,7 @@ const ComingSoonGate = ({ children }: { children: React.ReactNode }) => {
   const [unlocked, setUnlocked] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem(STORAGE_KEY) === "true") {
