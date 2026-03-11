@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Store, DollarSign, Eye, Zap, Shield, Users, CheckCircle } from "lucide-react";
 import ResellerCsvUpload from "@/components/reseller/ResellerCsvUpload";
+import ResellerMyTickets from "@/components/reseller/ResellerMyTickets";
 
 const benefits = [
   { icon: DollarSign, title: "Zero Listing Fees", description: "List your tickets for free — we only take a small commission on completed sales." },
