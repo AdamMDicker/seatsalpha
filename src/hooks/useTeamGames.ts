@@ -49,7 +49,7 @@ export function useTeamGames(searchTerm: string | undefined) {
     setSelectedGame(null);
     setSelectedSection(null);
     setFilter("all");
-    setSelectedMonth("all");
+    setSelectedMonth(currentMonthKey);
     setSelectedOpponent("all");
     setMaxBudget(null);
 
