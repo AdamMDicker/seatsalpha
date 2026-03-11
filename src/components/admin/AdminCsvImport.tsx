@@ -164,17 +164,30 @@ const AdminCsvImport = () => {
         <div>
           <h2 className="font-display text-xl font-semibold">CSV Import</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Import events and tickets in bulk. Download our template to get started.
+            Import events and tickets in bulk using our pre-formatted template.
           </p>
         </div>
-        <Button variant="glass" size="sm" onClick={downloadAdminTemplate}>
-          <Download className="h-4 w-4" /> Download Template
-        </Button>
+      </div>
+
+      {/* Step 1: Download */}
+      <div className="bg-card border border-border rounded-xl p-5 mb-4">
+        <div className="flex items-start gap-4">
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex-shrink-0">1</div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground text-sm mb-1">Download the template</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              Start with our pre-formatted CSV file. Fill in your event and ticket data, then come back to upload.
+            </p>
+            <Button variant="hero" size="sm" onClick={downloadAdminTemplate}>
+              <Download className="h-4 w-4" /> Download CSV Template
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Column reference */}
-      <div className="glass rounded-xl p-4 mb-6">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Required Columns</p>
+      <div className="bg-card border border-border rounded-xl p-4 mb-4">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Column Reference</p>
         <TooltipProvider delayDuration={100}>
           <div className="flex flex-wrap gap-2">
             {ADMIN_CSV_HEADERS.map((col) => (
@@ -194,7 +207,17 @@ const AdminCsvImport = () => {
         </TooltipProvider>
       </div>
 
-      <div className="glass rounded-xl p-6 space-y-6">
+      {/* Step 2: Upload */}
+      <div className="bg-card border border-border rounded-xl p-5 space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex-shrink-0">2</div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground text-sm mb-1">Upload your completed file</h3>
+            <p className="text-xs text-muted-foreground">
+              Upload the filled-in template to import your events and tickets.
+            </p>
+          </div>
+        </div>
         <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
           <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
           <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
@@ -206,7 +229,7 @@ const AdminCsvImport = () => {
               </button>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground mb-3">Drop your CSV file or click to browse</p>
+            <p className="text-sm text-muted-foreground mb-3">Drop your completed CSV here or click to browse</p>
           )}
           <div className="flex gap-2 justify-center">
             <Button variant="glass" size="sm" onClick={() => fileInputRef.current?.click()}>
