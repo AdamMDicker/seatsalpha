@@ -159,7 +159,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <div className="text-right">
               <p className="font-display text-xl font-bold text-foreground">${ticket.price}</p>
               <p className="text-xs text-muted-foreground">per ticket</p>
-              <p className="text-[10px] text-emerald-400 mt-0.5">HST included</p>
+              <p className="text-[10px] text-emerald-400 mt-0.5">Members enjoy HST-included pricing</p>
             </div>
             <Button
               variant="hero"
