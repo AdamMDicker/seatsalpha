@@ -167,13 +167,18 @@ const FeeGateDialog = ({
               </div>
 
               {/* Legal disclosures & checkboxes */}
+              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+                <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-foreground/90">
+                  All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
+                </p>
+              </div>
+
               <div className="space-y-3">
-                <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                  <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-foreground/90">
-                    All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
-                  </p>
-                </div>
+                <p className="text-xs font-semibold text-primary flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  You must check both boxes below to proceed
+                </p>
 
                 <div className="flex items-start gap-2">
                   <Checkbox id="terms-member" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
