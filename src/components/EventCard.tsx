@@ -10,7 +10,7 @@ interface EventCardProps {
 
 const EventCard = ({ event }: EventCardProps) => {
   return (
-    <Link to={`/event/${event.id}`} className="group block">
+    <Link to={getEventTeamPath(event.title, event.id)} className="group block">
       <div className="rounded-xl overflow-hidden bg-card border border-border shadow-lg transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1">
         <div className="relative h-48 overflow-hidden bg-secondary flex items-center justify-center p-6">
           <h2 className="font-display text-xl font-bold text-foreground text-center leading-snug">
