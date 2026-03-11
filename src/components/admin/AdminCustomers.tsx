@@ -180,7 +180,8 @@ const AdminCustomers = () => {
                 <h3 className="font-semibold text-foreground">{c.full_name || "No name"}</h3>
                 {c.hasMembership && <Badge variant="default" className="text-[10px]">Member</Badge>}
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">{(c as any).email || "No email"}</p>
+              <p className="text-xs text-muted-foreground">
                 {c.city && c.province ? `${c.city}, ${c.province}` : c.city || c.province || "No location"}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
