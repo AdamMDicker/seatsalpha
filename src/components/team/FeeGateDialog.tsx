@@ -36,9 +36,9 @@ interface FeeGateDialogProps {
 type CheckoutOption = "hst" | "membership";
 
 const MEMBERSHIP_BENEFITS = [
-  "No HST on all seats.ca purchases for 12 months",
+  "HST becomes inclusive on all seats.ca purchases for 12 months",
   "Save hundreds per season on tickets",
-  "Cancel anytime — no commitment",
+  "Cancel anytime — auto-renew can be turned off",
   "Works across all sports & events",
 ];
 
