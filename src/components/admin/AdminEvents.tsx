@@ -320,60 +320,68 @@ const AdminEvents = () => {
           </div>
 
           {/* Tickets for this event (shown when editing) */}
-          {editingEvent && (
-            <div className="space-y-3 border-t border-border pt-4">
-              <div className="flex items-center gap-2">
-                <Ticket className="h-4 w-4 text-primary" />
-                <h4 className="font-display font-semibold text-sm">Tickets for this Event ({eventTickets.length})</h4>
-              </div>
-              {eventTickets.length > 0 ? (
-                <div className="max-h-64 overflow-y-auto rounded-lg border border-border">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b border-border bg-secondary sticky top-0">
-                        <th className="text-left p-2 font-medium text-muted-foreground">Section</th>
-                        <th className="text-left p-2 font-medium text-muted-foreground">Row</th>
-                        <th className="text-left p-2 font-medium text-muted-foreground">Seats</th>
-                        <th className="text-right p-2 font-medium text-muted-foreground">Price</th>
-                        <th className="text-right p-2 font-medium text-muted-foreground">Qty</th>
-                        <th className="text-right p-2 font-medium text-muted-foreground">Sold</th>
-                        <th className="text-center p-2 font-medium text-muted-foreground">Type</th>
-                        <th className="text-center p-2 font-medium text-muted-foreground">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {eventTickets.map((t) => (
-                        <tr key={t.id} className="border-b border-border/50 hover:bg-secondary/50">
-                          <td className="p-2 text-foreground font-medium">{t.section}</td>
-                          <td className="p-2 text-foreground">{t.row_name || "—"}</td>
-                          <td className="p-2 text-foreground">{t.seat_number || "—"}</td>
-                          <td className="p-2 text-foreground text-right">${t.price}</td>
-                          <td className="p-2 text-foreground text-right">{t.quantity}</td>
-                          <td className="p-2 text-foreground text-right">{t.quantity_sold}</td>
-                          <td className="p-2 text-center">
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                              t.is_reseller_ticket ? "bg-amber-500/15 text-amber-400" : "bg-primary/15 text-primary"
-                            }`}>
-                              {t.is_reseller_ticket ? "Reseller" : "Featured"}
-                            </span>
-                          </td>
-                          <td className="p-2 text-center">
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                              t.is_active ? "bg-emerald-500/15 text-emerald-400" : "bg-destructive/15 text-destructive"
-                            }`}>
-                              {t.is_active ? "Active" : "Inactive"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          {editingEvent && (() => {
+            const featured = eventTickets.filter(t => !t.is_reseller_ticket);
+            const reseller = eventTickets.filter(t => t.is_reseller_ticket);
+            const TicketTable = ({ tickets, label, color }: { tickets: TicketForEvent[]; label: string; color: string }) => (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-xs font-semibold ${color}`}>{label} ({tickets.length})</span>
+                  <span className="text-xs text-muted-foreground">
+                    {tickets.reduce((s, t) => s + (t.quantity - t.quantity_sold), 0)} remaining
+                  </span>
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No tickets listed for this event yet.</p>
-              )}
-            </div>
-          )}
+                {tickets.length > 0 ? (
+                  <div className="max-h-48 overflow-y-auto rounded-lg border border-border">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border bg-secondary sticky top-0">
+                          <th className="text-left p-2 font-medium text-muted-foreground">Section</th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">Row</th>
+                          <th className="text-left p-2 font-medium text-muted-foreground">Seats</th>
+                          <th className="text-right p-2 font-medium text-muted-foreground">Price</th>
+                          <th className="text-right p-2 font-medium text-muted-foreground">Qty</th>
+                          <th className="text-right p-2 font-medium text-muted-foreground">Sold</th>
+                          <th className="text-center p-2 font-medium text-muted-foreground">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tickets.map((t) => (
+                          <tr key={t.id} className="border-b border-border/50 hover:bg-secondary/50">
+                            <td className="p-2 text-foreground font-medium">{t.section}</td>
+                            <td className="p-2 text-foreground">{t.row_name || "—"}</td>
+                            <td className="p-2 text-foreground">{t.seat_number || "—"}</td>
+                            <td className="p-2 text-foreground text-right">${t.price}</td>
+                            <td className="p-2 text-foreground text-right">{t.quantity}</td>
+                            <td className="p-2 text-foreground text-right">{t.quantity_sold}</td>
+                            <td className="p-2 text-center">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                t.is_active ? "bg-emerald-500/15 text-emerald-400" : "bg-destructive/15 text-destructive"
+                              }`}>
+                                {t.is_active ? "Active" : "Inactive"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">None</p>
+                )}
+              </div>
+            );
+            return (
+              <div className="space-y-4 border-t border-border pt-4">
+                <div className="flex items-center gap-2">
+                  <Ticket className="h-4 w-4 text-primary" />
+                  <h4 className="font-display font-semibold text-sm">All Tickets ({eventTickets.length})</h4>
+                </div>
+                <TicketTable tickets={featured} label="⭐ Our Tickets (Featured)" color="text-primary" />
+                <TicketTable tickets={reseller} label="🏷️ Reseller Tickets" color="text-amber-400" />
+              </div>
+            );
+          })()}
 
           <div className="flex gap-2">
             <Button variant="hero" size="sm" onClick={handleSave}>Save</Button>
