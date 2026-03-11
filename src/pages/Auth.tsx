@@ -62,6 +62,93 @@ const Auth = () => {
     setResending(false);
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) return;
+    setForgotLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setForgotSent(true);
+      toast({ title: "Check your email", description: "We sent you a password reset link." });
+    }
+    setForgotLoading(false);
+  };
+
+  if (showForgot) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Ticket className="h-8 w-8 text-primary" />
+              <span className="font-display text-2xl font-bold">
+                seats<span className="text-primary">.ca</span>
+              </span>
+            </div>
+            <h1 className="font-display text-2xl font-bold mb-1">Reset your password</h1>
+            <p className="text-sm text-muted-foreground">
+              Enter your email and we'll send you a reset link
+            </p>
+          </div>
+
+          <div className="glass rounded-xl p-6">
+            {forgotSent ? (
+              <div className="text-center py-2">
+                <Mail className="h-10 w-10 text-primary mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground mb-4">
+                  Check your inbox for a password reset link. It may take a minute to arrive.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setForgotSent(false); setForgotLoading(false); }}
+                  className="gap-1.5"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Send again
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                      className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                    />
+                  </div>
+                </div>
+                <Button variant="hero" className="w-full" disabled={forgotLoading}>
+                  {forgotLoading ? "Sending..." : "Send Reset Link"}
+                </Button>
+              </form>
+            )}
+
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => { setShowForgot(false); setForgotSent(false); setForgotEmail(""); }}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back to Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
