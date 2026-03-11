@@ -144,6 +144,7 @@ const TeamMLBPage = () => {
                 giveawayItem={selectedGame.giveaway_item}
                 gameTitle={selectedGame.title}
                 venueName={selectedGame.venue}
+                eventDate={selectedGame.event_date}
               />
             </div>
           )}
