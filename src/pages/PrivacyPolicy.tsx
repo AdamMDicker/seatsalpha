@@ -90,7 +90,7 @@ const PrivacyPolicy = () => {
               <li><strong className="text-foreground">Right to Deletion:</strong> You may request the deletion of your personal information, and we will comply with your request unless retention is required by law or necessary for legitimate business purposes.</li>
               <li><strong className="text-foreground">Right to Complain:</strong> If you believe your privacy rights have been violated, you have the right to file a complaint with the Office of the Privacy Commissioner of Canada (OPC) at www.priv.gc.ca.</li>
             </ul>
-            <p className="mt-3">To exercise any of these rights, please contact us at privacy@seats.ca. We will respond to your request within 30 days, as required by PIPEDA.</p>
+            <p className="mt-3">To exercise any of these rights, please contact us at michaelkurtz66@hotmail.com. We will respond to your request within 30 days, as required by PIPEDA.</p>
           </section>
 
           <section>
