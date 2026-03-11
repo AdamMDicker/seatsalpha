@@ -123,7 +123,7 @@ const EventsSection = () => {
         </div>
 
         <div className="flex justify-center gap-2 mb-10 flex-wrap">
-          {categories.map((cat) => (
+          {categories.filter(cat => cat.id !== "concerts" && cat.id !== "theatre").map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
