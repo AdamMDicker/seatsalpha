@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ZoomIn, X, Gift, Calendar, Clock, MapPin } from "lucide-react";
-import skydomeMap from "@/assets/venues/skydome-seating-final.jpg";
+import rogersCentreMap from "@/assets/venues/rogers-centre-seating-map.jpg";
 import yankeeStadiumMap from "@/assets/venues/yankee-stadium-seating.jpg";
 import fenwayParkMap from "@/assets/venues/fenway-park-seating.jpg";
 import dodgerStadiumMap from "@/assets/venues/dodger-stadium-seating.jpg";
