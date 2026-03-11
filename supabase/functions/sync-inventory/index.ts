@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
       .from("events")
       .select("id, title, event_date")
       .like("title", "%Toronto Blue Jays vs%")
-      .eq("venue", "Skydome");
+      .eq("venue", "Rogers Centre");
 
     const eventLookup = new Map<string, string>();
     (allExistingEvents || []).forEach((e) => {

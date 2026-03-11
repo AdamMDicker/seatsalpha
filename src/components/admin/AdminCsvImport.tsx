@@ -42,7 +42,7 @@ const ADMIN_CSV_HEADERS = ["title", "venue", "city", "province", "event_date", "
 function generateAdminCsvTemplate(): string {
   const example = [
     "Toronto Blue Jays vs Yankees",
-    "Skydome",
+    "Rogers Centre",
     "Toronto",
     "ON",
     "2026-06-15T19:07",
