@@ -69,11 +69,15 @@ const AdminEvents = () => {
   };
 
   const fetchTicketsForEdit = async (eventId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("tickets")
       .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_active, is_reseller_ticket")
       .eq("event_id", eventId)
       .order("section", { ascending: true });
+    if (error) {
+      console.error("Error fetching tickets for edit:", error);
+      toast({ title: "Error loading tickets", description: error.message, variant: "destructive" });
+    }
     setEventTickets(data || []);
   };
 
