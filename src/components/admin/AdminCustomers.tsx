@@ -35,6 +35,8 @@ const AdminCustomers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterProvince, setFilterProvince] = useState("all");
   const [filterMembership, setFilterMembership] = useState<"all" | "active" | "none">("all");
+  const [deletingCustomer, setDeletingCustomer] = useState<CustomerWithMeta | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchCustomers = async () => {
     const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
