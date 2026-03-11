@@ -269,6 +269,9 @@ const Navbar = () => {
             <Link to="/about" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
               About Us
             </Link>
+            <Link to="/contact" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+              Contact Us
+            </Link>
             <Link to="/membership#faq" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
               FAQ
             </Link>
