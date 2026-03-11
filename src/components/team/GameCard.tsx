@@ -59,14 +59,14 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       <p className="text-sm text-muted-foreground">{formatTime(game.event_date)}</p>
 
       {/* Home/Away badge */}
-      <div className="flex items-center gap-1.5 mt-1.5">
+      <div className="flex items-center gap-1.5 mt-2">
         {isAway ? (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-400">
-            <Plane className="h-2.5 w-2.5" /> Away
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/15 text-amber-400">
+            <Plane className="h-3 w-3" /> Away
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-400">
-            <Home className="h-2.5 w-2.5" /> Home
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/15 text-emerald-400">
+            <Home className="h-3 w-3" /> Home
           </span>
         )}
       </div>
