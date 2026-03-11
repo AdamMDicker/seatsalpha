@@ -71,10 +71,10 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
         )}
       </div>
 
-      <p className="text-sm font-medium text-foreground mt-1.5 line-clamp-2">
+      <p className="text-base font-medium text-foreground mt-2 line-clamp-2">
         {isAway ? "@ " : "vs "}{opponent ? expandTeamNames(opponent) : expandTeamNames(game.title)}
       </p>
-      <p className="text-xs text-muted-foreground mt-0.5">{game.venue}</p>
+      <p className="text-sm text-muted-foreground mt-0.5">{game.venue}</p>
 
       {/* Giveaway badge */}
       {game.is_giveaway && (
