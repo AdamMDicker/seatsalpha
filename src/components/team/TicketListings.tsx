@@ -115,11 +115,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       window.location.href = "/auth";
       return;
     }
-    if (isMember) {
-      processPayment(ticket, false);
-    } else {
-      setFeeGateTicket(ticket);
-    }
+    setFeeGateTicket(ticket);
   };
 
   const allTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
@@ -311,10 +307,12 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           section={feeGateTicket.section}
           rowName={feeGateTicket.row_name}
           onProceedWithFees={() => processPayment(feeGateTicket, true)}
+          onProceedNoFees={() => processPayment(feeGateTicket, false)}
           loading={buyingTicketId === feeGateTicket.id}
           venueName={venueName}
           gameTitle={gameTitle}
           eventDate={eventDate}
+          isMember={isMember}
         />
       )}
 
