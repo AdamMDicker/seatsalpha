@@ -1,0 +1,1 @@
+UPDATE public.events SET venue = 'Rogers Centre' WHERE venue = 'Skydome';
