@@ -88,7 +88,6 @@ export const TEAMS_VENUES: TeamVenue[] = [
 
   // ===== MLB =====
   // AL East
-  { team: "Toronto Blue Jays", venue: "Skydome", city: "Toronto", province: "ON", league: "MLB", latitude: 43.6414, longitude: -79.3894 },
   { team: "Toronto Blue Jays", venue: "Rogers Centre", city: "Toronto", province: "ON", league: "MLB", latitude: 43.6414, longitude: -79.3894 },
   { team: "New York Yankees", venue: "Yankee Stadium", city: "New York", province: "NY", league: "MLB", latitude: 40.8296, longitude: -73.9262 },
   { team: "Boston Red Sox", venue: "Fenway Park", city: "Boston", province: "MA", league: "MLB", latitude: 42.3467, longitude: -71.0972 },

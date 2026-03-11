@@ -81,7 +81,7 @@ const About = () => {
               <h2 className="font-display text-2xl md:text-3xl font-bold">Built for Canadians, by Canadians</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              seats.ca isn't a Silicon Valley startup trying to break into the Canadian market. We're a Canadian company, built from the ground up with Canadian fans in mind. We understand the landscape — from the passion of Leafs Nation to the energy of a packed SkyDome on a summer night, from sold-out Drake concerts to playoff hockey that brings entire cities together.
+              seats.ca isn't a Silicon Valley startup trying to break into the Canadian market. We're a Canadian company, built from the ground up with Canadian fans in mind. We understand the landscape — from the passion of Leafs Nation to the energy of a packed Rogers Centre on a summer night, from sold-out Drake concerts to playoff hockey that brings entire cities together.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               We price everything in Canadian dollars. We understand Canadian tax law. We know what it's like to budget for a night out in Toronto, Vancouver, Montreal, or Calgary — and we've designed our platform to make that experience better, not more expensive.

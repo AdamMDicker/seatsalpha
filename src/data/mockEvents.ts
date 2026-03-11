@@ -27,7 +27,7 @@ export const mockEvents: Event[] = [
   {
     id: "2",
     title: "The Weeknd – After Hours Tour",
-    venue: "Skydome",
+    venue: "Rogers Centre",
     city: "Toronto, ON",
     date: "Apr 2, 2026",
     time: "8:00 PM",
