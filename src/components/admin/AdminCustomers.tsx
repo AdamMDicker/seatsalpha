@@ -71,7 +71,7 @@ const AdminCustomers = () => {
 
   const openEdit = (c: Tables<"profiles">) => {
     setEditing(c);
-    setForm({ full_name: c.full_name || "", city: c.city || "", province: c.province || "" });
+    setForm({ full_name: c.full_name || "", city: c.city || "", province: c.province || "", email: (c as any).email || "" });
     setNewPassword("");
     setShowPassword(false);
   };
