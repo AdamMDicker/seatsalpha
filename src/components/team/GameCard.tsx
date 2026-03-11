@@ -41,7 +41,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   return (
     <button
       onClick={onClick}
-      className={`flex-shrink-0 rounded-xl p-3 text-left transition-all w-[200px] min-h-[180px] border relative overflow-hidden flex flex-col ${
+      className={`flex-shrink-0 rounded-xl p-4 text-left transition-all w-[220px] min-h-[200px] border relative overflow-hidden flex flex-col ${
         isSelected
           ? isAway
             ? "bg-amber-500/10 border-amber-500/50 shadow-lg shadow-amber-500/10"
@@ -52,29 +52,29 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       {/* Home/Away indicator strip */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
 
-      <div className="flex items-center gap-2 mb-1 mt-1">
-        {teamLogo && <img src={teamLogo} alt="" className="w-5 h-5 object-contain" />}
-        <p className="text-xs font-semibold text-primary">{formatDate(game.event_date)}</p>
+      <div className="flex items-center gap-2 mb-1.5 mt-1">
+        {teamLogo && <img src={teamLogo} alt="" className="w-6 h-6 object-contain" />}
+        <p className="text-sm font-semibold text-primary">{formatDate(game.event_date)}</p>
       </div>
-      <p className="text-xs text-muted-foreground">{formatTime(game.event_date)}</p>
+      <p className="text-sm text-muted-foreground">{formatTime(game.event_date)}</p>
 
       {/* Home/Away badge */}
-      <div className="flex items-center gap-1.5 mt-1.5">
+      <div className="flex items-center gap-1.5 mt-2">
         {isAway ? (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-400">
-            <Plane className="h-2.5 w-2.5" /> Away
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/15 text-amber-400">
+            <Plane className="h-3 w-3" /> Away
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-400">
-            <Home className="h-2.5 w-2.5" /> Home
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/15 text-emerald-400">
+            <Home className="h-3 w-3" /> Home
           </span>
         )}
       </div>
 
-      <p className="text-sm font-medium text-foreground mt-1.5 line-clamp-2">
+      <p className="text-base font-medium text-foreground mt-2 line-clamp-2">
         {isAway ? "@ " : "vs "}{opponent ? expandTeamNames(opponent) : expandTeamNames(game.title)}
       </p>
-      <p className="text-xs text-muted-foreground mt-0.5">{game.venue}</p>
+      <p className="text-sm text-muted-foreground mt-0.5">{game.venue}</p>
 
       {/* Giveaway badge */}
       {game.is_giveaway && (
@@ -88,11 +88,11 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
 
       <div className="mt-auto pt-2">
         {game.tickets.length > 0 ? (
-          <p className="text-xs text-primary font-medium">
+          <p className="text-sm text-primary font-semibold">
             From ${Math.min(...game.tickets.map((t) => t.price))}
           </p>
         ) : (
-          <p className="text-xs text-muted-foreground">No tickets yet</p>
+          <p className="text-sm text-muted-foreground">No tickets yet</p>
         )}
       </div>
     </button>
