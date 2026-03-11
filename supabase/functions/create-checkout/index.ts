@@ -69,7 +69,7 @@ serve(async (req) => {
     }
 
     const successUrl = ticketInfo?.venue
-      ? `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(ticketInfo.venue)}&event=${encodeURIComponent(ticketInfo.eventTitle || "")}`
+      ? `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(ticketInfo.venue)}&event=${encodeURIComponent(ticketInfo.eventTitle || "")}&tier=${encodeURIComponent(ticketInfo.tier || "")}&date=${encodeURIComponent(ticketInfo.eventDate || "")}`
       : `${req.headers.get("origin")}/membership?success=true`;
 
     const session = await stripe.checkout.sessions.create({
