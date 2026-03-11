@@ -36,9 +36,9 @@ interface FeeGateDialogProps {
 type CheckoutOption = "hst" | "membership";
 
 const MEMBERSHIP_BENEFITS = [
-  "No HST on all seats.ca purchases for 12 months",
+  "HST becomes inclusive on all seats.ca purchases for 12 months",
   "Save hundreds per season on tickets",
-  "Cancel anytime — no commitment",
+  "Cancel anytime — auto-renew can be turned off",
   "Works across all sports & events",
 ];
 
@@ -167,13 +167,18 @@ const FeeGateDialog = ({
               </div>
 
               {/* Legal disclosures & checkboxes */}
+              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+                <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-foreground/90">
+                  All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
+                </p>
+              </div>
+
               <div className="space-y-3">
-                <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                  <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-foreground/90">
-                    All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
-                  </p>
-                </div>
+                <p className="text-xs font-semibold text-primary flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  You must check both boxes below to proceed
+                </p>
 
                 <div className="flex items-start gap-2">
                   <Checkbox id="terms-member" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
@@ -220,6 +225,17 @@ const FeeGateDialog = ({
           ) : (
             /* ---- NON-MEMBER CHECKOUT: HST vs membership options ---- */
             <>
+              {/* All sales final warning — moved to top */}
+              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+                <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-foreground/90">
+                  All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
+                </p>
+              </div>
+
+              {/* Action verb header */}
+              <p className="text-sm font-bold text-foreground uppercase tracking-wide text-center">Please Choose:</p>
+
               <div className="space-y-3">
                 {/* Option: No membership (pay HST) */}
                 <button
@@ -238,7 +254,8 @@ const FeeGateDialog = ({
                         {selectedOption === "hst" && <Check className="h-3 w-3 text-destructive-foreground" />}
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">No Membership</p>
+                        <p className="font-semibold text-foreground">Buy Tickets with No Membership</p>
+                        <p className="text-xs text-destructive font-medium mt-0.5">HST applied</p>
                         <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
                           <div className="flex justify-between gap-6">
                             <span>Ticket</span>
@@ -275,13 +292,13 @@ const FeeGateDialog = ({
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-foreground">Add Membership</p>
+                          <p className="font-semibold text-foreground">Add Annual Membership to Purchase</p>
                           <span className="text-[10px] font-bold bg-gold/20 text-gold px-1.5 py-0.5 rounded uppercase tracking-wide">
                             Recommended
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground mt-0.5">
-                          $49.95/year — <span className="text-primary font-semibold">no HST</span> on all seats.ca purchases
+                          $49.95/year — HST becomes inclusive for members for 12 months. Cancel anytime.
                         </p>
                       </div>
                     </div>
@@ -289,13 +306,6 @@ const FeeGateDialog = ({
                       ${totalWithMembership.toFixed(2)}
                     </span>
                   </div>
-
-                  {selectedOption === "membership" && (
-                    <div className="mt-3 ml-8 flex items-center gap-2 text-xs text-muted-foreground">
-                      <ShieldCheck className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                      <span>Save the HST on every ticket for 12 months. Cancel anytime.</span>
-                    </div>
-                  )}
                 </button>
 
                 {selectedOption === "membership" && (
@@ -331,14 +341,12 @@ const FeeGateDialog = ({
                 )}
               </div>
 
-              {/* Legal disclosures & checkboxes */}
+              {/* Checkboxes with required indicator */}
               <div className="space-y-3">
-                <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                  <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-foreground/90">
-                    All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
-                  </p>
-                </div>
+                <p className="text-xs font-semibold text-primary flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  You must check both boxes below to proceed
+                </p>
 
                 <div className="flex items-start gap-2">
                   <Checkbox id="terms-nonmember" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
