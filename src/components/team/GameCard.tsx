@@ -86,13 +86,15 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
         </div>
       )}
 
-      {game.tickets.length > 0 ? (
-        <p className="text-xs text-primary mt-1.5 font-medium">
-          From ${Math.min(...game.tickets.map((t) => t.price))}
-        </p>
-      ) : (
-        <p className="text-xs text-muted-foreground mt-1.5">No tickets yet</p>
-      )}
+      <div className="mt-auto pt-2">
+        {game.tickets.length > 0 ? (
+          <p className="text-xs text-primary font-medium">
+            From ${Math.min(...game.tickets.map((t) => t.price))}
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">No tickets yet</p>
+        )}
+      </div>
     </button>
   );
 };

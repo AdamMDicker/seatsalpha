@@ -111,7 +111,7 @@ export function useTeamGames(searchTerm: string | undefined) {
 
   const resetFilters = () => {
     setFilter("all");
-    setSelectedMonth("all");
+    setSelectedMonth(currentMonthKey);
     setSelectedOpponent("all");
     setMaxBudget(null);
   };
