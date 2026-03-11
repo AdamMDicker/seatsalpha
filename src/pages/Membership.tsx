@@ -148,6 +148,9 @@ const Membership = () => {
           <p className="text-muted-foreground max-w-xl mx-auto mb-8">
             Non-members pay standard service fees at checkout. Members pay <strong className="text-gold">$0 in fees</strong> — saving hundreds every year on tickets to games, concerts, and more.
           </p>
+          <p className="text-xl md:text-2xl font-bold text-emerald-400 mb-8">
+            Members enjoy HST-included pricing.
+          </p>
           <JoinButton />
         </div>
       </section>
