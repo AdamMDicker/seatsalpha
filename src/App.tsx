@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import EventDetail from "./pages/EventDetail";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
 import TeamMLBPage from "./pages/TeamMLBPage";
 import TeamNHLPage from "./pages/TeamNHLPage";
