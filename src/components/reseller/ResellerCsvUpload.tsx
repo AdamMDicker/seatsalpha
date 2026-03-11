@@ -143,25 +143,47 @@ const ResellerCsvUpload = () => {
   };
 
   return (
-    <div className="glass rounded-xl p-8">
-      <h2 className="font-display text-2xl font-bold mb-2">Upload Inventory</h2>
-      <p className="text-sm text-muted-foreground mb-6">
-        Download our CSV template, fill in your ticket inventory, and upload it here.
-      </p>
-
-      <Button variant="outline" size="sm" className="mb-6" onClick={downloadCsvTemplate}>
-        <Download className="h-4 w-4" /> Download CSV Template
-      </Button>
-
-      <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
-        <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
-        <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-        <p className="text-sm text-muted-foreground mb-3">
-          {fileName || "Drop your CSV file or click to browse"}
+    <div className="bg-card border border-border rounded-xl p-8 space-y-6">
+      <div>
+        <h2 className="font-display text-2xl font-bold mb-1">Upload Inventory</h2>
+        <p className="text-sm text-muted-foreground">
+          Use our pre-formatted CSV template to bulk-import your ticket inventory.
         </p>
-        <Button variant="glass" size="sm" onClick={() => fileInputRef.current?.click()}>
-          <Upload className="h-4 w-4" /> Choose File
-        </Button>
+      </div>
+
+      {/* Step 1: Download */}
+      <div className="flex items-start gap-4 bg-secondary/50 rounded-xl p-5">
+        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex-shrink-0">1</div>
+        <div>
+          <h3 className="font-semibold text-foreground text-sm mb-1">Download the template</h3>
+          <p className="text-xs text-muted-foreground mb-3">
+            Start with our pre-formatted CSV file. Fill in your ticket data, save, then upload below.
+          </p>
+          <Button variant="hero" size="sm" onClick={downloadCsvTemplate}>
+            <Download className="h-4 w-4" /> Download CSV Template
+          </Button>
+        </div>
+      </div>
+
+      {/* Step 2: Upload */}
+      <div className="flex items-start gap-4">
+        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex-shrink-0 mt-1">2</div>
+        <div className="flex-1">
+          <h3 className="font-semibold text-foreground text-sm mb-1">Upload your completed file</h3>
+          <p className="text-xs text-muted-foreground mb-3">
+            Upload the filled-in template to import your tickets.
+          </p>
+          <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
+            <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
+            <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground mb-3">
+              {fileName || "Drop your completed CSV here or click to browse"}
+            </p>
+            <Button variant="glass" size="sm" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="h-4 w-4" /> Choose File
+            </Button>
+          </div>
+        </div>
       </div>
 
       {csvData.length > 0 && (
