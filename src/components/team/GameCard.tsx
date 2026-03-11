@@ -41,7 +41,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   return (
     <button
       onClick={onClick}
-      className={`flex-shrink-0 rounded-xl p-3 text-left transition-all w-[200px] min-h-[180px] border relative overflow-hidden flex flex-col ${
+      className={`flex-shrink-0 rounded-xl p-4 text-left transition-all w-[220px] min-h-[200px] border relative overflow-hidden flex flex-col ${
         isSelected
           ? isAway
             ? "bg-amber-500/10 border-amber-500/50 shadow-lg shadow-amber-500/10"
