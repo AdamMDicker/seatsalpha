@@ -55,7 +55,7 @@ const faqs = [
   { q: "Is my payment information secure?", a: "Absolutely. All payments are processed securely through Stripe, a PCI-compliant payment processor. We never store your credit card details." },
   { q: "Do I need an account to buy tickets?", a: "Yes, you'll need to create a free account to complete a purchase. This allows us to deliver your tickets and provide buyer protection." },
   { q: "Can I buy tickets on my phone?", a: "Yes! seats.ca is fully mobile-friendly. Browse events, purchase tickets, and access your orders from any device." },
-  { q: "How do I contact support?", a: "You can reach us at info@seats.ca, use the live chat widget on any page, or visit our Contact page. We aim to respond within 24 hours." },
+  { q: "How do I contact support?", a: "You can reach us at michaelkurtz66@hotmail.com, use the live chat widget on any page, or visit our Contact page. We aim to respond within 24 hours." },
 ];
 
 const platformLogos: Record<string, string> = { Ticketmaster: "TM", StubHub: "SH", "Vivid Seats": "VS" };

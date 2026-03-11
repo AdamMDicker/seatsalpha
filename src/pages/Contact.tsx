@@ -162,7 +162,7 @@ const Contact = () => {
             {/* Sidebar Info */}
             <div className="lg:col-span-2 space-y-5">
               <a
-                href="mailto:info@seats.ca"
+                href="mailto:michaelkurtz66@hotmail.com"
                 className="flex items-start gap-4 bg-card border border-border rounded-xl p-5 shadow-lg hover:border-primary/40 transition-all group"
               >
                 <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
@@ -170,7 +170,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors text-sm">Email Us Directly</h3>
-                  <p className="text-primary text-sm font-medium mt-0.5">info@seats.ca</p>
+                  <p className="text-primary text-sm font-medium mt-0.5">michaelkurtz66@hotmail.com</p>
                 </div>
               </a>
 
