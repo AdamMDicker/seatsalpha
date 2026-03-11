@@ -25,7 +25,7 @@ const AdminCustomers = () => {
   const [customers, setCustomers] = useState<CustomerWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Tables<"profiles"> | null>(null);
-  const [form, setForm] = useState({ full_name: "", city: "", province: "" });
+  const [form, setForm] = useState({ full_name: "", city: "", province: "", email: "" });
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -71,7 +71,7 @@ const AdminCustomers = () => {
 
   const openEdit = (c: Tables<"profiles">) => {
     setEditing(c);
-    setForm({ full_name: c.full_name || "", city: c.city || "", province: c.province || "" });
+    setForm({ full_name: c.full_name || "", city: c.city || "", province: c.province || "", email: (c as any).email || "" });
     setNewPassword("");
     setShowPassword(false);
   };
@@ -93,7 +93,7 @@ const AdminCustomers = () => {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: form.full_name.trim(), city: form.city.trim() || null, province: form.province.trim() || null })
+      .update({ full_name: form.full_name.trim(), city: form.city.trim() || null, province: form.province.trim() || null, email: form.email.trim() || null })
       .eq("id", editing.id);
     if (error) { toast.error("Failed to update profile"); setSaving(false); return; }
 
@@ -133,7 +133,8 @@ const AdminCustomers = () => {
   const filteredCustomers = customers.filter((c) => {
     const matchesSearch = !searchQuery ||
       (c.full_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (c.city || "").toLowerCase().includes(searchQuery.toLowerCase());
+      (c.city || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ((c as any).email || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesProvince = filterProvince === "all" || c.province === filterProvince;
     const matchesMembership = filterMembership === "all" ||
       (filterMembership === "active" && c.hasMembership) ||
@@ -151,7 +152,7 @@ const AdminCustomers = () => {
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input placeholder="Search by name or city..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          <input placeholder="Search by name, email, or city..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" />
         </div>
         <select value={filterProvince} onChange={(e) => setFilterProvince(e.target.value)}
@@ -179,7 +180,8 @@ const AdminCustomers = () => {
                 <h3 className="font-semibold text-foreground">{c.full_name || "No name"}</h3>
                 {c.hasMembership && <Badge variant="default" className="text-[10px]">Member</Badge>}
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">{(c as any).email || "No email"}</p>
+              <p className="text-xs text-muted-foreground">
                 {c.city && c.province ? `${c.city}, ${c.province}` : c.city || c.province || "No location"}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -207,6 +209,7 @@ const AdminCustomers = () => {
         <DialogContent>
           <DialogHeader><DialogTitle>Edit Customer</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
+            <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
             <div className="space-y-2"><Label>Full Name</Label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2"><Label>City</Label><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
