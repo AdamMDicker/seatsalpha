@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lock } from "lucide-react";
+import { Lock, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +10,7 @@ const ComingSoonGate = ({ children }: { children: React.ReactNode }) => {
   const [unlocked, setUnlocked] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem(STORAGE_KEY) === "true") {
@@ -46,14 +47,23 @@ const ComingSoonGate = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="password"
-            placeholder="Enter password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={`h-12 text-center text-lg bg-card border-border ${error ? "border-destructive animate-shake" : ""}`}
-            autoFocus
-          />
+          <div className="relative">
+            <Input
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={`h-12 text-center text-lg bg-card border-border pr-12 ${error ? "border-destructive animate-shake" : ""}`}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
           <Button type="submit" className="w-full h-12 text-lg font-semibold">
             Enter Site
           </Button>
