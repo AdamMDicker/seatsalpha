@@ -10,6 +10,7 @@ import {
   Heading,
   Hr,
   Html,
+  Link,
   Preview,
   Section,
   Text,
@@ -30,7 +31,7 @@ export const EmailChangeEmail = ({
 }: EmailChangeEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your email change for seats.ca</Preview>
+    <Preview>Confirm your email change on seats.ca</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
@@ -40,12 +41,12 @@ export const EmailChangeEmail = ({
         </Section>
 
         <Section style={content}>
-          <Heading style={h1}>Confirm your email change</Heading>
+          <Heading style={h1}>Confirm email change</Heading>
           <Text style={text}>
-            You requested to change your seats.ca email from <strong>{email}</strong> to <strong>{newEmail}</strong>.
-          </Text>
-          <Text style={text}>
-            Click the button below to confirm this change:
+            You requested to change your seats.ca email from{' '}
+            <Link href={`mailto:${email}`} style={link}>{email}</Link>{' '}
+            to{' '}
+            <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
           </Text>
 
           <Section style={buttonContainer}>
@@ -85,6 +86,7 @@ const logoDot = { color: '#ffffff', opacity: '0.85' }
 const content = { padding: '32px 32px 24px', backgroundColor: '#fafafa' }
 const h1 = { fontSize: '24px', fontWeight: '700' as const, color: '#1a1a2e', margin: '0 0 16px', lineHeight: '1.3' }
 const text = { fontSize: '15px', color: '#4a4a5a', lineHeight: '1.6', margin: '0 0 16px' }
+const link = { color: '#E31837', textDecoration: 'underline' }
 const buttonContainer = { textAlign: 'center' as const, margin: '24px 0' }
 const button = { backgroundColor: '#E31837', color: '#ffffff', fontSize: '16px', fontWeight: '600' as const, borderRadius: '8px', padding: '14px 32px', textDecoration: 'none', display: 'inline-block' }
 const subtext = { fontSize: '13px', color: '#8a8a9a', lineHeight: '1.5', margin: '16px 0 8px' }

@@ -38,9 +38,9 @@ export const InviteEmail = ({
         </Section>
 
         <Section style={content}>
-          <Heading style={h1}>You've been invited! 🎉</Heading>
+          <Heading style={h1}>You're invited!</Heading>
           <Text style={text}>
-            You've been invited to join <strong>seats.ca</strong> — Canada's first no-fee ticket platform. Click below to accept and create your account.
+            You've been invited to join seats.ca — Canada's first no-fee ticket platform. Click the button below to accept and create your account.
           </Text>
 
           <Section style={buttonContainer}>
