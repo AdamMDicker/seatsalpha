@@ -91,6 +91,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
           <p className="text-sm text-emerald-400 font-semibold">
             From ${Math.min(...game.tickets.map((t) => t.price))}
           </p>
+          <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
         ) : (
           <p className="text-sm text-muted-foreground">No tickets yet</p>
         )}
