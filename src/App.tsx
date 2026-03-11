@@ -26,6 +26,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import LiveChat from "./components/LiveChat";
 import ScrollToTop from "./components/ScrollToTop";
+import NotificationDetail from "./pages/NotificationDetail";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/about" element={<About />} />
+            <Route path="/notifications/:id" element={<NotificationDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

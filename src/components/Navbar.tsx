@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Ticket, LogOut, Shield, ChevronDown } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -287,6 +288,7 @@ const Navbar = () => {
             )}
             {user ? (
               <div className="flex items-center gap-3">
+                <NotificationBell />
                 <span className="text-xs text-muted-foreground">{user.email}</span>
                 <Button variant="glass" size="sm" onClick={signOut}>
                   <LogOut className="h-3.5 w-3.5" /> Sign Out

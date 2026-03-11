@@ -98,6 +98,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           serviceFee: feeAmount,
           venue: venueName || "",
           eventDate: eventDate || "",
+          ticketId: ticket.id,
         },
       });
       if (error) throw error;

@@ -24,7 +24,7 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { eventTitle, totalAmount, quantity, tier, uberAdded, hotelAdded, flightAdded, serviceFee, venue, eventDate } = await req.json();
+    const { eventTitle, totalAmount, quantity, tier, uberAdded, hotelAdded, flightAdded, serviceFee, venue, eventDate, ticketId } = await req.json();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -78,6 +78,9 @@ serve(async (req) => {
         uber_added: String(uberAdded || false),
         hotel_added: String(hotelAdded || false),
         flight_added: String(flightAdded || false),
+        ticket_id: ticketId || "",
+        venue: venue || "",
+        event_date: eventDate || "",
       },
     });
 
