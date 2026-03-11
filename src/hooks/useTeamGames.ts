@@ -30,6 +30,7 @@ export interface GameEvent {
 }
 
 export function useTeamGames(searchTerm: string | undefined) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [games, setGames] = useState<GameEvent[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
