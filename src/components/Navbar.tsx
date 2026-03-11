@@ -288,6 +288,7 @@ const Navbar = () => {
             )}
             {user ? (
               <div className="flex items-center gap-3">
+                <NotificationBell />
                 <span className="text-xs text-muted-foreground">{user.email}</span>
                 <Button variant="glass" size="sm" onClick={signOut}>
                   <LogOut className="h-3.5 w-3.5" /> Sign Out
