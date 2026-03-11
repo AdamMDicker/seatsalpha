@@ -314,6 +314,8 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           loading={buyingTicketId === feeGateTicket.id}
           venueName={venueName}
           gameTitle={gameTitle}
+          eventDate={eventDate}
+        />
         />
       )}
 
