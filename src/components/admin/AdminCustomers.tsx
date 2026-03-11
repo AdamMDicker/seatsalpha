@@ -209,6 +209,7 @@ const AdminCustomers = () => {
         <DialogContent>
           <DialogHeader><DialogTitle>Edit Customer</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
+            <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
             <div className="space-y-2"><Label>Full Name</Label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2"><Label>City</Label><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
