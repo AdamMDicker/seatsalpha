@@ -316,7 +316,6 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           gameTitle={gameTitle}
           eventDate={eventDate}
         />
-        />
       )}
 
       {/* Seat View Lightbox */}
