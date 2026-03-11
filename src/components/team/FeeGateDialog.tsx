@@ -58,7 +58,17 @@ const FeeGateDialog = ({
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>("membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [confirmedDetails, setConfirmedDetails] = useState(false);
   const { toast } = useToast();
+
+  // Reset checkboxes when dialog opens
+  useEffect(() => {
+    if (open) {
+      setAgreedToTerms(false);
+      setConfirmedDetails(false);
+    }
+  }, [open]);
 
   const hstAmount = Math.round(ticketPrice * 0.13 * 100) / 100;
   const totalWithHST = Math.round((ticketPrice + hstAmount) * 100) / 100;
