@@ -111,6 +111,22 @@ const AdminCustomers = () => {
     fetchCustomers();
   };
 
+  const deleteCustomer = async () => {
+    if (!deletingCustomer) return;
+    setDeleting(true);
+    const res = await supabase.functions.invoke("admin-delete-user", {
+      body: { user_id: deletingCustomer.user_id },
+    });
+    if (res.error || res.data?.error) {
+      toast.error(res.data?.error || "Failed to delete user");
+    } else {
+      toast.success("User deleted successfully");
+      fetchCustomers();
+    }
+    setDeleting(false);
+    setDeletingCustomer(null);
+  };
+
   // Unique provinces from customer data
   const usedProvinces = [...new Set(customers.map((c) => c.province).filter(Boolean))] as string[];
 
