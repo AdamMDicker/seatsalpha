@@ -425,29 +425,34 @@ const AdminEvents = () => {
                 <div className="border-t border-border bg-secondary/30 px-4 py-3 animate-fade-in">
                   {loadingTickets && !expandedTickets[event.id] ? (
                     <p className="text-xs text-muted-foreground">Loading tickets...</p>
-                  ) : tickets.length > 0 ? (
-                    <div className="space-y-1.5">
-                      <p className="text-xs font-semibold text-muted-foreground mb-2">{tickets.length} ticket{tickets.length !== 1 ? "s" : ""} listed</p>
-                      {tickets.map((t) => (
-                        <div key={t.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded bg-background/50">
-                          <div className="flex items-center gap-3">
-                            <span className="font-medium text-foreground">Sec {t.section}</span>
-                            {t.row_name && <span className="text-muted-foreground">Row {t.row_name}</span>}
-                            {t.seat_number && <span className="text-muted-foreground">Seats {t.seat_number}</span>}
+                  ) : tickets.length > 0 ? (() => {
+                    const featured = tickets.filter(t => !t.is_reseller_ticket);
+                    const reseller = tickets.filter(t => t.is_reseller_ticket);
+                    const TicketGroup = ({ items, label, color }: { items: TicketForEvent[]; label: string; color: string }) => items.length > 0 ? (
+                      <div>
+                        <p className={`text-xs font-semibold mb-1.5 ${color}`}>{label} ({items.length}) · {items.reduce((s, t) => s + (t.quantity - t.quantity_sold), 0)} remaining</p>
+                        {items.map((t) => (
+                          <div key={t.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded bg-background/50 mb-1">
+                            <div className="flex items-center gap-3">
+                              <span className="font-medium text-foreground">Sec {t.section}</span>
+                              {t.row_name && <span className="text-muted-foreground">Row {t.row_name}</span>}
+                              {t.seat_number && <span className="text-muted-foreground">Seats {t.seat_number}</span>}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-medium text-foreground">${t.price}</span>
+                              <span className="text-muted-foreground">{t.quantity - t.quantity_sold} left</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="font-medium text-foreground">${t.price}</span>
-                            <span className="text-muted-foreground">{t.quantity - t.quantity_sold} remaining</span>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                              t.is_reseller_ticket ? "bg-amber-500/15 text-amber-400" : "bg-primary/15 text-primary"
-                            }`}>
-                              {t.is_reseller_ticket ? "Reseller" : "Featured"}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
+                        ))}
+                      </div>
+                    ) : null;
+                    return (
+                      <div className="space-y-3">
+                        <TicketGroup items={featured} label="⭐ Our Tickets" color="text-primary" />
+                        <TicketGroup items={reseller} label="🏷️ Reseller Tickets" color="text-amber-400" />
+                      </div>
+                    );
+                  })() : (
                     <p className="text-xs text-muted-foreground">No tickets listed for this event.</p>
                   )}
                 </div>
