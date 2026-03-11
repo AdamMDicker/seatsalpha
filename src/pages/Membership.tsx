@@ -48,7 +48,7 @@ const faqs = [
   // Seller / reseller FAQs
   { q: "How do I become a seller on seats.ca?", a: "Visit the 'Become a Seller' page and fill out the application form with your details. Our team reviews every application and you'll be notified once approved. Once live, you can start listing tickets right away." },
   { q: "How do I list my tickets for sale?", a: "Once your seller account is approved, you can upload tickets individually or in bulk via CSV through your seller dashboard. Include section, row, seat numbers, and pricing — your listings go live instantly." },
-  { q: "What does it cost to sell on seats.ca?", a: "There are no upfront listing fees. Seller commission details are provided during the onboarding process. Contact us at info@seats.ca for more information." },
+  { q: "What does it cost to sell on seats.ca?", a: "There are no upfront listing fees. Seller commission details are provided during the onboarding process. Contact us at michaelkurtz66@hotmail.com for more information." },
   { q: "How do I get paid after a sale?", a: "Payouts are processed after the event takes place to ensure buyer protection. You'll receive payment directly to your account on file." },
   // General platform FAQs
   { q: "How are tickets delivered?", a: "All tickets are delivered electronically. After purchase, you'll receive your tickets via email and they'll also be available in your account." },
