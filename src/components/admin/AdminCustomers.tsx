@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Eye, EyeOff, ShoppingCart, Search, Ban } from "lucide-react";
+import { Pencil, Eye, EyeOff, ShoppingCart, Search, Ban, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -34,6 +35,8 @@ const AdminCustomers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterProvince, setFilterProvince] = useState("all");
   const [filterMembership, setFilterMembership] = useState<"all" | "active" | "none">("all");
+  const [deletingCustomer, setDeletingCustomer] = useState<CustomerWithMeta | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchCustomers = async () => {
     const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
@@ -108,6 +111,22 @@ const AdminCustomers = () => {
     fetchCustomers();
   };
 
+  const deleteCustomer = async () => {
+    if (!deletingCustomer) return;
+    setDeleting(true);
+    const res = await supabase.functions.invoke("admin-delete-user", {
+      body: { user_id: deletingCustomer.user_id },
+    });
+    if (res.error || res.data?.error) {
+      toast.error(res.data?.error || "Failed to delete user");
+    } else {
+      toast.success("User deleted successfully");
+      fetchCustomers();
+    }
+    setDeleting(false);
+    setDeletingCustomer(null);
+  };
+
   // Unique provinces from customer data
   const usedProvinces = [...new Set(customers.map((c) => c.province).filter(Boolean))] as string[];
 
@@ -173,6 +192,9 @@ const AdminCustomers = () => {
               </Button>
               <Button size="sm" variant="outline" onClick={() => openEdit(c)}>
                 <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+              </Button>
+              <Button size="sm" variant="destructive" onClick={() => setDeletingCustomer(c)}>
+                <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
               </Button>
             </div>
           </div>
@@ -241,6 +263,24 @@ const AdminCustomers = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deletingCustomer} onOpenChange={(o) => !o && setDeletingCustomer(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete <strong>{deletingCustomer?.full_name || "this user"}</strong>? This will remove their account, profile, roles, and all associated data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteCustomer} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? "Deleting..." : "Delete User"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
