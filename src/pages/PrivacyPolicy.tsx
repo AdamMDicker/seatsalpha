@@ -95,7 +95,7 @@ const PrivacyPolicy = () => {
 
           <section>
             <h2 className="text-lg font-semibold text-foreground mb-2">9. Children's Privacy</h2>
-            <p>The Platform is not intended for use by individuals under the age of 18 or the age of majority in their province or territory of residence. We do not knowingly collect personal information from children or minors. If we become aware that we have inadvertently collected personal information from a minor, we will take steps to delete that information promptly. If you believe that a minor has provided us with personal information, please contact us at privacy@seats.ca.</p>
+            <p>The Platform is not intended for use by individuals under the age of 18 or the age of majority in their province or territory of residence. We do not knowingly collect personal information from children or minors. If we become aware that we have inadvertently collected personal information from a minor, we will take steps to delete that information promptly. If you believe that a minor has provided us with personal information, please contact us at michaelkurtz66@hotmail.com.</p>
           </section>
 
           <section>
