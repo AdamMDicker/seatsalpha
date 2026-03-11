@@ -71,6 +71,7 @@ const TermsOfService = () => {
               <li><strong className="text-foreground">Postponed Events (No New Date Announced):</strong> If an event is postponed indefinitely with no rescheduled date announced, tickets will remain valid pending a new date announcement. If the event is ultimately cancelled, the cancellation refund policy above will apply.</li>
               <li><strong className="text-foreground">Venue Changes:</strong> If an event is moved to a different venue, your tickets remain valid for the event at the new venue. Seat assignments may be subject to change at the discretion of the event organizer. seats.ca is not responsible for differences in seating, amenities, or experience between the original and replacement venue.</li>
             </ul>
+            <p className="mt-3"><strong className="text-foreground">Important — Postponements & Rainouts:</strong> If an event is postponed or rescheduled (including weather-related postponements such as baseball rainouts), tickets will remain valid for the new event date unless the event organizer officially cancels the event and issues refunds. seats.ca does not issue refunds for postponed or rescheduled events where the original tickets remain valid for the new date. Buyers unable to attend the rescheduled event may resell their tickets through the Platform.</p>
           </section>
 
           <section>
