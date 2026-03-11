@@ -152,7 +152,7 @@ const AdminCustomers = () => {
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input placeholder="Search by name or city..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          <input placeholder="Search by name, email, or city..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" />
         </div>
         <select value={filterProvince} onChange={(e) => setFilterProvince(e.target.value)}
