@@ -193,6 +193,9 @@ const AdminCustomers = () => {
               <Button size="sm" variant="outline" onClick={() => openEdit(c)}>
                 <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
               </Button>
+              <Button size="sm" variant="destructive" onClick={() => setDeletingCustomer(c)}>
+                <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+              </Button>
             </div>
           </div>
         ))}
