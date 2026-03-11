@@ -1,187 +1,148 @@
 import { useParams, Link } from "react-router-dom";
-import { mockEvents } from "@/data/mockEvents";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, ArrowLeft, Car, Plane, Hotel, Crown, ExternalLink } from "lucide-react";
+import { Calendar, MapPin, ArrowLeft, Car, ExternalLink } from "lucide-react";
 import { getUberDeepLink } from "@/utils/uberDeepLink";
-import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import TicketListings from "@/components/team/TicketListings";
+import { expandTeamNames } from "@/utils/teamNameUtils";
 
-const ticketTiers = [
-  { id: "upper", label: "Upper Bowl", price: 0, description: "Great view of the action" },
-  { id: "lower", label: "Lower Bowl", price: 40, description: "Closer to the excitement" },
-  { id: "floor", label: "Floor / Premium", price: 120, description: "The ultimate experience" },
-];
+interface TicketInfo {
+  id: string;
+  section: string;
+  row_name: string | null;
+  seat_number: string | null;
+  price: number;
+  quantity: number;
+  quantity_sold: number;
+  is_reseller_ticket: boolean;
+  perks: string[] | null;
+  seat_notes: string | null;
+  hide_seat_numbers?: boolean;
+}
+
+interface EventData {
+  id: string;
+  title: string;
+  venue: string;
+  city: string;
+  province: string;
+  event_date: string;
+  description: string | null;
+  category: string;
+  image_url: string | null;
+  is_giveaway: boolean;
+  giveaway_item: string | null;
+}
 
 const EventDetail = () => {
   const { id } = useParams();
-  const event = mockEvents.find((e) => e.id === id);
-  const [selectedTier, setSelectedTier] = useState("upper");
-  const [quantity, setQuantity] = useState(2);
-  const [hotelSelected, setHotelSelected] = useState(false);
-  const [flightSelected, setFlightSelected] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { user, isMember } = useAuth();
-  const { toast } = useToast();
+  const [event, setEvent] = useState<EventData | null>(null);
+  const [tickets, setTickets] = useState<TicketInfo[]>([]);
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!event) {
+  useEffect(() => {
+    if (!id) return;
+    const fetchEvent = async () => {
+      setLoading(true);
+      const { data: ev } = await supabase
+        .from("events")
+        .select("id, title, venue, city, province, event_date, description, category, image_url, is_giveaway, giveaway_item")
+        .eq("id", id)
+        .single();
+
+      if (ev) {
+        setEvent(ev);
+        const { data: tix } = await supabase
+          .from("tickets")
+          .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers")
+          .eq("event_id", ev.id)
+          .eq("is_active", true)
+          .order("price", { ascending: true });
+        setTickets(tix || []);
+      }
+      setLoading(false);
+    };
+    fetchEvent();
+  }, [id]);
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Event not found.</p>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-32 text-center text-muted-foreground">Loading event...</div>
       </div>
     );
   }
 
-  const tier = ticketTiers.find((t) => t.id === selectedTier)!;
-  const ticketPrice = event.priceFrom + tier.price;
-  const uberLink = getUberDeepLink(event.venue);
-  const total = ticketPrice * quantity + (hotelSelected ? 189 : 0) + (flightSelected ? 299 : 0);
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-32 text-center">
+          <p className="text-muted-foreground mb-4">Event not found.</p>
+          <Link to="/" className="text-primary hover:underline">Back to Home</Link>
+        </div>
+      </div>
+    );
+  }
 
-  const handleBuy = async () => {
-    if (!user) {
-      window.location.href = "/auth";
-      return;
-    }
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-payment", {
-        body: {
-          eventTitle: event.title,
-          totalAmount: total,
-          quantity,
-          tier: tier.label,
-          hotelAdded: hotelSelected,
-          flightAdded: flightSelected,
-        },
-      });
-      if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Could not start checkout", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const formattedDate = new Date(event.event_date).toLocaleDateString("en-CA", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const formattedTime = new Date(event.event_date).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" });
+  const uberLink = getUberDeepLink(event.venue);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="pt-20">
-        <div className="relative h-64 md:h-80 overflow-hidden">
-          <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        </div>
-
-        <div className="container mx-auto px-4 -mt-20 relative z-10 pb-20">
+      <div className="pt-24 pb-20">
+        <div className="container mx-auto px-4">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back to Events
           </Link>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <div>
-                {event.isOwn && (
-                  <span className="inline-block px-2 py-1 rounded-md bg-success/15 text-success text-xs font-semibold mb-3">✓ No Fees</span>
-                )}
-                <h1 className="font-display text-3xl md:text-4xl font-bold mb-4">{event.title}</h1>
-                <div className="flex flex-wrap gap-4 text-muted-foreground">
-                  <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" />{event.date} · {event.time}</span>
-                  <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" />{event.venue}, {event.city}</span>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-display font-semibold text-lg mb-4">Select Your Seats</h3>
-                <div className="space-y-3">
-                  {ticketTiers.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => setSelectedTier(t.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all duration-200 border ${
-                        selectedTier === t.id ? "border-primary bg-primary/10 shadow-lg shadow-primary/10" : "border-border bg-card hover:border-primary/40"
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-semibold text-foreground">{t.label}</p>
-                          <p className="text-sm text-muted-foreground">{t.description}</p>
-                        </div>
-                        <span className="font-display font-bold text-lg">${event.priceFrom + t.price}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-display font-semibold text-lg mb-4">Enhance Your Experience</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {uberLink ? (
-                    <a href={uberLink} target="_blank" rel="noopener noreferrer" className="p-4 rounded-xl border border-border bg-card hover:border-primary/40 text-left transition-all block">
-                      <Car className="h-5 w-5 text-primary mb-2" />
-                      <p className="font-semibold text-sm">Uber to the Game</p>
-                      <p className="text-xs text-muted-foreground">Open Uber with venue pre-filled</p>
-                      <p className="font-display font-bold mt-2 text-primary flex items-center gap-1">Free <ExternalLink className="h-3 w-3" /></p>
-                    </a>
-                  ) : (
-                    <div className="p-4 rounded-xl border border-border bg-card text-left opacity-50">
-                      <Car className="h-5 w-5 text-primary mb-2" />
-                      <p className="font-semibold text-sm">Uber Ride</p>
-                      <p className="text-xs text-muted-foreground">Not available for this venue</p>
-                    </div>
-                  )}
-                  <button onClick={() => setHotelSelected(!hotelSelected)} className={`p-4 rounded-xl border text-left transition-all ${hotelSelected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
-                    <Hotel className="h-5 w-5 text-primary mb-2" />
-                    <p className="font-semibold text-sm">Hotel Stay</p>
-                    <p className="text-xs text-muted-foreground">Near venue, 1 night</p>
-                    <p className="font-display font-bold mt-2 text-gold">+$189</p>
-                  </button>
-                  <button onClick={() => setFlightSelected(!flightSelected)} className={`p-4 rounded-xl border text-left transition-all ${flightSelected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
-                    <Plane className="h-5 w-5 text-primary mb-2" />
-                    <p className="font-semibold text-sm">Flight Deal</p>
-                    <p className="text-xs text-muted-foreground">Best fare to {event.city}</p>
-                    <p className="font-display font-bold mt-2 text-gold">+$299</p>
-                  </button>
-                </div>
-              </div>
+          <div className="mb-8">
+            <h1 className="font-display text-3xl md:text-4xl font-bold mb-4">{expandTeamNames(event.title)}</h1>
+            <div className="flex flex-wrap gap-4 text-muted-foreground">
+              <span className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                {formattedDate} · {formattedTime}
+              </span>
+              <span className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                {event.venue}, {event.city}, {event.province}
+              </span>
             </div>
 
-            <div>
-              <div className="glass rounded-xl p-6 sticky top-24 space-y-5">
-                <h3 className="font-display font-semibold text-lg">Order Summary</h3>
-                <div>
-                  <label className="text-sm text-muted-foreground mb-2 block">Quantity</label>
-                  <select value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm border border-border focus:outline-none focus:ring-2 focus:ring-primary/50">
-                    {[1, 2, 3, 4, 5, 6].map((n) => (
-                      <option key={n} value={n}>{n} ticket{n > 1 ? "s" : ""}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">{quantity}x {tier.label}</span><span>${ticketPrice * quantity}</span></div>
-                  
-                  {hotelSelected && <div className="flex justify-between"><span className="text-muted-foreground">Hotel Stay</span><span>$189</span></div>}
-                  {flightSelected && <div className="flex justify-between"><span className="text-muted-foreground">Flight</span><span>$299</span></div>}
-                  <div className="flex justify-between text-sm text-success font-medium pt-1"><span>Service Fees</span><span>$0.00</span></div>
-                  <div className="border-t border-border pt-3 flex justify-between font-display font-bold text-lg"><span>Total</span><span>${total}</span></div>
-                </div>
-                <Button variant="hero" className="w-full animate-pulse-glow" size="lg" onClick={handleBuy} disabled={loading}>
-                  {loading ? "Processing..." : "Buy Tickets"}
-                </Button>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                    <Crown className="h-3 w-3 text-gold" />
-                    <span>{isMember ? "Fee-free as a member!" : "Members save on every purchase"}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
+            {uberLink && (
+              <a href={uberLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-4 text-sm text-primary hover:underline">
+                <Car className="h-4 w-4" />
+                Uber to the Game
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
           </div>
+
+          {tickets.length > 0 ? (
+            <TicketListings
+              tickets={tickets}
+              selectedSection={selectedSection}
+              setSelectedSection={setSelectedSection}
+              isGiveaway={event.is_giveaway}
+              giveawayItem={event.giveaway_item}
+              gameTitle={event.title}
+              venueName={event.venue}
+            />
+          ) : (
+            <div className="text-center py-16 text-muted-foreground">
+              <p className="text-lg font-medium mb-2">No tickets available yet</p>
+              <p className="text-sm">Check back later for ticket listings.</p>
+            </div>
+          )}
         </div>
       </div>
 
