@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import EventDetail from "./pages/EventDetail";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
 import TeamMLBPage from "./pages/TeamMLBPage";
 import TeamNHLPage from "./pages/TeamNHLPage";
@@ -54,6 +55,7 @@ const App = () => (
               {/* Legacy Blue Jays route redirect */}
               <Route path="/teams/blue-jays" element={<TeamMLBPage />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/reseller" element={<ResellerDashboard />} />
               <Route path="/membership" element={<Membership />} />
