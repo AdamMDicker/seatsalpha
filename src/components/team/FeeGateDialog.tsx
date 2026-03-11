@@ -113,6 +113,7 @@ const FeeGateDialog = ({
   };
 
   const isLoading = isMember ? loading : (selectedOption === "membership" ? membershipLoading : loading);
+  const canProceed = agreedToTerms && confirmedDetails;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
