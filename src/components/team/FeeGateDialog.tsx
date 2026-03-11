@@ -239,9 +239,16 @@ const FeeGateDialog = ({
                       </div>
                       <div>
                         <p className="font-semibold text-foreground">No Membership</p>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          Add 13% HST <span className="text-destructive font-semibold">(+${hstAmount.toFixed(2)})</span>
-                        </p>
+                        <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
+                          <div className="flex justify-between gap-6">
+                            <span>Ticket</span>
+                            <span>${ticketPrice.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between gap-6">
+                            <span className="text-destructive">+ HST (13%)</span>
+                            <span className="text-destructive font-semibold">${hstAmount.toFixed(2)}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <span className="text-foreground font-bold text-lg whitespace-nowrap">
