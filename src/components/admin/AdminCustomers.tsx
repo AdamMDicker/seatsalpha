@@ -133,7 +133,8 @@ const AdminCustomers = () => {
   const filteredCustomers = customers.filter((c) => {
     const matchesSearch = !searchQuery ||
       (c.full_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (c.city || "").toLowerCase().includes(searchQuery.toLowerCase());
+      (c.city || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ((c as any).email || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesProvince = filterProvince === "all" || c.province === filterProvince;
     const matchesMembership = filterMembership === "all" ||
       (filterMembership === "active" && c.hasMembership) ||
