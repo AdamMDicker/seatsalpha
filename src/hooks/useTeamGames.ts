@@ -89,7 +89,18 @@ export function useTeamGames(searchTerm: string | undefined) {
       });
 
       setGames(gamesWithTickets);
-      if (gamesWithTickets.length > 0) setSelectedGame(gamesWithTickets[0]);
+      // Auto-select game from ?game= query param, or default to first
+      const gameParam = searchParams.get("game");
+      const targetGame = gameParam
+        ? gamesWithTickets.find((g) => g.id === gameParam)
+        : null;
+      if (targetGame) {
+        setSelectedGame(targetGame);
+        // Clear the query param after selecting
+        setSearchParams({}, { replace: true });
+      } else if (gamesWithTickets.length > 0) {
+        setSelectedGame(gamesWithTickets[0]);
+      }
       setLoading(false);
     };
 
