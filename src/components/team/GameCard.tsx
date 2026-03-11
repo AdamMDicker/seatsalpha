@@ -88,11 +88,11 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
 
       <div className="mt-auto pt-2">
         {game.tickets.length > 0 ? (
-          <p className="text-xs text-primary font-medium">
+          <p className="text-sm text-primary font-semibold">
             From ${Math.min(...game.tickets.map((t) => t.price))}
           </p>
         ) : (
-          <p className="text-xs text-muted-foreground">No tickets yet</p>
+          <p className="text-sm text-muted-foreground">No tickets yet</p>
         )}
       </div>
     </button>
