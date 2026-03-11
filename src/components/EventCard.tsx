@@ -2,6 +2,7 @@ import { Calendar, MapPin, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Event } from "@/data/mockEvents";
 import { Link } from "react-router-dom";
+import { getEventTeamPath } from "@/utils/eventToTeamRoute";
 
 interface EventCardProps {
   event: Event;
