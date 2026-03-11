@@ -6,16 +6,14 @@ const ScrollToTop = () => {
 
   useEffect(() => {
     if (hash) {
-      // Wait for page to render, then scroll to hash element
       setTimeout(() => {
         const el = document.querySelector(hash);
         if (el) {
           el.scrollIntoView({ behavior: "smooth" });
-          return;
         }
       }, 100);
     } else {
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
   }, [pathname, hash]);
 
