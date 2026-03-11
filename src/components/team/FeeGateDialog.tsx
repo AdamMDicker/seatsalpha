@@ -101,7 +101,7 @@ const FeeGateDialog = ({
     }
   };
 
-  const isLoading = selectedOption === "membership" ? membershipLoading : loading;
+  const isLoading = isMember ? loading : (selectedOption === "membership" ? membershipLoading : loading);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
