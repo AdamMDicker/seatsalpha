@@ -26,6 +26,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import LiveChat from "./components/LiveChat";
 import ScrollToTop from "./components/ScrollToTop";
+import NotificationDetail from "./pages/NotificationDetail";
 
 const queryClient = new QueryClient();
 
