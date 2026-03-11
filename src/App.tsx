@@ -27,6 +27,7 @@ import About from "./pages/About";
 import LiveChat from "./components/LiveChat";
 import ScrollToTop from "./components/ScrollToTop";
 import NotificationDetail from "./pages/NotificationDetail";
+import ComingSoonGate from "./components/ComingSoonGate";
 
 const queryClient = new QueryClient();
 
@@ -36,36 +37,38 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <ScrollToTop />
-          <LiveChat />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/event/:id" element={<EventDetail />} />
-            <Route path="/teams/mlb/:slug" element={<TeamMLBPage />} />
-            <Route path="/teams/nhl/:slug" element={<TeamNHLPage />} />
-            <Route path="/teams/nba/:slug" element={<TeamNBAPage />} />
-            <Route path="/teams/nfl/:slug" element={<TeamNFLPage />} />
-            <Route path="/teams/mls/:slug" element={<TeamMLSPage />} />
-            <Route path="/teams/cfl/:slug" element={<TeamCFLPage />} />
-            <Route path="/teams/wnba/:slug" element={<TeamWNBAPage />} />
-            {/* Legacy Blue Jays route redirect */}
-            <Route path="/teams/blue-jays" element={<TeamMLBPage />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/reseller" element={<ResellerDashboard />} />
-            <Route path="/membership" element={<Membership />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/payment-canceled" element={<PaymentCanceled />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/notifications/:id" element={<NotificationDetail />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <ComingSoonGate>
+          <BrowserRouter>
+            <ScrollToTop />
+            <LiveChat />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/event/:id" element={<EventDetail />} />
+              <Route path="/teams/mlb/:slug" element={<TeamMLBPage />} />
+              <Route path="/teams/nhl/:slug" element={<TeamNHLPage />} />
+              <Route path="/teams/nba/:slug" element={<TeamNBAPage />} />
+              <Route path="/teams/nfl/:slug" element={<TeamNFLPage />} />
+              <Route path="/teams/mls/:slug" element={<TeamMLSPage />} />
+              <Route path="/teams/cfl/:slug" element={<TeamCFLPage />} />
+              <Route path="/teams/wnba/:slug" element={<TeamWNBAPage />} />
+              {/* Legacy Blue Jays route redirect */}
+              <Route path="/teams/blue-jays" element={<TeamMLBPage />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/reseller" element={<ResellerDashboard />} />
+              <Route path="/membership" element={<Membership />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/payment-canceled" element={<PaymentCanceled />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/notifications/:id" element={<NotificationDetail />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </ComingSoonGate>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
