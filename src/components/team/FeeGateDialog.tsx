@@ -6,11 +6,16 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Crown, Zap, Check, ShieldCheck, ExternalLink } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Crown, Zap, Check, ShieldCheck, CalendarDays, MapPin } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { format } from "date-fns";
 
 interface FeeGateDialogProps {
   open: boolean;
@@ -22,9 +27,17 @@ interface FeeGateDialogProps {
   loading: boolean;
   venueName?: string;
   gameTitle?: string;
+  eventDate?: string;
 }
 
 type CheckoutOption = "hst" | "membership";
+
+const MEMBERSHIP_BENEFITS = [
+  "No HST on all seats.ca purchases for 12 months",
+  "Save hundreds per season on tickets",
+  "Cancel anytime — no commitment",
+  "Works across all sports & events",
+];
 
 const FeeGateDialog = ({
   open,
@@ -36,6 +49,7 @@ const FeeGateDialog = ({
   loading,
   venueName,
   gameTitle,
+  eventDate,
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>("membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
@@ -47,6 +61,10 @@ const FeeGateDialog = ({
 
   const currentTotal = selectedOption === "hst" ? totalWithHST : totalWithMembership;
 
+  const formattedDate = eventDate
+    ? format(new Date(eventDate), "EEEE, MMMM d, yyyy · h:mm a")
+    : null;
+
   const handleBuyMembership = async () => {
     setMembershipLoading(true);
     try {
@@ -57,6 +75,7 @@ const FeeGateDialog = ({
           eventTitle: gameTitle || "Event Ticket",
           tier,
           venue: venueName || "",
+          eventDate: eventDate || "",
         },
       });
       if (error) throw error;
@@ -89,6 +108,23 @@ const FeeGateDialog = ({
               Section {section}{rowName ? ` · Row ${rowName}` : ""}
             </DialogDescription>
           </DialogHeader>
+          {/* Game date & venue for chargeback clarity */}
+          {(formattedDate || venueName) && (
+            <div className="mt-3 space-y-1">
+              {formattedDate && (
+                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                  <CalendarDays className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                  <span>{formattedDate}</span>
+                </div>
+              )}
+              {venueName && (
+                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                  <MapPin className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                  <span>{venueName}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="px-6 pb-6 space-y-4">
@@ -171,18 +207,36 @@ const FeeGateDialog = ({
               )}
             </button>
 
-            {/* Membership info link */}
+            {/* Membership info hover popover — stays in checkout */}
             {selectedOption === "membership" && (
               <div className="text-center">
-                <Link
-                  to="/membership"
-                  target="_blank"
-                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  <Crown className="h-3 w-3" />
-                  Why buy a membership?
-                  <ExternalLink className="h-3 w-3" />
-                </Link>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="text-xs text-primary hover:underline inline-flex items-center gap-1 cursor-pointer">
+                      <Crown className="h-3 w-3" />
+                      Why buy a membership?
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 p-4" align="center">
+                    <div className="space-y-3">
+                      <h4 className="font-display font-bold text-sm text-foreground flex items-center gap-1.5">
+                        <Crown className="h-4 w-4 text-gold" />
+                        Membership Benefits
+                      </h4>
+                      <ul className="space-y-2">
+                        {MEMBERSHIP_BENEFITS.map((benefit, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                            <Check className="h-3.5 w-3.5 text-primary flex-shrink-0 mt-0.5" />
+                            <span>{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-[10px] text-muted-foreground/70 pt-1 border-t border-border">
+                        One payment of $49.95/year. Pays for itself in 1–2 purchases.
+                      </p>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             )}
           </div>

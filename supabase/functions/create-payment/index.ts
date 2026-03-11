@@ -24,7 +24,7 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { eventTitle, totalAmount, quantity, tier, uberAdded, hotelAdded, flightAdded, serviceFee, venue } = await req.json();
+    const { eventTitle, totalAmount, quantity, tier, uberAdded, hotelAdded, flightAdded, serviceFee, venue, eventDate } = await req.json();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -69,7 +69,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(venue || "")}&event=${encodeURIComponent(eventTitle || "")}`,
+      success_url: `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(venue || "")}&event=${encodeURIComponent(eventTitle || "")}&tier=${encodeURIComponent(tier || "")}&date=${encodeURIComponent(eventDate || "")}`,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
       metadata: {
         event_title: eventTitle,

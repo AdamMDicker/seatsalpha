@@ -136,6 +136,7 @@ const EventDetail = () => {
               giveawayItem={event.giveaway_item}
               gameTitle={event.title}
               venueName={event.venue}
+              eventDate={event.event_date}
             />
           ) : (
             <div className="text-center py-16 text-muted-foreground">

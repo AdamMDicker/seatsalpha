@@ -1,21 +1,76 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Check, Car, ExternalLink, Home } from "lucide-react";
+import { Check, Car, ExternalLink, Home, Hotel, Plane, Crown, ShoppingBag, CalendarDays, MapPin, Armchair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useSearchParams } from "react-router-dom";
 import { getUberDeepLink } from "@/utils/uberDeepLink";
+
+interface UpsellCard {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  cta: string;
+  live: boolean;
+  href?: string;
+}
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const venue = searchParams.get("venue");
   const eventTitle = searchParams.get("event");
+  const tier = searchParams.get("tier");
+  const eventDate = searchParams.get("date");
   const uberLink = venue ? getUberDeepLink(venue) : null;
+
+  const upsellCards: UpsellCard[] = [
+    ...(uberLink
+      ? [
+          {
+            icon: <Car className="h-6 w-6" />,
+            title: "Uber to the Game",
+            description: `Get dropped off right at ${venue || "the venue"}. No parking, no hassle.`,
+            cta: "Book Uber",
+            live: true,
+            href: uberLink,
+          },
+        ]
+      : []),
+    {
+      icon: <Hotel className="h-6 w-6" />,
+      title: "Book a Hotel",
+      description: "Travelling for the game? Find deals on nearby hotels.",
+      cta: "Coming Soon",
+      live: false,
+    },
+    {
+      icon: <Plane className="h-6 w-6" />,
+      title: "Book a Flight",
+      description: "Flying in? Compare flights to get the best fare.",
+      cta: "Coming Soon",
+      live: false,
+    },
+    {
+      icon: <Crown className="h-6 w-6" />,
+      title: "Limo Service",
+      description: "Arrive in style with private car service to the venue.",
+      cta: "Coming Soon",
+      live: false,
+    },
+    {
+      icon: <ShoppingBag className="h-6 w-6" />,
+      title: "Fan Gear",
+      description: "Rep your team — jerseys, hats, and more delivered to your door.",
+      cta: "Coming Soon",
+      live: false,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-28 pb-20 flex items-center justify-center px-4">
-        <div className="glass rounded-2xl p-10 text-center max-w-lg mx-auto space-y-6">
+      <div className="pt-28 pb-20 px-4 max-w-3xl mx-auto space-y-8">
+        {/* Confirmation card */}
+        <div className="glass rounded-2xl p-10 text-center space-y-5">
           <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
             <Check className="h-8 w-8 text-primary" />
           </div>
@@ -23,44 +78,91 @@ const PaymentSuccess = () => {
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground">Payment Successful!</h1>
             {eventTitle && (
-              <p className="text-primary font-display font-semibold mt-2">{decodeURIComponent(eventTitle)}</p>
+              <p className="text-primary font-display font-semibold mt-2 text-lg">
+                {decodeURIComponent(eventTitle)}
+              </p>
             )}
-            <p className="text-muted-foreground mt-2">Your tickets have been confirmed. Check your email for details.</p>
           </div>
 
-          {uberLink && (
-            <div className="glass rounded-xl p-6 space-y-3 border-primary/20">
-              <div className="flex items-center justify-center gap-2">
-                <Car className="h-5 w-5 text-primary" />
-                <h2 className="font-display font-semibold text-foreground">Need a ride to the game?</h2>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Skip parking and get dropped off right at {venue}. Book your Uber now or save the link for game day.
-              </p>
-              <a href={uberLink} target="_blank" rel="noopener noreferrer">
-                <Button variant="hero" className="w-full gap-2">
-                  <Car className="h-4 w-4" />
-                  Order Uber to {venue}
-                  <ExternalLink className="h-3 w-3" />
-                </Button>
-              </a>
+          {/* Order details for chargeback clarity */}
+          {(eventDate || venue || tier) && (
+            <div className="inline-flex flex-col gap-2 text-sm text-muted-foreground bg-secondary/50 rounded-xl px-6 py-4 mx-auto">
+              {eventDate && (
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span>{decodeURIComponent(eventDate)}</span>
+                </div>
+              )}
+              {venue && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span>{decodeURIComponent(venue)}</span>
+                </div>
+              )}
+              {tier && (
+                <div className="flex items-center gap-2">
+                  <Armchair className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span>{decodeURIComponent(tier)}</span>
+                </div>
+              )}
             </div>
           )}
 
-          {!uberLink && venue && (
-            <div className="glass rounded-xl p-6 space-y-2 border-border">
-              <div className="flex items-center justify-center gap-2">
-                <Car className="h-5 w-5 text-muted-foreground" />
-                <h2 className="font-display font-semibold text-foreground">Getting to {venue}</h2>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Plan your trip ahead of time — consider rideshare, transit, or carpooling for a stress-free game day.
-              </p>
-            </div>
-          )}
+          <p className="text-muted-foreground">
+            Your tickets have been confirmed. Check your email for details.
+          </p>
+        </div>
 
+        {/* Upsell section */}
+        <div className="space-y-4">
+          <h2 className="font-display text-xl font-bold text-foreground text-center">
+            Enhance Your Game Day
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upsellCards.map((card, i) => (
+              <div
+                key={i}
+                className={`rounded-xl border p-5 flex flex-col items-center text-center gap-3 transition-all ${
+                  card.live
+                    ? "border-primary/30 bg-gradient-to-b from-primary/10 to-transparent hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
+                    : "border-border bg-card/50 opacity-80"
+                }`}
+              >
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    card.live
+                      ? "bg-primary/20 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {card.icon}
+                </div>
+                <h3 className="font-display font-semibold text-foreground text-sm">
+                  {card.title}
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {card.description}
+                </p>
+                {card.live && card.href ? (
+                  <a href={card.href} target="_blank" rel="noopener noreferrer" className="w-full">
+                    <Button variant="hero" size="sm" className="w-full gap-1.5">
+                      {card.cta}
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  </a>
+                ) : (
+                  <Button variant="outline" size="sm" className="w-full" disabled>
+                    {card.cta}
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="text-center">
           <Link to="/">
-            <Button variant="outline" className="w-full mt-2 gap-2">
+            <Button variant="outline" className="gap-2">
               <Home className="h-4 w-4" />
               Back to Home
             </Button>
