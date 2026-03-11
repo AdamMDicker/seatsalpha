@@ -26,8 +26,8 @@ import targetCenterMap from "@/assets/venues/target-center-seating.jpg";
 import collegeParkCenterMap from "@/assets/venues/college-park-center-seating.jpg";
 import chaseCenterMap from "@/assets/venues/chase-center-seating.jpg";
 
-// Skydome / Rogers Centre section overlays — no 300 level (suites only, not bookable)
-const SKYDOME_SECTIONS = [
+// Rogers Centre section overlays — no 300 level (suites only, not bookable)
+const ROGERS_CENTRE_SECTIONS = [
   { id: "100L", label: "100 Level Left (Sections 107-113)", color: "hsl(353, 82%, 49%)", left: 5, top: 45, width: 18, height: 22 },
   { id: "100R", label: "100 Level Right (Sections 115-121)", color: "hsl(353, 82%, 49%)", left: 77, top: 45, width: 18, height: 22 },
   { id: "200L", label: "200 Level Left (Sections 211-221)", color: "hsl(42, 90%, 55%)", left: 8, top: 28, width: 16, height: 16 },
@@ -38,8 +38,7 @@ const SKYDOME_SECTIONS = [
 
 // Venue-specific seating map images
 const VENUE_MAPS: Record<string, string> = {
-  "Rogers Centre": skydomeMap,
-  "Skydome": skydomeMap,
+  "Rogers Centre": rogersCentreMap,
   "Yankee Stadium": yankeeStadiumMap,
   "Fenway Park": fenwayParkMap,
   "Dodger Stadium": dodgerStadiumMap,
