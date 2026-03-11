@@ -93,7 +93,7 @@ const AdminCustomers = () => {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: form.full_name.trim(), city: form.city.trim() || null, province: form.province.trim() || null })
+      .update({ full_name: form.full_name.trim(), city: form.city.trim() || null, province: form.province.trim() || null, email: form.email.trim() || null })
       .eq("id", editing.id);
     if (error) { toast.error("Failed to update profile"); setSaving(false); return; }
 
