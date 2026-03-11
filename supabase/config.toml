@@ -1,6 +1,8 @@
 project_id = "fkcszgrewzhswdtsqpad"
 
 [functions]
+  [functions.admin-delete-user]
+    verify_jwt = false
   [functions.auth-email-hook]
     verify_jwt = false
   [functions.check-subscription]
