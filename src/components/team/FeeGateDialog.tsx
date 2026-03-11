@@ -11,8 +11,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Crown, Zap, Check, ShieldCheck, CalendarDays, MapPin } from "lucide-react";
-import { useState } from "react";
+import { Crown, Zap, Check, ShieldCheck, CalendarDays, MapPin, AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -57,7 +58,17 @@ const FeeGateDialog = ({
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>("membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [confirmedDetails, setConfirmedDetails] = useState(false);
   const { toast } = useToast();
+
+  // Reset checkboxes when dialog opens
+  useEffect(() => {
+    if (open) {
+      setAgreedToTerms(false);
+      setConfirmedDetails(false);
+    }
+  }, [open]);
 
   const hstAmount = Math.round(ticketPrice * 0.13 * 100) / 100;
   const totalWithHST = Math.round((ticketPrice + hstAmount) * 100) / 100;
@@ -102,6 +113,7 @@ const FeeGateDialog = ({
   };
 
   const isLoading = isMember ? loading : (selectedOption === "membership" ? membershipLoading : loading);
+  const canProceed = agreedToTerms && confirmedDetails;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -154,6 +166,33 @@ const FeeGateDialog = ({
                 <p className="text-sm text-muted-foreground mt-1 ml-6">Your membership removes all service fees.</p>
               </div>
 
+              {/* Legal disclosures & checkboxes */}
+              <div className="space-y-3">
+                <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-foreground/90">
+                    All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
+                  </p>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Checkbox id="terms-member" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
+                  <label htmlFor="terms-member" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                    I confirm that I have read and agree to the{" "}
+                    <a href="/terms-of-service" target="_blank" className="text-primary underline hover:text-primary/80">Terms of Service</a>,{" "}
+                    <a href="/terms-of-service#refunds" target="_blank" className="text-primary underline hover:text-primary/80">Refund Policy</a>, and{" "}
+                    <a href="/terms-of-service#ticket-delivery" target="_blank" className="text-primary underline hover:text-primary/80">Ticket Delivery Policy</a>.
+                  </label>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Checkbox id="details-member" checked={confirmedDetails} onCheckedChange={(v) => setConfirmedDetails(v === true)} className="mt-0.5" />
+                  <label htmlFor="details-member" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                    I confirm the ticket details above are correct.
+                  </label>
+                </div>
+              </div>
+
               <div className="border-t border-border pt-4 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-foreground font-bold text-lg">Total</span>
@@ -161,12 +200,17 @@ const FeeGateDialog = ({
                     ${ticketPrice.toFixed(2)}
                   </span>
                 </div>
+
+                <p className="text-[10px] text-muted-foreground text-center">
+                  By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
+                </p>
+
                 <Button
                   variant="gold"
                   size="lg"
                   className="w-full text-base h-12"
                   onClick={handleProceed}
-                  disabled={isLoading}
+                  disabled={isLoading || !canProceed}
                 >
                   <Zap className="h-4 w-4" />
                   {isLoading ? "Processing..." : `Pay $${ticketPrice.toFixed(2)}`}
@@ -280,6 +324,33 @@ const FeeGateDialog = ({
                 )}
               </div>
 
+              {/* Legal disclosures & checkboxes */}
+              <div className="space-y-3">
+                <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-foreground/90">
+                    All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
+                  </p>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Checkbox id="terms-nonmember" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
+                  <label htmlFor="terms-nonmember" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                    I confirm that I have read and agree to the{" "}
+                    <a href="/terms-of-service" target="_blank" className="text-primary underline hover:text-primary/80">Terms of Service</a>,{" "}
+                    <a href="/terms-of-service#refunds" target="_blank" className="text-primary underline hover:text-primary/80">Refund Policy</a>, and{" "}
+                    <a href="/terms-of-service#ticket-delivery" target="_blank" className="text-primary underline hover:text-primary/80">Ticket Delivery Policy</a>.
+                  </label>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Checkbox id="details-nonmember" checked={confirmedDetails} onCheckedChange={(v) => setConfirmedDetails(v === true)} className="mt-0.5" />
+                  <label htmlFor="details-nonmember" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                    I confirm the ticket details above are correct.
+                  </label>
+                </div>
+              </div>
+
               <div className="border-t border-border pt-4 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-foreground font-bold text-lg">Total</span>
@@ -288,12 +359,16 @@ const FeeGateDialog = ({
                   </span>
                 </div>
 
+                <p className="text-[10px] text-muted-foreground text-center">
+                  By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
+                </p>
+
                 <Button
                   variant={selectedOption === "membership" ? "gold" : "hero"}
                   size="lg"
                   className="w-full text-base h-12"
                   onClick={handleProceed}
-                  disabled={isLoading}
+                  disabled={isLoading || !canProceed}
                 >
                   {selectedOption === "membership" ? (
                     <>
