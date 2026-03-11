@@ -78,6 +78,9 @@ serve(async (req) => {
         uber_added: String(uberAdded || false),
         hotel_added: String(hotelAdded || false),
         flight_added: String(flightAdded || false),
+        ticket_id: ticketId || "",
+        venue: venue || "",
+        event_date: eventDate || "",
       },
     });
 
