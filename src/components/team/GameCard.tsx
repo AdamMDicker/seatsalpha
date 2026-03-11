@@ -41,10 +41,12 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   return (
     <button
       onClick={onClick}
-      className={`flex-shrink-0 rounded-xl p-3 text-left transition-all min-w-[180px] border relative overflow-hidden ${
+      className={`flex-shrink-0 rounded-xl p-3 text-left transition-all w-[200px] min-h-[180px] border relative overflow-hidden flex flex-col ${
         isSelected
-          ? "bg-primary/15 border-primary shadow-lg shadow-primary/10"
-          : "glass hover:border-primary/30"
+          ? isAway
+            ? "bg-amber-500/10 border-amber-500/50 shadow-lg shadow-amber-500/10"
+            : "bg-emerald-500/10 border-emerald-500/50 shadow-lg shadow-emerald-500/10"
+          : "bg-card border-border hover:border-primary/30"
       }`}
     >
       {/* Home/Away indicator strip */}
