@@ -55,6 +55,7 @@ const App = () => (
               {/* Legacy Blue Jays route redirect */}
               <Route path="/teams/blue-jays" element={<TeamMLBPage />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/reseller" element={<ResellerDashboard />} />
               <Route path="/membership" element={<Membership />} />

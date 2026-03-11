@@ -227,7 +227,18 @@ const Auth = () => {
             <Button variant="hero" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
             </Button>
-          </form>
+
+            {isLogin && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => { setShowForgot(true); setForgotEmail(email); }}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Forgot your password?
+                </button>
+              </div>
+            )}
 
           {showResend && (
             <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
