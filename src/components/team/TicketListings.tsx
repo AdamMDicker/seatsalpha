@@ -97,6 +97,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           flightAdded: false,
           serviceFee: feeAmount,
           venue: venueName || "",
+          eventDate: eventDate || "",
         },
       });
       if (error) throw error;
