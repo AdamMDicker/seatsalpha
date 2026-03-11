@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
       if (!gameMap.has(gameKey)) {
         gameMap.set(gameKey, {
           gameData: {
-            title, venue: "Skydome", city: "Toronto", province: "ON",
+            title, venue: "Rogers Centre", city: "Toronto", province: "ON",
             event_date: eventDate, description: "MLB - Home Game",
             category: "sports", is_giveaway: isGiveaway,
             giveaway_item: isGiveaway ? promo : null,
