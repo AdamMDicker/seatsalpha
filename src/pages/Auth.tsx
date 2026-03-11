@@ -239,6 +239,7 @@ const Auth = () => {
                 </button>
               </div>
             )}
+          </form>
 
           {showResend && (
             <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
