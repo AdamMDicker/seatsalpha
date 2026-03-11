@@ -117,194 +117,152 @@ const FeeGateDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-6 pt-6 pb-4">
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden">
+        {/* Compact Header */}
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-5 pt-4 pb-3">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl text-foreground">Checkout</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogTitle className="font-display text-xl text-foreground">Checkout</DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs">
               Section {section}{rowName ? ` · Row ${rowName}` : ""}
+              {formattedDate ? ` · ${formattedDate}` : ""}
+              {venueName ? ` · ${venueName}` : ""}
             </DialogDescription>
           </DialogHeader>
-          {/* Game date & venue for chargeback clarity */}
-          {(formattedDate || venueName) && (
-            <div className="mt-3 space-y-1">
-              {formattedDate && (
-                <div className="flex items-center gap-2 text-sm text-foreground/80">
-                  <CalendarDays className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                  <span>{formattedDate}</span>
-                </div>
-              )}
-              {venueName && (
-                <div className="flex items-center gap-2 text-sm text-foreground/80">
-                  <MapPin className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                  <span>{venueName}</span>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
-        <div className="px-6 pb-6 space-y-4">
+        <div className="px-5 pb-5 space-y-3">
           {/* Ticket base price */}
-          <div className="flex justify-between items-center py-3 border-b border-border">
-            <span className="text-foreground font-medium text-base">Ticket Price</span>
-            <span className="text-foreground font-bold text-lg">${ticketPrice.toFixed(2)}</span>
+          <div className="flex justify-between items-center py-2 border-b border-border">
+            <span className="text-foreground font-medium text-sm">Ticket Price</span>
+            <span className="text-foreground font-bold text-base">${ticketPrice.toFixed(2)}</span>
           </div>
 
           {isMember ? (
-            /* ---- MEMBER CHECKOUT: clean, no upsell ---- */
-            <div className="space-y-4">
-              <div className="rounded-xl border-2 border-gold bg-gold/5 p-4">
+            /* ---- MEMBER CHECKOUT ---- */
+            <div className="space-y-3">
+              <div className="rounded-lg border-2 border-gold bg-gold/5 p-3">
                 <div className="flex items-center gap-2">
                   <Crown className="h-4 w-4 text-gold" />
-                  <p className="font-semibold text-foreground">Member Pricing</p>
+                  <p className="font-semibold text-foreground text-sm">Member Pricing</p>
                   <span className="text-[10px] font-bold bg-gold/20 text-gold px-1.5 py-0.5 rounded uppercase tracking-wide">
                     No Fees
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1 ml-6">Your membership removes all service fees.</p>
+                <p className="text-xs text-muted-foreground mt-1 ml-6">Your membership removes all service fees.</p>
               </div>
 
-              {/* Legal disclosures & checkboxes */}
-              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-foreground/90">
+              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-[11px] text-foreground/90">
                   All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
                 </p>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-primary flex items-center gap-1">
+              <div className="space-y-2">
+                <p className="text-[11px] font-semibold text-primary flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3" />
                   You must check both boxes below to proceed
                 </p>
-
                 <div className="flex items-start gap-2">
                   <Checkbox id="terms-member" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
-                  <label htmlFor="terms-member" className="text-xs text-muted-foreground leading-snug cursor-pointer">
-                    I confirm that I have read and agree to the{" "}
+                  <label htmlFor="terms-member" className="text-[11px] text-muted-foreground leading-snug cursor-pointer">
+                    I agree to the{" "}
                     <a href="/terms-of-service" target="_blank" className="text-primary underline hover:text-primary/80">Terms of Service</a>,{" "}
                     <a href="/terms-of-service#refunds" target="_blank" className="text-primary underline hover:text-primary/80">Refund Policy</a>, and{" "}
                     <a href="/terms-of-service#ticket-delivery" target="_blank" className="text-primary underline hover:text-primary/80">Ticket Delivery Policy</a>.
                   </label>
                 </div>
-
                 <div className="flex items-start gap-2">
                   <Checkbox id="details-member" checked={confirmedDetails} onCheckedChange={(v) => setConfirmedDetails(v === true)} className="mt-0.5" />
-                  <label htmlFor="details-member" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                  <label htmlFor="details-member" className="text-[11px] text-muted-foreground leading-snug cursor-pointer">
                     I confirm the ticket details above are correct.
                   </label>
                 </div>
               </div>
 
-              <div className="border-t border-border pt-4 space-y-3">
+              <div className="border-t border-border pt-3 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-foreground font-bold text-lg">Total</span>
-                  <span className="text-foreground font-display font-bold text-2xl">
-                    ${ticketPrice.toFixed(2)}
-                  </span>
+                  <span className="text-foreground font-bold text-base">Total</span>
+                  <span className="text-foreground font-display font-bold text-xl">${ticketPrice.toFixed(2)}</span>
                 </div>
-
                 <p className="text-[10px] text-muted-foreground text-center">
                   By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
                 </p>
-
-                <Button
-                  variant="gold"
-                  size="lg"
-                  className="w-full text-base h-12"
-                  onClick={handleProceed}
-                  disabled={isLoading || !canProceed}
-                >
+                <Button variant="gold" size="lg" className="w-full text-sm h-10" onClick={handleProceed} disabled={isLoading || !canProceed}>
                   <Zap className="h-4 w-4" />
                   {isLoading ? "Processing..." : `Pay $${ticketPrice.toFixed(2)}`}
                 </Button>
               </div>
             </div>
           ) : (
-            /* ---- NON-MEMBER CHECKOUT: HST vs membership options ---- */
+            /* ---- NON-MEMBER CHECKOUT ---- */
             <>
-              {/* All sales final warning — moved to top */}
-              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-foreground/90">
+              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-[11px] text-foreground/90">
                   All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
                 </p>
               </div>
 
-              {/* Action verb header */}
-              <p className="text-sm font-bold text-foreground uppercase tracking-wide text-center">Please Choose:</p>
+              <p className="text-xs font-bold text-foreground uppercase tracking-wide text-center">Please Choose:</p>
 
-              <div className="space-y-3">
-                {/* Option: No membership (pay HST) */}
+              <div className="space-y-2">
+                {/* Option: No membership */}
                 <button
                   onClick={() => setSelectedOption("hst")}
-                  className={`w-full text-left rounded-xl border-2 p-4 transition-all ${
+                  className={`w-full text-left rounded-lg border-2 p-3 transition-all ${
                     selectedOption === "hst"
                       ? "border-destructive bg-destructive/5"
                       : "border-border bg-card hover:border-muted-foreground/30"
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className={`mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 flex-1">
+                      <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                         selectedOption === "hst" ? "border-destructive bg-destructive" : "border-muted-foreground/40"
                       }`}>
-                        {selectedOption === "hst" && <Check className="h-3 w-3 text-destructive-foreground" />}
+                        {selectedOption === "hst" && <Check className="h-2.5 w-2.5 text-destructive-foreground" />}
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">Buy Tickets with No Membership</p>
-                        <p className="text-xs text-destructive font-medium mt-0.5">HST applied</p>
-                        <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
-                          <div className="flex justify-between gap-6">
-                            <span>Ticket</span>
-                            <span>${ticketPrice.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between gap-6">
-                            <span className="text-destructive">+ HST (13%)</span>
-                            <span className="text-destructive font-semibold">${hstAmount.toFixed(2)}</span>
-                          </div>
-                        </div>
+                        <p className="font-semibold text-foreground text-sm">Buy Tickets with No Membership</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Ticket ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
+                        </p>
                       </div>
                     </div>
-                    <span className="text-foreground font-bold text-lg whitespace-nowrap">
-                      ${totalWithHST.toFixed(2)}
-                    </span>
+                    <span className="text-foreground font-bold text-base whitespace-nowrap">${totalWithHST.toFixed(2)}</span>
                   </div>
                 </button>
 
-                {/* Option: Add membership (no HST) */}
+                {/* Option: Add membership */}
                 <button
                   onClick={() => setSelectedOption("membership")}
-                  className={`w-full text-left rounded-xl border-2 p-4 transition-all ${
+                  className={`w-full text-left rounded-lg border-2 p-3 transition-all ${
                     selectedOption === "membership"
                       ? "border-gold bg-gold/5"
                       : "border-border bg-card hover:border-muted-foreground/30"
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className={`mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 flex-1">
+                      <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                         selectedOption === "membership" ? "border-gold bg-gold" : "border-muted-foreground/40"
                       }`}>
-                        {selectedOption === "membership" && <Check className="h-3 w-3 text-gold-foreground" />}
+                        {selectedOption === "membership" && <Check className="h-2.5 w-2.5 text-gold-foreground" />}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-foreground">Add Annual Membership to Purchase</p>
-                          <span className="text-[10px] font-bold bg-gold/20 text-gold px-1.5 py-0.5 rounded uppercase tracking-wide">
+                          <p className="font-semibold text-foreground text-sm">Add Annual Membership to Purchase</p>
+                          <span className="text-[9px] font-bold bg-gold/20 text-gold px-1 py-0.5 rounded uppercase tracking-wide">
                             Recommended
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          $49.95/year — HST becomes inclusive for members for 12 months. Cancel anytime.
+                        <p className="text-[11px] text-muted-foreground">
+                          $49.95/year — HST becomes inclusive for 12 months. Cancel anytime.
                         </p>
                       </div>
                     </div>
-                    <span className="text-foreground font-bold text-lg whitespace-nowrap">
-                      ${totalWithMembership.toFixed(2)}
-                    </span>
+                    <span className="text-foreground font-bold text-base whitespace-nowrap">${totalWithMembership.toFixed(2)}</span>
                   </div>
                 </button>
 
@@ -312,7 +270,7 @@ const FeeGateDialog = ({
                   <div className="text-center">
                     <Popover>
                       <PopoverTrigger asChild>
-                        <button className="text-xs text-primary hover:underline inline-flex items-center gap-1 cursor-pointer">
+                        <button className="text-[11px] text-primary hover:underline inline-flex items-center gap-1 cursor-pointer">
                           <Crown className="h-3 w-3" />
                           Why buy a membership?
                         </button>
@@ -341,47 +299,41 @@ const FeeGateDialog = ({
                 )}
               </div>
 
-              {/* Checkboxes with required indicator */}
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-primary flex items-center gap-1">
+              {/* Checkboxes */}
+              <div className="space-y-2">
+                <p className="text-[11px] font-semibold text-primary flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3" />
                   You must check both boxes below to proceed
                 </p>
-
                 <div className="flex items-start gap-2">
                   <Checkbox id="terms-nonmember" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
-                  <label htmlFor="terms-nonmember" className="text-xs text-muted-foreground leading-snug cursor-pointer">
-                    I confirm that I have read and agree to the{" "}
+                  <label htmlFor="terms-nonmember" className="text-[11px] text-muted-foreground leading-snug cursor-pointer">
+                    I agree to the{" "}
                     <a href="/terms-of-service" target="_blank" className="text-primary underline hover:text-primary/80">Terms of Service</a>,{" "}
                     <a href="/terms-of-service#refunds" target="_blank" className="text-primary underline hover:text-primary/80">Refund Policy</a>, and{" "}
                     <a href="/terms-of-service#ticket-delivery" target="_blank" className="text-primary underline hover:text-primary/80">Ticket Delivery Policy</a>.
                   </label>
                 </div>
-
                 <div className="flex items-start gap-2">
                   <Checkbox id="details-nonmember" checked={confirmedDetails} onCheckedChange={(v) => setConfirmedDetails(v === true)} className="mt-0.5" />
-                  <label htmlFor="details-nonmember" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                  <label htmlFor="details-nonmember" className="text-[11px] text-muted-foreground leading-snug cursor-pointer">
                     I confirm the ticket details above are correct.
                   </label>
                 </div>
               </div>
 
-              <div className="border-t border-border pt-4 space-y-3">
+              <div className="border-t border-border pt-3 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-foreground font-bold text-lg">Total</span>
-                  <span className="text-foreground font-display font-bold text-2xl">
-                    ${currentTotal.toFixed(2)}
-                  </span>
+                  <span className="text-foreground font-bold text-base">Total</span>
+                  <span className="text-foreground font-display font-bold text-xl">${currentTotal.toFixed(2)}</span>
                 </div>
-
                 <p className="text-[10px] text-muted-foreground text-center">
                   By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
                 </p>
-
                 <Button
                   variant={selectedOption === "membership" ? "gold" : "hero"}
                   size="lg"
-                  className="w-full text-base h-12"
+                  className="w-full text-sm h-10"
                   onClick={handleProceed}
                   disabled={isLoading || !canProceed}
                 >
@@ -391,14 +343,11 @@ const FeeGateDialog = ({
                       {isLoading ? "Processing..." : `Get Membership & Pay $${currentTotal.toFixed(2)}`}
                     </>
                   ) : (
-                    <>
-                      {isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)}`}
-                    </>
+                    <>{isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)}`}</>
                   )}
                 </Button>
-
                 {selectedOption === "hst" && (
-                  <p className="text-center text-xs text-muted-foreground">
+                  <p className="text-center text-[11px] text-muted-foreground">
                     Includes ${hstAmount.toFixed(2)} HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
                   </p>
                 )}
