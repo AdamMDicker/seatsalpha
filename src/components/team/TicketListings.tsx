@@ -235,11 +235,11 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <Button
               variant="hero"
               size="sm"
-              className="h-7 text-xs px-2.5"
+              className="h-7 text-xs px-2.5 animate-pulse-glow"
               onClick={(e) => { e.stopPropagation(); handleBuy(ticket); }}
               disabled={buyingTicketId === ticket.id}
             >
-              {buyingTicketId === ticket.id ? "..." : "Buy"}
+              {buyingTicketId === ticket.id ? "..." : "Buy Tickets"}
             </Button>
             {isExpanded ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
           </div>
