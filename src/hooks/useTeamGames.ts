@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface TicketInfo {
@@ -29,6 +30,7 @@ export interface GameEvent {
 }
 
 export function useTeamGames(searchTerm: string | undefined) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [games, setGames] = useState<GameEvent[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
@@ -87,7 +89,18 @@ export function useTeamGames(searchTerm: string | undefined) {
       });
 
       setGames(gamesWithTickets);
-      if (gamesWithTickets.length > 0) setSelectedGame(gamesWithTickets[0]);
+      // Auto-select game from ?game= query param, or default to first
+      const gameParam = searchParams.get("game");
+      const targetGame = gameParam
+        ? gamesWithTickets.find((g) => g.id === gameParam)
+        : null;
+      if (targetGame) {
+        setSelectedGame(targetGame);
+        // Clear the query param after selecting
+        setSearchParams({}, { replace: true });
+      } else if (gamesWithTickets.length > 0) {
+        setSelectedGame(gamesWithTickets[0]);
+      }
       setLoading(false);
     };
 
