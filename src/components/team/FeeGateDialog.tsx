@@ -75,6 +75,7 @@ const FeeGateDialog = ({
           eventTitle: gameTitle || "Event Ticket",
           tier,
           venue: venueName || "",
+          eventDate: eventDate || "",
         },
       });
       if (error) throw error;
