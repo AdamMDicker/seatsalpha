@@ -117,8 +117,8 @@ const PrivacyPolicy = () => {
             <h2 className="text-lg font-semibold text-foreground mb-2">13. Contact Us</h2>
             <p>If you have any questions, concerns, or requests regarding this Privacy Policy or how we handle your personal information, please contact our Privacy Officer at:</p>
             <div className="mt-2 space-y-1">
-              <p><strong className="text-foreground">Privacy Inquiries:</strong> privacy@seats.ca</p>
-              <p><strong className="text-foreground">General Support:</strong> info@seats.ca</p>
+              <p><strong className="text-foreground">Privacy Inquiries:</strong> michaelkurtz66@hotmail.com</p>
+              <p><strong className="text-foreground">General Support:</strong> michaelkurtz66@hotmail.com</p>
               <p><strong className="text-foreground">Jurisdiction:</strong> Province of Ontario, Canada</p>
             </div>
             <p className="mt-3">We are committed to working with you to resolve any complaints or concerns about your privacy. If you are not satisfied with our response, you may contact the Office of the Privacy Commissioner of Canada at 1-800-282-1376 or visit www.priv.gc.ca.</p>
