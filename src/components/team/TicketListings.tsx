@@ -50,7 +50,7 @@ const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
   giveaway_guaranteed: { label: "Giveaway Guaranteed", emoji: "🎁" },
 };
 
-const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, venueName }: TicketListingsProps) => {
+const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, venueName, eventDate }: TicketListingsProps) => {
   const [seatImages, setSeatImages] = useState<Record<string, SeatImage[]>>({});
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [buyingTicketId, setBuyingTicketId] = useState<string | null>(null);
