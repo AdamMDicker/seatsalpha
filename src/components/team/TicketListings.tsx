@@ -165,6 +165,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <Button
               variant="hero"
               size="sm"
+              className="animate-pulse-glow"
               onClick={() => handleBuy(ticket)}
               disabled={buyingTicketId === ticket.id}
             >
