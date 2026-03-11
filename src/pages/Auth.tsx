@@ -16,6 +16,10 @@ const Auth = () => {
   const [showResend, setShowResend] = useState(false);
   const [resendEmail, setResendEmail] = useState("");
   const [resending, setResending] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
