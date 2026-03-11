@@ -115,11 +115,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       window.location.href = "/auth";
       return;
     }
-    if (isMember) {
-      processPayment(ticket, false);
-    } else {
-      setFeeGateTicket(ticket);
-    }
+    setFeeGateTicket(ticket);
   };
 
   const allTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
