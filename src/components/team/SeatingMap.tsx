@@ -65,9 +65,8 @@ const VENUE_MAPS: Record<string, string> = {
   "Chase Center": chaseCenterMap,
 };
 
-// Display name mapping (show Rogers Centre officially, but we know it's SkyDome)
+// Display name mapping
 const VENUE_DISPLAY_NAMES: Record<string, string> = {
-  "Skydome": "Rogers Centre",
   "Rogers Centre": "Rogers Centre",
 };
 
