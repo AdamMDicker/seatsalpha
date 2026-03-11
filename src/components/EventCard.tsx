@@ -54,6 +54,7 @@ const EventCard = ({ event }: EventCardProps) => {
               <span className="text-sm text-muted-foreground">From</span>
               <span className="font-display font-bold text-foreground">${event.priceFrom}</span>
               <span className="text-[9px] text-emerald-400 ml-1">HST-included for members</span>
+            </div>
             <Button variant="hero" size="sm" className="text-xs">
               Get Tickets
             </Button>
