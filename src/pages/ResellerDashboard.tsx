@@ -121,7 +121,8 @@ const ResellerDashboard = () => {
 
           {/* Upload section for approved resellers */}
           {isApproved && (
-            <div className="mb-16 max-w-2xl mx-auto">
+            <div className="mb-16 max-w-4xl mx-auto space-y-10">
+              <ResellerMyTickets />
               <ResellerCsvUpload />
             </div>
           )}
