@@ -121,7 +121,7 @@ const AdminTickets = () => {
       </div>
 
       {showForm && (
-        <div className="glass rounded-xl p-6 mb-6 space-y-4">
+        <div className="bg-card border border-border rounded-xl p-6 mb-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <select value={form.event_id} onChange={(e) => setForm({ ...form, event_id: e.target.value })}
               className="px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm">
@@ -141,19 +141,19 @@ const AdminTickets = () => {
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {filteredTickets.map((ticket) => (
-          <div key={ticket.id} className={`glass rounded-xl p-4 flex items-center justify-between ${!ticket.is_active ? "opacity-50" : ""}`}>
+          <div key={ticket.id} className={`bg-card border border-border rounded-xl px-5 py-4 flex items-center justify-between ${!ticket.is_active ? "opacity-50" : ""}`}>
             <div>
               <h3 className="font-semibold text-foreground">{ticket.events?.title || "Unknown Event"}</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {ticket.section} {ticket.row_name && `· Row ${ticket.row_name}`} {ticket.seat_number && `· Seat ${ticket.seat_number}`} · ${ticket.price} · {ticket.quantity - ticket.quantity_sold} remaining
                 {ticket.is_reseller_ticket && <span className="ml-2 text-primary">(Reseller)</span>}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" onClick={() => openEdit(ticket)}><Pencil className="h-4 w-4" /></Button>
-              <Button variant="glass" size="sm" onClick={() => toggleActive(ticket)}>
+              <Button variant="outline" size="sm" onClick={() => toggleActive(ticket)}>
                 {ticket.is_active ? "Deactivate" : "Activate"}
               </Button>
             </div>
