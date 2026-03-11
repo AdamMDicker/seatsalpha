@@ -168,7 +168,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               onClick={() => handleBuy(ticket)}
               disabled={buyingTicketId === ticket.id}
             >
-              {buyingTicketId === ticket.id ? "..." : "Buy"}
+              {buyingTicketId === ticket.id ? "..." : "Buy Tickets"}
             </Button>
           </div>
         </div>
