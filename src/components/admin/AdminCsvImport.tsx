@@ -25,7 +25,7 @@ const MAX_ROWS = 1000;
 
 const COLUMN_DESCRIPTIONS: Record<string, string> = {
   title: "Full event title, e.g. 'Toronto Blue Jays vs Yankees'. Must match or create an event.",
-  venue: "Venue name, e.g. 'Skydome', 'Scotiabank Arena'. Used to match existing events.",
+  venue: "Venue name, e.g. 'Rogers Centre', 'Scotiabank Arena'. Used to match existing events.",
   city: "City where the event takes place, e.g. 'Toronto'. Required for new events.",
   province: "Province or state code, e.g. 'ON', 'BC', 'NY'. Required for new events.",
   event_date: "Date and time in ISO format: YYYY-MM-DDTHH:MM or YYYY-MM-DD HH:MM. e.g. '2026-06-15T19:07'.",
