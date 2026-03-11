@@ -52,11 +52,11 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       {/* Home/Away indicator strip */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
 
-      <div className="flex items-center gap-2 mb-1 mt-1">
-        {teamLogo && <img src={teamLogo} alt="" className="w-5 h-5 object-contain" />}
-        <p className="text-xs font-semibold text-primary">{formatDate(game.event_date)}</p>
+      <div className="flex items-center gap-2 mb-1.5 mt-1">
+        {teamLogo && <img src={teamLogo} alt="" className="w-6 h-6 object-contain" />}
+        <p className="text-sm font-semibold text-primary">{formatDate(game.event_date)}</p>
       </div>
-      <p className="text-xs text-muted-foreground">{formatTime(game.event_date)}</p>
+      <p className="text-sm text-muted-foreground">{formatTime(game.event_date)}</p>
 
       {/* Home/Away badge */}
       <div className="flex items-center gap-1.5 mt-1.5">
