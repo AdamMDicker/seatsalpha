@@ -37,7 +37,9 @@ const FeaturesSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <p className="text-sm text-emerald-400 font-semibold mt-3">Members enjoy HST-included pricing.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
           {features.map((feature, i) => (
             <div
               key={i}

@@ -227,7 +227,10 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <span className="text-xs text-muted-foreground">{ticket.quantity - ticket.quantity_sold} avail</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+            <div className="text-right">
+              <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+              <p className="text-[9px] text-emerald-400">HST incl.</p>
+            </div>
             <Button
               variant="hero"
               size="sm"
