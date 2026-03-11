@@ -11,8 +11,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Crown, Zap, Check, ShieldCheck, CalendarDays, MapPin } from "lucide-react";
-import { useState } from "react";
+import { Crown, Zap, Check, ShieldCheck, CalendarDays, MapPin, AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
