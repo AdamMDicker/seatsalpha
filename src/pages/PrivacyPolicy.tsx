@@ -90,12 +90,12 @@ const PrivacyPolicy = () => {
               <li><strong className="text-foreground">Right to Deletion:</strong> You may request the deletion of your personal information, and we will comply with your request unless retention is required by law or necessary for legitimate business purposes.</li>
               <li><strong className="text-foreground">Right to Complain:</strong> If you believe your privacy rights have been violated, you have the right to file a complaint with the Office of the Privacy Commissioner of Canada (OPC) at www.priv.gc.ca.</li>
             </ul>
-            <p className="mt-3">To exercise any of these rights, please contact us at privacy@seats.ca. We will respond to your request within 30 days, as required by PIPEDA.</p>
+            <p className="mt-3">To exercise any of these rights, please contact us at michaelkurtz66@hotmail.com. We will respond to your request within 30 days, as required by PIPEDA.</p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-foreground mb-2">9. Children's Privacy</h2>
-            <p>The Platform is not intended for use by individuals under the age of 18 or the age of majority in their province or territory of residence. We do not knowingly collect personal information from children or minors. If we become aware that we have inadvertently collected personal information from a minor, we will take steps to delete that information promptly. If you believe that a minor has provided us with personal information, please contact us at privacy@seats.ca.</p>
+            <p>The Platform is not intended for use by individuals under the age of 18 or the age of majority in their province or territory of residence. We do not knowingly collect personal information from children or minors. If we become aware that we have inadvertently collected personal information from a minor, we will take steps to delete that information promptly. If you believe that a minor has provided us with personal information, please contact us at michaelkurtz66@hotmail.com.</p>
           </section>
 
           <section>
@@ -117,8 +117,8 @@ const PrivacyPolicy = () => {
             <h2 className="text-lg font-semibold text-foreground mb-2">13. Contact Us</h2>
             <p>If you have any questions, concerns, or requests regarding this Privacy Policy or how we handle your personal information, please contact our Privacy Officer at:</p>
             <div className="mt-2 space-y-1">
-              <p><strong className="text-foreground">Privacy Inquiries:</strong> privacy@seats.ca</p>
-              <p><strong className="text-foreground">General Support:</strong> info@seats.ca</p>
+              <p><strong className="text-foreground">Privacy Inquiries:</strong> michaelkurtz66@hotmail.com</p>
+              <p><strong className="text-foreground">General Support:</strong> michaelkurtz66@hotmail.com</p>
               <p><strong className="text-foreground">Jurisdiction:</strong> Province of Ontario, Canada</p>
             </div>
             <p className="mt-3">We are committed to working with you to resolve any complaints or concerns about your privacy. If you are not satisfied with our response, you may contact the Office of the Privacy Commissioner of Canada at 1-800-282-1376 or visit www.priv.gc.ca.</p>

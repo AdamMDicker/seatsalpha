@@ -269,6 +269,9 @@ const Navbar = () => {
             <Link to="/about" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
               About Us
             </Link>
+            <Link to="/contact" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+              Contact Us
+            </Link>
             <Link to="/membership#faq" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
               FAQ
             </Link>
@@ -304,6 +307,7 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden pb-4 space-y-2 animate-fade-in">
             <Link to="/" className="block py-2 text-sm text-muted-foreground hover:text-foreground">Events</Link>
+            <Link to="/contact" className="block py-2 text-sm text-muted-foreground hover:text-foreground">Contact Us</Link>
             {isAdmin && <Link to="/admin" className="block py-2 text-sm text-gold">Admin Dashboard</Link>}
             {user ? (
               <Button variant="glass" size="sm" className="w-full" onClick={signOut}>Sign Out</Button>
