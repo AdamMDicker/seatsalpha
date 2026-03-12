@@ -119,7 +119,8 @@ const FeeGateDialog = ({
       const tier = `Section ${section}${rowName ? ` Row ${rowName}` : ""}`;
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
-          ticketAmount: ticketPrice,
+          ticketAmount: subtotal,
+          quantity,
           eventTitle: gameTitle || "Event Ticket",
           tier,
           venue: venueName || "",
