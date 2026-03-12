@@ -295,7 +295,7 @@ const FeeGateDialog = ({
                       <div>
                         <p className="font-semibold text-foreground text-sm">Buy Tickets with No Membership</p>
                         <p className="text-[11px] text-muted-foreground">
-                          Ticket ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
+                          {quantity}× ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
                         </p>
                       </div>
                     </div>
