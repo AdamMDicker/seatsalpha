@@ -56,12 +56,18 @@ serve(async (req) => {
     // If ticket info provided, add ticket as a one-time line item
     const ticketQty = ticketInfo?.quantity || 1;
     if (ticketInfo) {
+      const descParts = [
+        ticketInfo.tier,
+        ticketInfo.venue ? `at ${ticketInfo.venue}` : null,
+        ticketInfo.eventDate || null,
+      ].filter(Boolean).join(" · ");
+
       lineItems.push({
         price_data: {
           currency: "cad",
           product_data: {
-            name: `${ticketInfo.eventTitle || "Event Ticket"} — ${ticketInfo.tier || ""}${ticketQty > 1 ? ` (x${ticketQty})` : ""}`,
-            description: ticketInfo.tier || undefined,
+            name: `${ticketInfo.eventTitle || "Event Ticket"}${ticketQty > 1 ? ` (x${ticketQty})` : ""}`,
+            description: descParts || undefined,
           },
           unit_amount: Math.round(ticketInfo.ticketAmount * 100),
         },
