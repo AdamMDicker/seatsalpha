@@ -87,7 +87,7 @@ const EventsSection = () => {
             venue: ev.venue,
             city: `${ev.city}, ${ev.province}`,
             date: new Date(ev.event_date).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
-            time: new Date(ev.event_date).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" }),
+            time: new Date(ev.event_date).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit", hour12: true }),
             category: (ev.category as Event["category"]) || "sports",
             priceFrom: minPrice,
             image: opponentLogo || ev.image_url || "https://images.unsplash.com/photo-1529768167801-9173d94c2a42?w=600&h=400&fit=crop",

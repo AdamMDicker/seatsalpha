@@ -21,7 +21,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" });
   const formatTime = (d: string) =>
-    new Date(d).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" });
+    new Date(d).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit", hour12: true });
 
   const isHome = game.description?.includes("Home") || (!game.title.includes("@") && !game.description?.includes("Away"));
   const isAway = game.description?.includes("Away") || game.title.includes("@");

@@ -91,7 +91,7 @@ const EventDetail = () => {
   }
 
   const formattedDate = new Date(event.event_date).toLocaleDateString("en-CA", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-  const formattedTime = new Date(event.event_date).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" });
+  const formattedTime = new Date(event.event_date).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit", hour12: true });
   const uberLink = getUberDeepLink(event.venue);
 
   return (
