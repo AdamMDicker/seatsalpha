@@ -20,6 +20,7 @@ interface TicketInfo {
   perks?: string[] | null;
   seat_notes?: string | null;
   hide_seat_numbers?: boolean;
+  split_type?: string | null;
 }
 
 interface SeatImage {
@@ -82,15 +83,16 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     setLightboxIndex(startIndex);
   };
 
-  const processPayment = async (ticket: TicketInfo, includeFee: boolean) => {
+  const processPayment = async (ticket: TicketInfo, includeFee: boolean, qty: number = 1) => {
     setBuyingTicketId(ticket.id);
     try {
-      const feeAmount = includeFee ? Math.round(ticket.price * 0.13 * 100) / 100 : 0;
+      const totalAmount = ticket.price * qty;
+      const feeAmount = includeFee ? Math.round(totalAmount * 0.13 * 100) / 100 : 0;
       const { data, error } = await supabase.functions.invoke("create-payment", {
         body: {
           eventTitle: gameTitle ? expandTeamNames(gameTitle) : "Event Ticket",
-          totalAmount: ticket.price,
-          quantity: 1,
+          totalAmount,
+          quantity: qty,
           tier: `Section ${ticket.section}${ticket.row_name ? ` Row ${ticket.row_name}` : ""}`,
           uberAdded: false,
           hotelAdded: false,
@@ -312,13 +314,15 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           ticketPrice={feeGateTicket.price}
           section={feeGateTicket.section}
           rowName={feeGateTicket.row_name}
-          onProceedWithFees={() => processPayment(feeGateTicket, true)}
-          onProceedNoFees={() => processPayment(feeGateTicket, false)}
+          onProceedWithFees={(qty) => processPayment(feeGateTicket, true, qty)}
+          onProceedNoFees={(qty) => processPayment(feeGateTicket, false, qty)}
           loading={buyingTicketId === feeGateTicket.id}
           venueName={venueName}
           gameTitle={gameTitle}
           eventDate={eventDate}
           isMember={isMember}
+          availableQuantity={feeGateTicket.quantity - feeGateTicket.quantity_sold}
+          splitType={feeGateTicket.split_type}
         />
       )}
 

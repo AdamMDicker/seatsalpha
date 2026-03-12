@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Crown, Zap, Check, ShieldCheck, CalendarDays, MapPin, AlertTriangle } from "lucide-react";
+import { Crown, Zap, Check, ShieldCheck, CalendarDays, MapPin, AlertTriangle, Minus, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,13 +24,15 @@ interface FeeGateDialogProps {
   ticketPrice: number;
   section: string;
   rowName?: string | null;
-  onProceedWithFees: () => void;
-  onProceedNoFees?: () => void;
+  onProceedWithFees: (qty: number) => void;
+  onProceedNoFees?: (qty: number) => void;
   loading: boolean;
   venueName?: string;
   gameTitle?: string;
   eventDate?: string;
   isMember?: boolean;
+  availableQuantity: number;
+  splitType?: string | null;
 }
 
 type CheckoutOption = "hst" | "membership";
@@ -55,24 +57,55 @@ const FeeGateDialog = ({
   gameTitle,
   eventDate,
   isMember = false,
+  availableQuantity,
+  splitType,
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>("membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [confirmedDetails, setConfirmedDetails] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
-  // Reset checkboxes when dialog opens
+  // Compute valid quantities based on split type
+  const isNoSplit = splitType === "No Splitting";
+  const isNoPairs = splitType === "Keep Pairs";
+  const isNoSingles = splitType === "No Singles";
+
+  const getInitialQuantity = () => {
+    if (isNoSplit) return availableQuantity;
+    if (isNoPairs) return Math.min(2, availableQuantity);
+    if (isNoSingles && availableQuantity >= 2) return 2;
+    return 1;
+  };
+
+  const isValidQuantity = (q: number) => {
+    if (q < 1 || q > availableQuantity) return false;
+    if (isNoSplit) return q === availableQuantity;
+    if (isNoPairs) return q % 2 === 0;
+    if (isNoSingles) return q !== 1 || availableQuantity === 1;
+    return true;
+  };
+
+  // Reset state when dialog opens
   useEffect(() => {
     if (open) {
       setAgreedToTerms(false);
       setConfirmedDetails(false);
+      setQuantity(getInitialQuantity());
     }
-  }, [open]);
+  }, [open, availableQuantity, splitType]);
 
-  const hstAmount = Math.round(ticketPrice * 0.13 * 100) / 100;
-  const totalWithHST = Math.round((ticketPrice + hstAmount) * 100) / 100;
-  const totalWithMembership = Math.round((ticketPrice + 49.95) * 100) / 100;
+  const handleQuantityChange = (delta: number) => {
+    let next = quantity + delta;
+    if (isNoPairs) next = quantity + delta * 2;
+    if (isValidQuantity(next)) setQuantity(next);
+  };
+
+  const subtotal = Math.round(ticketPrice * quantity * 100) / 100;
+  const hstAmount = Math.round(subtotal * 0.13 * 100) / 100;
+  const totalWithHST = Math.round((subtotal + hstAmount) * 100) / 100;
+  const totalWithMembership = Math.round((subtotal + 49.95) * 100) / 100;
 
   const currentTotal = selectedOption === "hst" ? totalWithHST : totalWithMembership;
 
@@ -86,7 +119,8 @@ const FeeGateDialog = ({
       const tier = `Section ${section}${rowName ? ` Row ${rowName}` : ""}`;
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
-          ticketAmount: ticketPrice,
+          ticketAmount: subtotal,
+          quantity,
           eventTitle: gameTitle || "Event Ticket",
           tier,
           venue: venueName || "",
@@ -104,11 +138,11 @@ const FeeGateDialog = ({
 
   const handleProceed = () => {
     if (isMember) {
-      onProceedNoFees?.();
+      onProceedNoFees?.(quantity);
     } else if (selectedOption === "membership") {
       handleBuyMembership();
     } else {
-      onProceedWithFees();
+      onProceedWithFees(quantity);
     }
   };
 
@@ -124,9 +158,14 @@ const FeeGateDialog = ({
             <DialogTitle className="font-display text-xl text-foreground">Checkout</DialogTitle>
             <DialogDescription className="text-muted-foreground text-xs">
               Section {section}{rowName ? ` · Row ${rowName}` : ""}
-              {formattedDate ? ` · ${formattedDate}` : ""}
               {venueName ? ` · ${venueName}` : ""}
             </DialogDescription>
+            {formattedDate && (
+              <p className="text-xs font-medium text-foreground/80 flex items-center gap-1 mt-1">
+                <CalendarDays className="h-3 w-3" />
+                {formattedDate}
+              </p>
+            )}
           </DialogHeader>
         </div>
 
@@ -139,11 +178,47 @@ const FeeGateDialog = ({
             </p>
           </div>
 
-          {/* Ticket base price */}
+          {/* Quantity selector + ticket price */}
           <div className="flex justify-between items-center py-2 border-b border-border">
-            <span className="text-foreground font-medium text-sm">Ticket Price</span>
-            <span className="text-foreground font-bold text-base">${ticketPrice.toFixed(2)}</span>
+            <div>
+              <span className="text-foreground font-medium text-sm">Tickets</span>
+              <span className="text-muted-foreground text-xs ml-1.5">(${ticketPrice.toFixed(2)} each)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {!isNoSplit && (
+                <div className="flex items-center gap-1 border border-border rounded-md">
+                  <button
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={!isValidQuantity(isNoPairs ? quantity - 2 : quantity - 1)}
+                    className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                  <span className="text-sm font-bold text-foreground w-6 text-center">{quantity}</span>
+                  <button
+                    onClick={() => handleQuantityChange(1)}
+                    disabled={!isValidQuantity(isNoPairs ? quantity + 2 : quantity + 1)}
+                    className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+              {isNoSplit && (
+                <span className="text-xs text-muted-foreground">×{quantity} (full set only)</span>
+              )}
+              <span className="text-foreground font-bold text-base">${subtotal.toFixed(2)}</span>
+            </div>
           </div>
+
+          {/* Split type notice */}
+          {splitType && splitType !== "Any" && (
+            <p className="text-[10px] text-muted-foreground text-center italic">
+              {splitType === "No Splitting" && `This listing must be purchased as a full set of ${availableQuantity}.`}
+              {splitType === "No Singles" && "Single tickets cannot be purchased from this listing."}
+              {splitType === "Keep Pairs" && "Tickets must be purchased in pairs."}
+            </p>
+          )}
 
           {isMember ? (
             /* ---- MEMBER CHECKOUT ---- */
@@ -185,14 +260,14 @@ const FeeGateDialog = ({
               <div className="border-t border-border pt-3 space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-foreground font-bold text-base">Total</span>
-                  <span className="text-foreground font-display font-bold text-xl">${ticketPrice.toFixed(2)}</span>
+                  <span className="text-foreground font-display font-bold text-xl">${subtotal.toFixed(2)}</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground text-center">
                   By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
                 </p>
                 <Button variant="gold" size="lg" className="w-full text-sm h-10" onClick={handleProceed} disabled={isLoading || !canProceed}>
                   <Zap className="h-4 w-4" />
-                  {isLoading ? "Processing..." : `Pay $${ticketPrice.toFixed(2)}`}
+                  {isLoading ? "Processing..." : `Pay $${subtotal.toFixed(2)}`}
                 </Button>
               </div>
             </div>
@@ -221,7 +296,7 @@ const FeeGateDialog = ({
                       <div>
                         <p className="font-semibold text-foreground text-sm">Buy Tickets with No Membership</p>
                         <p className="text-[11px] text-muted-foreground">
-                          Ticket ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
+                          {quantity}× ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
                         </p>
                       </div>
                     </div>
