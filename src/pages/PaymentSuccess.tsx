@@ -157,15 +157,15 @@ const PaymentSuccess = () => {
                 key={i}
                 className={`rounded-xl border p-5 flex flex-col items-center text-center gap-3 transition-all ${
                   card.live
-                    ? "border-primary/30 bg-gradient-to-b from-primary/10 to-transparent hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
-                    : "border-border bg-card/50 opacity-80"
+                    ? "border-primary/30 bg-card hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
+                    : "border-border/50 bg-card opacity-70"
                 }`}
               >
                 <div
                   className={`w-12 h-12 rounded-full flex items-center justify-center ${
                     card.live
                       ? "bg-primary/20 text-primary"
-                      : "bg-muted text-muted-foreground"
+                      : "bg-secondary text-muted-foreground"
                   }`}
                 >
                   {card.icon}
@@ -184,7 +184,7 @@ const PaymentSuccess = () => {
                     </Button>
                   </a>
                 ) : (
-                  <Button variant="outline" size="sm" className="w-full" disabled>
+                  <Button variant="secondary" size="sm" className="w-full" disabled>
                     {card.cta}
                   </Button>
                 )}
