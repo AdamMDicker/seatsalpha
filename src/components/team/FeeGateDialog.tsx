@@ -266,7 +266,7 @@ const FeeGateDialog = ({
                 </p>
                 <Button variant="gold" size="lg" className="w-full text-sm h-10" onClick={handleProceed} disabled={isLoading || !canProceed}>
                   <Zap className="h-4 w-4" />
-                  {isLoading ? "Processing..." : `Pay $${ticketPrice.toFixed(2)}`}
+                  {isLoading ? "Processing..." : `Pay $${subtotal.toFixed(2)}`}
                 </Button>
               </div>
             </div>
