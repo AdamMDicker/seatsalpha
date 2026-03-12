@@ -36,11 +36,31 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    // Format date for Stripe display (human-readable EST)
+    let formattedEventDate: string | null = null;
+    if (eventDate) {
+      try {
+        const d = new Date(eventDate);
+        if (!isNaN(d.getTime())) {
+          formattedEventDate = d.toLocaleString("en-CA", {
+            timeZone: "America/Toronto",
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+        }
+      } catch { /* fallback below */ }
+    }
+
     // Build description with game details for Stripe dashboard/receipts
     const descriptionParts = [
       tier,
       venue ? `at ${venue}` : null,
-      eventDate || null,
+      formattedEventDate || null,
     ].filter(Boolean).join(" · ");
 
     // Use per-ticket price so Stripe receipt shows correct quantity
