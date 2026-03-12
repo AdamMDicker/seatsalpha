@@ -54,12 +54,13 @@ serve(async (req) => {
     ];
 
     // If ticket info provided, add ticket as a one-time line item
+    const ticketQty = ticketInfo?.quantity || 1;
     if (ticketInfo) {
       lineItems.push({
         price_data: {
           currency: "cad",
           product_data: {
-            name: ticketInfo.eventTitle || "Event Ticket",
+            name: `${ticketInfo.eventTitle || "Event Ticket"} — ${ticketInfo.tier || ""}${ticketQty > 1 ? ` (x${ticketQty})` : ""}`,
             description: ticketInfo.tier || undefined,
           },
           unit_amount: Math.round(ticketInfo.ticketAmount * 100),
@@ -69,7 +70,7 @@ serve(async (req) => {
     }
 
     const successUrl = ticketInfo?.venue
-      ? `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(ticketInfo.venue)}&event=${encodeURIComponent(ticketInfo.eventTitle || "")}&tier=${encodeURIComponent(ticketInfo.tier || "")}&date=${encodeURIComponent(ticketInfo.eventDate || "")}`
+      ? `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(ticketInfo.venue)}&event=${encodeURIComponent(ticketInfo.eventTitle || "")}&tier=${encodeURIComponent(ticketInfo.tier || "")}&date=${encodeURIComponent(ticketInfo.eventDate || "")}&qty=${encodeURIComponent(String(ticketQty))}`
       : `${req.headers.get("origin")}/membership?success=true`;
 
     const session = await stripe.checkout.sessions.create({
@@ -79,6 +80,15 @@ serve(async (req) => {
       mode: "subscription",
       success_url: successUrl,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
+      ...(ticketInfo ? {
+        metadata: {
+          event_title: ticketInfo.eventTitle || "",
+          ticket_quantity: String(ticketQty),
+          ticket_tier: ticketInfo.tier || "",
+          venue: ticketInfo.venue || "",
+          event_date: ticketInfo.eventDate || "",
+        },
+      } : {}),
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
