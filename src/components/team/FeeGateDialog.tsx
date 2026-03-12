@@ -131,6 +131,14 @@ const FeeGateDialog = ({
         </div>
 
         <div className="px-5 pb-5 space-y-3">
+          {/* Sales final warning — always at top */}
+          <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5">
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-foreground/90">
+              All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
+            </p>
+          </div>
+
           {/* Ticket base price */}
           <div className="flex justify-between items-center py-2 border-b border-border">
             <span className="text-foreground font-medium text-sm">Ticket Price</span>
@@ -151,17 +159,11 @@ const FeeGateDialog = ({
                 <p className="text-xs text-muted-foreground mt-1 ml-6">Your membership removes all service fees.</p>
               </div>
 
-              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-                <p className="text-[11px] text-foreground/90">
-                  All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-[11px] font-semibold text-primary flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  You must check both boxes below to proceed
+              {/* Checkboxes */}
+              <div className="space-y-2 rounded-lg border-2 border-primary/30 bg-primary/5 p-3">
+                <p className="text-[11px] font-bold text-primary flex items-center gap-1 uppercase tracking-wide">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Required — Check both to proceed
                 </p>
                 <div className="flex items-start gap-2">
                   <Checkbox id="terms-member" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
@@ -197,13 +199,6 @@ const FeeGateDialog = ({
           ) : (
             /* ---- NON-MEMBER CHECKOUT ---- */
             <>
-              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-                <p className="text-[11px] text-foreground/90">
-                  All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
-                </p>
-              </div>
-
               <p className="text-xs font-bold text-foreground uppercase tracking-wide text-center">Please Choose:</p>
 
               <div className="space-y-2">
@@ -299,11 +294,11 @@ const FeeGateDialog = ({
                 )}
               </div>
 
-              {/* Checkboxes */}
-              <div className="space-y-2">
-                <p className="text-[11px] font-semibold text-primary flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  You must check both boxes below to proceed
+              {/* Checkboxes — highlighted box */}
+              <div className="space-y-2 rounded-lg border-2 border-primary/30 bg-primary/5 p-3">
+                <p className="text-[11px] font-bold text-primary flex items-center gap-1 uppercase tracking-wide">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Required — Check both to proceed
                 </p>
                 <div className="flex items-start gap-2">
                   <Checkbox id="terms-nonmember" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
