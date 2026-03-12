@@ -96,7 +96,7 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
   const displayName = VENUE_DISPLAY_NAMES[game.venue] || game.venue;
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" });
-  const formatTime = (d: string) => new Date(d).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" });
+  const formatTime = (d: string) => new Date(d).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit", hour12: true });
 
   return (
     <div>
