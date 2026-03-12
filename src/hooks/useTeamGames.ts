@@ -72,7 +72,7 @@ export function useTeamGames(searchTerm: string | undefined) {
       const eventIds = events.map((e) => e.id);
       const { data: allTickets } = await supabase
         .from("tickets")
-        .select("id, event_id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers")
+        .select("id, event_id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers, split_type")
         .in("event_id", eventIds)
         .eq("is_active", true);
 
