@@ -83,15 +83,16 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     setLightboxIndex(startIndex);
   };
 
-  const processPayment = async (ticket: TicketInfo, includeFee: boolean) => {
+  const processPayment = async (ticket: TicketInfo, includeFee: boolean, qty: number = 1) => {
     setBuyingTicketId(ticket.id);
     try {
-      const feeAmount = includeFee ? Math.round(ticket.price * 0.13 * 100) / 100 : 0;
+      const totalAmount = ticket.price * qty;
+      const feeAmount = includeFee ? Math.round(totalAmount * 0.13 * 100) / 100 : 0;
       const { data, error } = await supabase.functions.invoke("create-payment", {
         body: {
           eventTitle: gameTitle ? expandTeamNames(gameTitle) : "Event Ticket",
-          totalAmount: ticket.price,
-          quantity: 1,
+          totalAmount,
+          quantity: qty,
           tier: `Section ${ticket.section}${ticket.row_name ? ` Row ${ticket.row_name}` : ""}`,
           uberAdded: false,
           hotelAdded: false,
