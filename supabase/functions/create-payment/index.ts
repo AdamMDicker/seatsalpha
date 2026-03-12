@@ -36,7 +36,6 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    // Build line items dynamically based on the ticket purchase
     // Build description with game details for Stripe dashboard/receipts
     const descriptionParts = [
       tier,
@@ -44,17 +43,20 @@ serve(async (req) => {
       eventDate || null,
     ].filter(Boolean).join(" · ");
 
+    // Use per-ticket price so Stripe receipt shows correct quantity
+    const perTicketPrice = quantity > 0 ? Math.round((totalAmount / quantity) * 100) : Math.round(totalAmount * 100);
+
     const lineItems: any[] = [
       {
         price_data: {
           currency: "cad",
           product_data: {
-            name: `${eventTitle}${quantity > 1 ? ` (x${quantity})` : ""}`,
+            name: eventTitle,
             description: descriptionParts || undefined,
           },
-          unit_amount: Math.round(totalAmount * 100),
+          unit_amount: perTicketPrice,
         },
-        quantity: 1,
+        quantity: quantity || 1,
       },
     ];
 
