@@ -157,9 +157,14 @@ const FeeGateDialog = ({
             <DialogTitle className="font-display text-xl text-foreground">Checkout</DialogTitle>
             <DialogDescription className="text-muted-foreground text-xs">
               Section {section}{rowName ? ` · Row ${rowName}` : ""}
-              {formattedDate ? ` · ${formattedDate}` : ""}
               {venueName ? ` · ${venueName}` : ""}
             </DialogDescription>
+            {formattedDate && (
+              <p className="text-xs font-medium text-foreground/80 flex items-center gap-1 mt-1">
+                <CalendarDays className="h-3 w-3" />
+                {formattedDate}
+              </p>
+            )}
           </DialogHeader>
         </div>
 
@@ -172,11 +177,47 @@ const FeeGateDialog = ({
             </p>
           </div>
 
-          {/* Ticket base price */}
+          {/* Quantity selector + ticket price */}
           <div className="flex justify-between items-center py-2 border-b border-border">
-            <span className="text-foreground font-medium text-sm">Ticket Price</span>
-            <span className="text-foreground font-bold text-base">${ticketPrice.toFixed(2)}</span>
+            <div>
+              <span className="text-foreground font-medium text-sm">Tickets</span>
+              <span className="text-muted-foreground text-xs ml-1.5">(${ticketPrice.toFixed(2)} each)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {!isNoSplit && (
+                <div className="flex items-center gap-1 border border-border rounded-md">
+                  <button
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={!isValidQuantity(isNoPairs ? quantity - 2 : quantity - 1)}
+                    className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                  <span className="text-sm font-bold text-foreground w-6 text-center">{quantity}</span>
+                  <button
+                    onClick={() => handleQuantityChange(1)}
+                    disabled={!isValidQuantity(isNoPairs ? quantity + 2 : quantity + 1)}
+                    className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+              {isNoSplit && (
+                <span className="text-xs text-muted-foreground">×{quantity} (full set only)</span>
+              )}
+              <span className="text-foreground font-bold text-base">${subtotal.toFixed(2)}</span>
+            </div>
           </div>
+
+          {/* Split type notice */}
+          {splitType && splitType !== "Any" && (
+            <p className="text-[10px] text-muted-foreground text-center italic">
+              {splitType === "No Splitting" && `This listing must be purchased as a full set of ${availableQuantity}.`}
+              {splitType === "No Singles" && "Single tickets cannot be purchased from this listing."}
+              {splitType === "Keep Pairs" && "Tickets must be purchased in pairs."}
+            </p>
+          )}
 
           {isMember ? (
             /* ---- MEMBER CHECKOUT ---- */
