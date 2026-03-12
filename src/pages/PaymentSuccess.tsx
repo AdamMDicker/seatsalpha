@@ -1,9 +1,10 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Check, Car, ExternalLink, Home, Hotel, Plane, Crown, ShoppingBag, CalendarDays, MapPin, Armchair } from "lucide-react";
+import { Check, Car, ExternalLink, Home, Hotel, Plane, Crown, ShoppingBag, CalendarDays, MapPin, Armchair, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useSearchParams } from "react-router-dom";
 import { getUberDeepLink } from "@/utils/uberDeepLink";
+import { format } from "date-fns";
 
 interface UpsellCard {
   icon: React.ReactNode;
@@ -14,12 +15,24 @@ interface UpsellCard {
   href?: string;
 }
 
+function formatEventDate(raw: string): string {
+  try {
+    const decoded = decodeURIComponent(raw);
+    const date = new Date(decoded);
+    if (isNaN(date.getTime())) return decoded;
+    return format(date, "EEEE, MMMM d, yyyy · h:mm a");
+  } catch {
+    return raw;
+  }
+}
+
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const venue = searchParams.get("venue");
   const eventTitle = searchParams.get("event");
   const tier = searchParams.get("tier");
   const eventDate = searchParams.get("date");
+  const qty = searchParams.get("qty");
   const uberLink = venue ? getUberDeepLink(venue) : null;
 
   const upsellCards: UpsellCard[] = [
@@ -28,7 +41,7 @@ const PaymentSuccess = () => {
           {
             icon: <Car className="h-6 w-6" />,
             title: "Uber to the Game",
-            description: `Get dropped off right at ${venue || "the venue"}. No parking, no hassle.`,
+            description: `Get dropped off right at ${venue ? decodeURIComponent(venue) : "the venue"}. No parking, no hassle.`,
             cta: "Book Uber",
             live: true,
             href: uberLink,
@@ -84,13 +97,13 @@ const PaymentSuccess = () => {
             )}
           </div>
 
-          {/* Order details for chargeback clarity */}
-          {(eventDate || venue || tier) && (
+          {/* Order details */}
+          {(eventDate || venue || tier || qty) && (
             <div className="inline-flex flex-col gap-2 text-sm text-muted-foreground bg-secondary/50 rounded-xl px-6 py-4 mx-auto">
               {eventDate && (
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
-                  <span>{decodeURIComponent(eventDate)}</span>
+                  <span>{formatEventDate(eventDate)}</span>
                 </div>
               )}
               {venue && (
@@ -103,6 +116,12 @@ const PaymentSuccess = () => {
                 <div className="flex items-center gap-2">
                   <Armchair className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>{decodeURIComponent(tier)}</span>
+                </div>
+              )}
+              {qty && (
+                <div className="flex items-center gap-2">
+                  <Ticket className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span>{qty} {parseInt(qty) === 1 ? "ticket" : "tickets"}</span>
                 </div>
               )}
             </div>
