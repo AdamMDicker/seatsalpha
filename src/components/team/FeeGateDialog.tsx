@@ -24,13 +24,15 @@ interface FeeGateDialogProps {
   ticketPrice: number;
   section: string;
   rowName?: string | null;
-  onProceedWithFees: () => void;
-  onProceedNoFees?: () => void;
+  onProceedWithFees: (qty: number) => void;
+  onProceedNoFees?: (qty: number) => void;
   loading: boolean;
   venueName?: string;
   gameTitle?: string;
   eventDate?: string;
   isMember?: boolean;
+  availableQuantity: number;
+  splitType?: string | null;
 }
 
 type CheckoutOption = "hst" | "membership";
