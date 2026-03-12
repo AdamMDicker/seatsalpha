@@ -314,13 +314,15 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           ticketPrice={feeGateTicket.price}
           section={feeGateTicket.section}
           rowName={feeGateTicket.row_name}
-          onProceedWithFees={() => processPayment(feeGateTicket, true)}
-          onProceedNoFees={() => processPayment(feeGateTicket, false)}
+          onProceedWithFees={(qty) => processPayment(feeGateTicket, true, qty)}
+          onProceedNoFees={(qty) => processPayment(feeGateTicket, false, qty)}
           loading={buyingTicketId === feeGateTicket.id}
           venueName={venueName}
           gameTitle={gameTitle}
           eventDate={eventDate}
           isMember={isMember}
+          availableQuantity={feeGateTicket.quantity - feeGateTicket.quantity_sold}
+          splitType={feeGateTicket.split_type}
         />
       )}
 

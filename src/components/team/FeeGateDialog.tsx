@@ -137,11 +137,11 @@ const FeeGateDialog = ({
 
   const handleProceed = () => {
     if (isMember) {
-      onProceedNoFees?.();
+      onProceedNoFees?.(quantity);
     } else if (selectedOption === "membership") {
       handleBuyMembership();
     } else {
-      onProceedWithFees();
+      onProceedWithFees(quantity);
     }
   };
 
