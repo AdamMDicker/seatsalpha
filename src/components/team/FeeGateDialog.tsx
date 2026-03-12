@@ -64,19 +64,48 @@ const FeeGateDialog = ({
   const [membershipLoading, setMembershipLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [confirmedDetails, setConfirmedDetails] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
-  // Reset checkboxes when dialog opens
+  // Compute valid quantities based on split type
+  const isNoSplit = splitType === "No Splitting";
+  const isNoPairs = splitType === "Keep Pairs";
+  const isNoSingles = splitType === "No Singles";
+
+  const getInitialQuantity = () => {
+    if (isNoSplit) return availableQuantity;
+    if (isNoPairs) return Math.min(2, availableQuantity);
+    if (isNoSingles && availableQuantity >= 2) return 2;
+    return 1;
+  };
+
+  const isValidQuantity = (q: number) => {
+    if (q < 1 || q > availableQuantity) return false;
+    if (isNoSplit) return q === availableQuantity;
+    if (isNoPairs) return q % 2 === 0;
+    if (isNoSingles) return q !== 1 || availableQuantity === 1;
+    return true;
+  };
+
+  // Reset state when dialog opens
   useEffect(() => {
     if (open) {
       setAgreedToTerms(false);
       setConfirmedDetails(false);
+      setQuantity(getInitialQuantity());
     }
-  }, [open]);
+  }, [open, availableQuantity, splitType]);
 
-  const hstAmount = Math.round(ticketPrice * 0.13 * 100) / 100;
-  const totalWithHST = Math.round((ticketPrice + hstAmount) * 100) / 100;
-  const totalWithMembership = Math.round((ticketPrice + 49.95) * 100) / 100;
+  const handleQuantityChange = (delta: number) => {
+    let next = quantity + delta;
+    if (isNoPairs) next = quantity + delta * 2;
+    if (isValidQuantity(next)) setQuantity(next);
+  };
+
+  const subtotal = Math.round(ticketPrice * quantity * 100) / 100;
+  const hstAmount = Math.round(subtotal * 0.13 * 100) / 100;
+  const totalWithHST = Math.round((subtotal + hstAmount) * 100) / 100;
+  const totalWithMembership = Math.round((subtotal + 49.95) * 100) / 100;
 
   const currentTotal = selectedOption === "hst" ? totalWithHST : totalWithMembership;
 
