@@ -80,6 +80,15 @@ serve(async (req) => {
       mode: "subscription",
       success_url: successUrl,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
+      ...(ticketInfo ? {
+        metadata: {
+          event_title: ticketInfo.eventTitle || "",
+          ticket_quantity: String(ticketQty),
+          ticket_tier: ticketInfo.tier || "",
+          venue: ticketInfo.venue || "",
+          event_date: ticketInfo.eventDate || "",
+        },
+      } : {}),
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
