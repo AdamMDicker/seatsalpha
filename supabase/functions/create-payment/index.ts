@@ -37,12 +37,20 @@ serve(async (req) => {
     }
 
     // Build line items dynamically based on the ticket purchase
+    // Build description with game details for Stripe dashboard/receipts
+    const descriptionParts = [
+      tier,
+      venue ? `at ${venue}` : null,
+      eventDate || null,
+    ].filter(Boolean).join(" · ");
+
     const lineItems: any[] = [
       {
         price_data: {
           currency: "cad",
           product_data: {
-            name: `${eventTitle} — ${tier} (x${quantity})`,
+            name: `${eventTitle}${quantity > 1 ? ` (x${quantity})` : ""}`,
+            description: descriptionParts || undefined,
           },
           unit_amount: Math.round(totalAmount * 100),
         },
@@ -64,11 +72,19 @@ serve(async (req) => {
       });
     }
 
+    // Build a short statement descriptor suffix (max 22 chars)
+    const city = venue ? venue.split(",").pop()?.trim()?.slice(0, 10) : "";
+    const stmtSuffix = city ? `${city} Tickets` : "Tickets";
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: lineItems,
       mode: "payment",
+      payment_intent_data: {
+        description: `${eventTitle} — ${descriptionParts}`,
+        statement_descriptor_suffix: stmtSuffix.slice(0, 22),
+      },
       success_url: `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(venue || "")}&event=${encodeURIComponent(eventTitle || "")}&tier=${encodeURIComponent(tier || "")}&date=${encodeURIComponent(eventDate || "")}&qty=${encodeURIComponent(String(quantity || 1))}`,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
       metadata: {
