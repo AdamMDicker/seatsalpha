@@ -20,7 +20,18 @@ function formatEventDate(raw: string): string {
     const decoded = decodeURIComponent(raw);
     const date = new Date(decoded);
     if (isNaN(date.getTime())) return decoded;
-    return format(date, "EEEE, MMMM d, yyyy · h:mm a");
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "America/Toronto",
+    }) + " · " + date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "America/Toronto",
+    }) + " EST";
   } catch {
     return raw;
   }
