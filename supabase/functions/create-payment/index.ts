@@ -72,11 +72,19 @@ serve(async (req) => {
       });
     }
 
+    // Build a short statement descriptor suffix (max 22 chars)
+    const city = venue ? venue.split(",").pop()?.trim()?.slice(0, 10) : "";
+    const stmtSuffix = city ? `${city} Tickets` : "Tickets";
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: lineItems,
       mode: "payment",
+      payment_intent_data: {
+        description: `${eventTitle} — ${descriptionParts}`,
+        statement_descriptor_suffix: stmtSuffix.slice(0, 22),
+      },
       success_url: `${req.headers.get("origin")}/payment-success?venue=${encodeURIComponent(venue || "")}&event=${encodeURIComponent(eventTitle || "")}&tier=${encodeURIComponent(tier || "")}&date=${encodeURIComponent(eventDate || "")}&qty=${encodeURIComponent(String(quantity || 1))}`,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
       metadata: {
