@@ -19,7 +19,10 @@ function formatEventDate(raw: string): string {
   try {
     const decoded = decodeURIComponent(raw);
     const date = new Date(decoded);
-    if (isNaN(date.getTime())) return decoded;
+    if (isNaN(date.getTime())) {
+      // Fallback: strip ISO artifacts for display
+      return decoded.replace(/T/g, " ").replace(/\+00:00|Z$/g, "").trim();
+    }
     return date.toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
