@@ -20,6 +20,7 @@ interface TicketInfo {
   perks?: string[] | null;
   seat_notes?: string | null;
   hide_seat_numbers?: boolean;
+  split_type?: string | null;
 }
 
 interface SeatImage {
