@@ -57,6 +57,8 @@ const FeeGateDialog = ({
   gameTitle,
   eventDate,
   isMember = false,
+  availableQuantity,
+  splitType,
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>("membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
