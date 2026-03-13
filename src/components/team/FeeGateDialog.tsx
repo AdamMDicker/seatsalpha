@@ -62,6 +62,7 @@ const FeeGateDialog = ({
   isAdmin = false,
   availableQuantity,
   splitType,
+  ticketId,
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>(isMember ? "hst" : "membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
