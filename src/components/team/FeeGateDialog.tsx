@@ -26,6 +26,7 @@ interface FeeGateDialogProps {
   rowName?: string | null;
   onProceedWithFees: (qty: number) => void;
   onProceedNoFees?: (qty: number) => void;
+  ticketId?: string;
   loading: boolean;
   venueName?: string;
   gameTitle?: string;
