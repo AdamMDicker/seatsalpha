@@ -4,6 +4,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import FeeGateDialog from "./FeeGateDialog";
@@ -58,6 +65,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [feeGateTicket, setFeeGateTicket] = useState<TicketInfo | null>(null);
   const [lightboxImages, setLightboxImages] = useState<SeatImage[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [desiredSeats, setDesiredSeats] = useState("any");
   const { user, isMember } = useAuth();
   const { toast } = useToast();
 
@@ -121,7 +129,26 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     setFeeGateTicket(ticket);
   };
 
-  const allTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
+  const selectedSeatCount = desiredSeats === "any" ? null : Number(desiredSeats);
+
+  const canFulfillSeatCount = (ticket: TicketInfo, seatCount: number | null) => {
+    if (!seatCount) return true;
+
+    const remaining = ticket.quantity - ticket.quantity_sold;
+    if (seatCount > remaining) return false;
+
+    if (ticket.split_type === "No Splitting") return seatCount === remaining;
+    if (ticket.split_type === "Keep Pairs") return seatCount % 2 === 0;
+    if (ticket.split_type === "No Singles") return seatCount !== 1 || remaining === 1;
+
+    return true;
+  };
+
+  const maxAvailableSeats = Math.max(0, ...tickets.map((t) => t.quantity - t.quantity_sold));
+  const seatCountOptions = Array.from({ length: Math.min(maxAvailableSeats, 10) }, (_, idx) => idx + 1);
+
+  const sectionFilteredTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
+  const allTickets = sectionFilteredTickets.filter((ticket) => canFulfillSeatCount(ticket, selectedSeatCount));
   const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket).slice(0, 4);
   const resellerTickets = allTickets.filter((t) => t.is_reseller_ticket);
 
@@ -293,6 +320,26 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           </div>
         </div>
       )}
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          {selectedSeatCount ? `Showing listings that can fulfill ${selectedSeatCount} seat${selectedSeatCount > 1 ? "s" : ""}.` : "Filter listings by seats needed."}
+        </p>
+        <Select value={desiredSeats} onValueChange={setDesiredSeats}>
+          <SelectTrigger className="w-[190px] h-9 bg-secondary border-border">
+            <SelectValue placeholder="Seats needed" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any group size</SelectItem>
+            {seatCountOptions.map((count) => (
+              <SelectItem key={count} value={String(count)}>
+                {count} seat{count > 1 ? "s" : ""}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">⭐ Featured Tickets</h2>
       {featuredTickets.length > 0 ? (
         <div className="space-y-3 mb-6">{featuredTickets.map((t) => <FeaturedTicketCard key={t.id} ticket={t} />)}</div>
