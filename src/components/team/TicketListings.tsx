@@ -337,7 +337,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <SelectItem value="any">Any group size</SelectItem>
             {seatCountOptions.map((count) => (
               <SelectItem key={count} value={String(count)}>
-                {count} seat{count > 1 ? "s" : ""}
+                {count === 3 ? "3 seats (full set)" : `${count} seats`}
               </SelectItem>
             ))}
           </SelectContent>
