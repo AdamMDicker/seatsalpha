@@ -11,6 +11,7 @@ import heroBasketball from "@/assets/hero-basketball.jpg";
 import heroFootball from "@/assets/hero-football.jpg";
 import heroSoccer from "@/assets/hero-soccer.jpg";
 import heroConcerts from "@/assets/hero-concerts.jpg";
+import heroStPatricks from "@/assets/hero-stpatricks.jpg";
 
 const HERO_OPTIONS = [
   { id: "canada", label: "Canada", image: heroCanada },
@@ -20,6 +21,7 @@ const HERO_OPTIONS = [
   { id: "football", label: "Football", image: heroFootball },
   { id: "soccer", label: "Soccer", image: heroSoccer },
   { id: "concerts", label: "Concerts", image: heroConcerts },
+  { id: "stpatricks", label: "St. Patrick's Day", image: heroStPatricks },
 ];
 
 const AdminHeroImage = () => {

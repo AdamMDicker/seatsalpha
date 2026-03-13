@@ -17,6 +17,7 @@ import heroBasketball from "@/assets/hero-basketball.jpg";
 import heroFootball from "@/assets/hero-football.jpg";
 import heroSoccer from "@/assets/hero-soccer.jpg";
 import heroConcerts from "@/assets/hero-concerts.jpg";
+import heroStPatricks from "@/assets/hero-stpatricks.jpg";
 
 const HERO_IMAGES: Record<string, string> = {
   canada: heroCanada,
@@ -26,6 +27,7 @@ const HERO_IMAGES: Record<string, string> = {
   football: heroFootball,
   soccer: heroSoccer,
   concerts: heroConcerts,
+  stpatricks: heroStPatricks,
 };
 
 const TEAMS = [
