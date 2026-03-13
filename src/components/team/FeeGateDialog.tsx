@@ -215,8 +215,6 @@ const FeeGateDialog = ({
               ? `This listing must be purchased as a full set of 3.`
               : "Tickets are sold in groups of 2 or 4."}
           </p>
-          )}
-
           {isMember ? (
             /* ---- MEMBER CHECKOUT ---- */
             <div className="space-y-3">
