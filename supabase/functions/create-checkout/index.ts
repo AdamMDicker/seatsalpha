@@ -56,22 +56,46 @@ serve(async (req) => {
     // If ticket info provided, add ticket as a one-time line item
     const ticketQty = ticketInfo?.quantity || 1;
     if (ticketInfo) {
+      // Format date for display
+      let formattedEventDate = "";
+      if (ticketInfo.eventDate) {
+        try {
+          const d = new Date(ticketInfo.eventDate);
+          if (!isNaN(d.getTime())) {
+            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const estOffset = -5 * 60;
+            const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+            const est = new Date(utc + estOffset * 60000);
+            const day = days[est.getDay()];
+            const month = months[est.getMonth()];
+            const date = est.getDate();
+            const year = est.getFullYear();
+            let hours = est.getHours();
+            const minutes = est.getMinutes().toString().padStart(2, "0");
+            const ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12 || 12;
+            formattedEventDate = `${day}, ${month} ${date}, ${year} · ${hours}:${minutes} ${ampm} ET`;
+          }
+        } catch { /* fallback */ }
+      }
+
       const descParts = [
         ticketInfo.tier,
         ticketInfo.venue ? `at ${ticketInfo.venue}` : null,
-        ticketInfo.eventDate || null,
+        formattedEventDate || null,
       ].filter(Boolean).join(" · ");
 
       lineItems.push({
         price_data: {
           currency: "cad",
           product_data: {
-            name: `${ticketInfo.eventTitle || "Event Ticket"}${ticketQty > 1 ? ` (x${ticketQty})` : ""}`,
+            name: ticketInfo.eventTitle || "Event Ticket",
             description: descParts || undefined,
           },
-          unit_amount: Math.round(ticketInfo.ticketAmount * 100),
+          unit_amount: Math.round((ticketInfo.ticketAmount / ticketQty) * 100),
         },
-        quantity: 1,
+        quantity: ticketQty,
       });
     }
 
