@@ -68,7 +68,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [desiredSeats, setDesiredSeats] = useState("any");
   const [filterAisle, setFilterAisle] = useState(false);
   const [filterRow1, setFilterRow1] = useState(false);
-  const { user, isMember } = useAuth();
+  const { user, isMember, isAdmin } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -418,7 +418,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           venueName={venueName}
           gameTitle={gameTitle}
           eventDate={eventDate}
-          isMember={isMember}
+          isMember={isMember || isAdmin}
           availableQuantity={feeGateTicket.quantity - feeGateTicket.quantity_sold}
           splitType={feeGateTicket.split_type}
         />
