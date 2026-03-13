@@ -136,16 +136,19 @@ const FeeGateDialog = ({
   };
 
   const handleProceed = () => {
-    if (isMember) {
-      onProceedNoFees?.(quantity);
-    } else if (selectedOption === "membership") {
-      handleBuyMembership();
+    if (isMember || selectedOption === "hst") {
+      // Members always get no fees; non-members choosing HST get fees
+      if (isMember) {
+        onProceedNoFees?.(quantity);
+      } else {
+        onProceedWithFees(quantity);
+      }
     } else {
-      onProceedWithFees(quantity);
+      handleBuyMembership();
     }
   };
 
-  const isLoading = isMember ? loading : (selectedOption === "membership" ? membershipLoading : loading);
+  const isLoading = selectedOption === "membership" ? membershipLoading : loading;
   const canProceed = agreedToTerms && confirmedDetails;
 
   return (
