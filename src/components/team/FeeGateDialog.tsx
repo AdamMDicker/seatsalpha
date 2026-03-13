@@ -60,7 +60,7 @@ const FeeGateDialog = ({
   availableQuantity,
   splitType,
 }: FeeGateDialogProps) => {
-  const [selectedOption, setSelectedOption] = useState<CheckoutOption>("membership");
+  const [selectedOption, setSelectedOption] = useState<CheckoutOption>(isMember ? "hst" : "membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [confirmedDetails, setConfirmedDetails] = useState(false);
