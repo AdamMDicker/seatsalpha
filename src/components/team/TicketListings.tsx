@@ -320,6 +320,26 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           </div>
         </div>
       )}
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          {selectedSeatCount ? `Showing listings that can fulfill ${selectedSeatCount} seat${selectedSeatCount > 1 ? "s" : ""}.` : "Filter listings by seats needed."}
+        </p>
+        <Select value={desiredSeats} onValueChange={setDesiredSeats}>
+          <SelectTrigger className="w-[190px] h-9 bg-secondary border-border">
+            <SelectValue placeholder="Seats needed" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any group size</SelectItem>
+            {seatCountOptions.map((count) => (
+              <SelectItem key={count} value={String(count)}>
+                {count} seat{count > 1 ? "s" : ""}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">⭐ Featured Tickets</h2>
       {featuredTickets.length > 0 ? (
         <div className="space-y-3 mb-6">{featuredTickets.map((t) => <FeaturedTicketCard key={t.id} ticket={t} />)}</div>
