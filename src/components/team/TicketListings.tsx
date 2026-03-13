@@ -101,7 +101,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           eventTitle: gameTitle ? expandTeamNames(gameTitle) : "Event Ticket",
           totalAmount,
           quantity: qty,
-          tier: `Section ${ticket.section}${ticket.row_name ? ` Row ${ticket.row_name}` : ""}`,
+          tier: `Section ${ticket.section}${ticket.row_name ? `, Row ${ticket.row_name}` : ""}${ticket.seat_number && !ticket.hide_seat_numbers ? `, Seat${ticket.seat_number.includes("-") || ticket.seat_number.includes(",") ? "s" : ""} ${ticket.seat_number}` : ""}`,
           uberAdded: false,
           hotelAdded: false,
           flightAdded: false,
