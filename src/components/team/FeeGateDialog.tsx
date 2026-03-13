@@ -155,15 +155,15 @@ const FeeGateDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
         {/* Compact Header */}
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-4 pt-3 pb-2 flex-shrink-0">
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-4 pt-2.5 pb-1.5 flex-shrink-0">
           <DialogHeader>
-            <DialogTitle className="font-display text-lg text-foreground">Checkout</DialogTitle>
-            <DialogDescription className="text-muted-foreground text-xs">
+            <DialogTitle className="font-display text-base text-foreground">Checkout</DialogTitle>
+            <DialogDescription className="text-muted-foreground text-[11px]">
               Section {section}{rowName ? ` · Row ${rowName}` : ""}
               {venueName ? ` · ${venueName}` : ""}
             </DialogDescription>
             {formattedDate && (
-              <p className="text-xs font-medium text-foreground/80 flex items-center gap-1 mt-1">
+              <p className="text-[11px] font-medium text-foreground/80 flex items-center gap-1 mt-0.5">
                 <CalendarDays className="h-3 w-3" />
                 {formattedDate}
               </p>
@@ -171,17 +171,17 @@ const FeeGateDialog = ({
           </DialogHeader>
         </div>
 
-        <div className="px-4 pb-4 space-y-2.5 overflow-y-auto flex-1">
-          {/* Sales final warning — always at top */}
-          <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/30 p-2">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+        <div className="px-4 pb-3 space-y-2 overflow-y-auto flex-1">
+          {/* Sales final warning */}
+          <div className="flex items-start gap-1.5 rounded-md bg-amber-500/10 border border-amber-500/30 p-1.5">
+            <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0 mt-0.5" />
             <p className="text-[10px] text-foreground/90 leading-snug">
               All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
             </p>
           </div>
 
           {/* Quantity selector + ticket price */}
-          <div className="flex justify-between items-center py-3 border-b border-border">
+          <div className="flex justify-between items-center py-2 border-b border-border">
             <div>
               <span className="text-foreground font-semibold text-sm">Tickets</span>
               <span className="text-muted-foreground text-xs ml-1.5">(${ticketPrice.toFixed(2)} each)</span>
@@ -192,44 +192,46 @@ const FeeGateDialog = ({
                   <button
                     onClick={() => handleQuantityChange(-1)}
                     disabled={validQuantities.indexOf(quantity) <= 0}
-                    className="px-2.5 py-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                    className="px-2 py-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-3.5 w-3.5" />
                   </button>
-                  <span className="text-lg font-display font-bold text-primary w-8 text-center">{quantity}</span>
+                  <span className="text-lg font-display font-bold text-primary w-7 text-center">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
                     disabled={validQuantities.indexOf(quantity) >= validQuantities.length - 1}
-                    className="px-2.5 py-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                    className="px-2 py-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 border-2 border-primary/30 rounded-lg bg-primary/5 px-3 py-1.5">
+                <div className="flex items-center gap-1.5 border-2 border-primary/30 rounded-lg bg-primary/5 px-2.5 py-1">
                   <span className="text-xs text-muted-foreground">×</span>
                   <span className="text-lg font-display font-bold text-primary">{quantity}</span>
                   {isThreePack && <span className="text-[10px] text-muted-foreground">(full set)</span>}
                 </div>
               )}
-              <span className="text-foreground font-bold text-lg font-display">${subtotal.toFixed(2)}</span>
+              <span className="text-foreground font-bold text-base font-display">${subtotal.toFixed(2)}</span>
             </div>
           </div>
 
-          {/* Quantity notice */}
-          <p className="text-[10px] text-muted-foreground text-center italic">
-            {isThreePack
-              ? `This listing must be purchased as a full set of 3.`
-              : "Tickets are sold in groups of 2 or 4."}
-          </p>
-          <p className="text-[11px] font-bold text-foreground uppercase tracking-wide text-center">Please Choose:</p>
+          {/* Quantity notice + label */}
+          <div className="text-center space-y-0.5">
+            <p className="text-[10px] text-muted-foreground italic">
+              {isThreePack
+                ? `This listing must be purchased as a full set of 3.`
+                : "Tickets are sold in groups of 2 or 4."}
+            </p>
+            <p className="text-[11px] font-bold text-foreground uppercase tracking-wide">Please Choose:</p>
+          </div>
 
           <div className="space-y-1.5">
             {/* Option: No fees (members only) */}
             {isMember && (
               <button
                 onClick={() => setSelectedOption("hst")}
-                className={`w-full text-left rounded-md border-2 p-2.5 transition-all ${
+                className={`w-full text-left rounded-md border-2 p-2 transition-all ${
                   selectedOption === "hst"
                     ? "border-gold bg-gold/5"
                     : "border-border bg-card hover:border-muted-foreground/30"
@@ -261,7 +263,7 @@ const FeeGateDialog = ({
             {!isMember && (
               <button
                 onClick={() => setSelectedOption("hst")}
-                className={`w-full text-left rounded-md border-2 p-2.5 transition-all ${
+                className={`w-full text-left rounded-md border-2 p-2 transition-all ${
                   selectedOption === "hst"
                     ? "border-destructive bg-destructive/5"
                     : "border-border bg-card hover:border-muted-foreground/30"
@@ -290,7 +292,7 @@ const FeeGateDialog = ({
             {!isMember && (
               <button
                 onClick={() => setSelectedOption("membership")}
-                className={`w-full text-left rounded-md border-2 p-2.5 transition-all ${
+                className={`w-full text-left rounded-md border-2 p-2 transition-all ${
                   selectedOption === "membership"
                     ? "border-gold bg-gold/5"
                     : "border-border bg-card hover:border-muted-foreground/30"
@@ -352,7 +354,7 @@ const FeeGateDialog = ({
           </div>
 
           {/* Checkboxes */}
-          <div className="space-y-1.5 rounded-md border-2 border-primary/30 bg-primary/5 p-2.5">
+          <div className="space-y-1 rounded-md border-2 border-primary/30 bg-primary/5 p-2">
             <p className="text-[10px] font-bold text-primary flex items-center gap-1 uppercase tracking-wide">
               <ShieldCheck className="h-3 w-3" />
               Required — Check both to proceed
@@ -374,7 +376,8 @@ const FeeGateDialog = ({
             </div>
           </div>
 
-          <div className="border-t border-border pt-2 space-y-1.5">
+          {/* Total + Pay */}
+          <div className="border-t border-border pt-1.5 space-y-1">
             <div className="flex justify-between items-center">
               <span className="text-foreground font-bold text-sm">Total</span>
               <span className="text-foreground font-display font-bold text-lg">
