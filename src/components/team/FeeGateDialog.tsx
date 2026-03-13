@@ -293,7 +293,7 @@ const FeeGateDialog = ({
             )}
 
             {/* Option: Add membership (non-members only) */}
-            {!isMember && (
+            {(!isMember || isAdmin) && (
               <button
                 onClick={() => setSelectedOption("membership")}
                 className={`w-full text-left rounded-md border-2 p-2 transition-all ${
