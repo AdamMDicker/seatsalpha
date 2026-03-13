@@ -220,120 +220,107 @@ const FeeGateDialog = ({
           </p>
           {isMember ? (
             /* ---- MEMBER CHECKOUT ---- */
-            <div className="space-y-2.5">
-              <div className="rounded-md border-2 border-gold bg-gold/5 p-2.5">
-                <div className="flex items-center gap-2">
-                  <Crown className="h-3.5 w-3.5 text-gold" />
-                  <p className="font-semibold text-foreground text-sm">Member Pricing</p>
-                  <span className="text-[9px] font-bold bg-gold/20 text-gold px-1.5 py-0.5 rounded uppercase tracking-wide">
-                    No Fees
-                  </span>
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-0.5 ml-5">Your membership removes all service fees.</p>
-              </div>
-
-              <div className="space-y-1.5 rounded-md border-2 border-primary/30 bg-primary/5 p-2.5">
-                <p className="text-[10px] font-bold text-primary flex items-center gap-1 uppercase tracking-wide">
-                  <ShieldCheck className="h-3 w-3" />
-                  Required — Check both to proceed
-                </p>
-                <div className="flex items-start gap-2">
-                  <Checkbox id="terms-member" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
-                  <label htmlFor="terms-member" className="text-[10px] text-muted-foreground leading-snug cursor-pointer">
-                    I agree to the{" "}
-                    <a href="/terms-of-service" target="_blank" className="text-primary underline hover:text-primary/80">Terms of Service</a>,{" "}
-                    <a href="/terms-of-service#refunds" target="_blank" className="text-primary underline hover:text-primary/80">Refund Policy</a>, and{" "}
-                    <a href="/terms-of-service#ticket-delivery" target="_blank" className="text-primary underline hover:text-primary/80">Ticket Delivery Policy</a>.
-                  </label>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Checkbox id="details-member" checked={confirmedDetails} onCheckedChange={(v) => setConfirmedDetails(v === true)} className="mt-0.5" />
-                  <label htmlFor="details-member" className="text-[10px] text-muted-foreground leading-snug cursor-pointer">
-                    I confirm the ticket details above are correct.
-                  </label>
-                </div>
-              </div>
-
-              <div className="border-t border-border pt-2 space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <span className="text-foreground font-bold text-sm">Total</span>
-                  <span className="text-foreground font-display font-bold text-lg">${subtotal.toFixed(2)}</span>
-                </div>
-                <p className="text-[9px] text-muted-foreground text-center">
-                  By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
-                </p>
-                <Button variant="gold" size="default" className="w-full text-sm h-9" onClick={handleProceed} disabled={isLoading || !canProceed}>
-                  <Zap className="h-3.5 w-3.5" />
-                  {isLoading ? "Processing..." : `Pay $${subtotal.toFixed(2)}`}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            /* ---- NON-MEMBER CHECKOUT ---- */
-            <>
-              <p className="text-[11px] font-bold text-foreground uppercase tracking-wide text-center">Please Choose:</p>
+            <p className="text-[11px] font-bold text-foreground uppercase tracking-wide text-center">Please Choose:</p>
 
               <div className="space-y-1.5">
-                {/* Option: No membership */}
-                <button
-                  onClick={() => setSelectedOption("hst")}
-                  className={`w-full text-left rounded-md border-2 p-2.5 transition-all ${
-                    selectedOption === "hst"
-                      ? "border-destructive bg-destructive/5"
-                      : "border-border bg-card hover:border-muted-foreground/30"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-1">
-                      <div className={`h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        selectedOption === "hst" ? "border-destructive bg-destructive" : "border-muted-foreground/40"
-                      }`}>
-                        {selectedOption === "hst" && <Check className="h-2 w-2 text-destructive-foreground" />}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground text-xs">Buy Tickets — No Membership</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {quantity}× ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithHST.toFixed(2)}</span>
-                  </div>
-                </button>
-
-                {/* Option: Add membership */}
-                <button
-                  onClick={() => setSelectedOption("membership")}
-                  className={`w-full text-left rounded-md border-2 p-2.5 transition-all ${
-                    selectedOption === "membership"
-                      ? "border-gold bg-gold/5"
-                      : "border-border bg-card hover:border-muted-foreground/30"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-1">
-                      <div className={`h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        selectedOption === "membership" ? "border-gold bg-gold" : "border-muted-foreground/40"
-                      }`}>
-                        {selectedOption === "membership" && <Check className="h-2 w-2 text-gold-foreground" />}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <p className="font-semibold text-foreground text-xs">Add Annual Membership</p>
-                          <span className="text-[8px] font-bold bg-gold/20 text-gold px-1 py-0.5 rounded uppercase tracking-wide">
-                            Recommended
-                          </span>
+                {/* Option: No fees (members only) */}
+                {isMember && (
+                  <button
+                    onClick={() => setSelectedOption("hst")}
+                    className={`w-full text-left rounded-md border-2 p-2.5 transition-all ${
+                      selectedOption === "hst"
+                        ? "border-gold bg-gold/5"
+                        : "border-border bg-card hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className={`h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          selectedOption === "hst" ? "border-gold bg-gold" : "border-muted-foreground/40"
+                        }`}>
+                          {selectedOption === "hst" && <Check className="h-2 w-2 text-gold-foreground" />}
                         </div>
-                        <p className="text-[10px] text-muted-foreground">
-                          $49.95/yr — HST inclusive for 12 months. Cancel anytime.
-                        </p>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-semibold text-foreground text-xs">Member Pricing</p>
+                            <span className="text-[8px] font-bold bg-gold/20 text-gold px-1 py-0.5 rounded uppercase tracking-wide">
+                              No Fees
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            {quantity}× ${ticketPrice.toFixed(2)} — No service fees applied
+                          </p>
+                        </div>
                       </div>
+                      <span className="text-foreground font-bold text-sm whitespace-nowrap">${subtotal.toFixed(2)}</span>
                     </div>
-                    <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithMembership.toFixed(2)}</span>
-                  </div>
-                </button>
+                  </button>
+                )}
 
-                {selectedOption === "membership" && (
+                {/* Option: HST (non-members only) */}
+                {!isMember && (
+                  <button
+                    onClick={() => setSelectedOption("hst")}
+                    className={`w-full text-left rounded-md border-2 p-2.5 transition-all ${
+                      selectedOption === "hst"
+                        ? "border-destructive bg-destructive/5"
+                        : "border-border bg-card hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className={`h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          selectedOption === "hst" ? "border-destructive bg-destructive" : "border-muted-foreground/40"
+                        }`}>
+                          {selectedOption === "hst" && <Check className="h-2 w-2 text-destructive-foreground" />}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground text-xs">Buy Tickets — No Membership</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {quantity}× ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithHST.toFixed(2)}</span>
+                    </div>
+                  </button>
+                )}
+
+                {/* Option: Add membership (non-members only) */}
+                {!isMember && (
+                  <button
+                    onClick={() => setSelectedOption("membership")}
+                    className={`w-full text-left rounded-md border-2 p-2.5 transition-all ${
+                      selectedOption === "membership"
+                        ? "border-gold bg-gold/5"
+                        : "border-border bg-card hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className={`h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          selectedOption === "membership" ? "border-gold bg-gold" : "border-muted-foreground/40"
+                        }`}>
+                          {selectedOption === "membership" && <Check className="h-2 w-2 text-gold-foreground" />}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-semibold text-foreground text-xs">Add Annual Membership</p>
+                            <span className="text-[8px] font-bold bg-gold/20 text-gold px-1 py-0.5 rounded uppercase tracking-wide">
+                              Recommended
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            $49.95/yr — HST inclusive for 12 months. Cancel anytime.
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithMembership.toFixed(2)}</span>
+                    </div>
+                  </button>
+                )}
+
+                {!isMember && selectedOption === "membership" && (
                   <div className="text-center">
                     <Popover>
                       <PopoverTrigger asChild>
@@ -373,8 +360,8 @@ const FeeGateDialog = ({
                   Required — Check both to proceed
                 </p>
                 <div className="flex items-start gap-2">
-                  <Checkbox id="terms-nonmember" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
-                  <label htmlFor="terms-nonmember" className="text-[10px] text-muted-foreground leading-snug cursor-pointer">
+                  <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
+                  <label htmlFor="terms" className="text-[10px] text-muted-foreground leading-snug cursor-pointer">
                     I agree to the{" "}
                     <a href="/terms-of-service" target="_blank" className="text-primary underline hover:text-primary/80">Terms of Service</a>,{" "}
                     <a href="/terms-of-service#refunds" target="_blank" className="text-primary underline hover:text-primary/80">Refund Policy</a>, and{" "}
@@ -382,8 +369,8 @@ const FeeGateDialog = ({
                   </label>
                 </div>
                 <div className="flex items-start gap-2">
-                  <Checkbox id="details-nonmember" checked={confirmedDetails} onCheckedChange={(v) => setConfirmedDetails(v === true)} className="mt-0.5" />
-                  <label htmlFor="details-nonmember" className="text-[10px] text-muted-foreground leading-snug cursor-pointer">
+                  <Checkbox id="details" checked={confirmedDetails} onCheckedChange={(v) => setConfirmedDetails(v === true)} className="mt-0.5" />
+                  <label htmlFor="details" className="text-[10px] text-muted-foreground leading-snug cursor-pointer">
                     I confirm the ticket details above are correct.
                   </label>
                 </div>
@@ -392,19 +379,26 @@ const FeeGateDialog = ({
               <div className="border-t border-border pt-2 space-y-1.5">
                 <div className="flex justify-between items-center">
                   <span className="text-foreground font-bold text-sm">Total</span>
-                  <span className="text-foreground font-display font-bold text-lg">${currentTotal.toFixed(2)}</span>
+                  <span className="text-foreground font-display font-bold text-lg">
+                    ${isMember ? subtotal.toFixed(2) : currentTotal.toFixed(2)}
+                  </span>
                 </div>
                 <p className="text-[9px] text-muted-foreground text-center">
                   By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
                 </p>
                 <Button
-                  variant={selectedOption === "membership" ? "gold" : "hero"}
+                  variant={isMember || selectedOption === "membership" ? "gold" : "hero"}
                   size="default"
                   className="w-full text-sm h-9"
                   onClick={handleProceed}
                   disabled={isLoading || !canProceed}
                 >
-                  {selectedOption === "membership" ? (
+                  {isMember ? (
+                    <>
+                      <Zap className="h-3.5 w-3.5" />
+                      {isLoading ? "Processing..." : `Pay $${subtotal.toFixed(2)}`}
+                    </>
+                  ) : selectedOption === "membership" ? (
                     <>
                       <Zap className="h-3.5 w-3.5" />
                       {isLoading ? "Processing..." : `Get Membership & Pay $${currentTotal.toFixed(2)}`}
@@ -413,14 +407,12 @@ const FeeGateDialog = ({
                     <>{isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)}`}</>
                   )}
                 </Button>
-                {selectedOption === "hst" && (
+                {!isMember && selectedOption === "hst" && (
                   <p className="text-center text-[10px] text-muted-foreground">
                     Includes ${hstAmount.toFixed(2)} HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
                   </p>
                 )}
               </div>
-            </>
-          )}
         </div>
       </DialogContent>
     </Dialog>
