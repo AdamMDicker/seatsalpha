@@ -67,24 +67,21 @@ const FeeGateDialog = ({
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
-  // Compute valid quantities based on split type
-  const isNoSplit = splitType === "No Splitting";
-  const isNoPairs = splitType === "Keep Pairs";
-  const isNoSingles = splitType === "No Singles";
+  // Tickets can only be sold in 2 or 4. 3-packs must be sold as full set.
+  const isThreePack = availableQuantity === 3;
 
-  const getInitialQuantity = () => {
-    if (isNoSplit) return availableQuantity;
-    if (isNoPairs) return Math.min(2, availableQuantity);
-    if (isNoSingles && availableQuantity >= 2) return 2;
-    return 1;
+  const getValidQuantities = (): number[] => {
+    if (isThreePack) return [3];
+    const valid: number[] = [];
+    if (availableQuantity >= 2) valid.push(2);
+    if (availableQuantity >= 4) valid.push(4);
+    return valid;
   };
 
-  const isValidQuantity = (q: number) => {
-    if (q < 1 || q > availableQuantity) return false;
-    if (isNoSplit) return q === availableQuantity;
-    if (isNoPairs) return q % 2 === 0;
-    if (isNoSingles) return q !== 1 || availableQuantity === 1;
-    return true;
+  const validQuantities = getValidQuantities();
+
+  const getInitialQuantity = () => {
+    return validQuantities[0] || 2;
   };
 
   // Reset state when dialog opens
@@ -94,12 +91,14 @@ const FeeGateDialog = ({
       setConfirmedDetails(false);
       setQuantity(getInitialQuantity());
     }
-  }, [open, availableQuantity, splitType]);
+  }, [open, availableQuantity]);
 
   const handleQuantityChange = (delta: number) => {
-    let next = quantity + delta;
-    if (isNoPairs) next = quantity + delta * 2;
-    if (isValidQuantity(next)) setQuantity(next);
+    const currentIdx = validQuantities.indexOf(quantity);
+    const nextIdx = currentIdx + delta;
+    if (nextIdx >= 0 && nextIdx < validQuantities.length) {
+      setQuantity(validQuantities[nextIdx]);
+    }
   };
 
   const subtotal = Math.round(ticketPrice * quantity * 100) / 100;
@@ -185,11 +184,11 @@ const FeeGateDialog = ({
               <span className="text-muted-foreground text-xs ml-1.5">(${ticketPrice.toFixed(2)} each)</span>
             </div>
             <div className="flex items-center gap-2">
-              {!isNoSplit && (
+              {validQuantities.length > 1 ? (
                 <div className="flex items-center gap-1 border border-border rounded-md">
                   <button
                     onClick={() => handleQuantityChange(-1)}
-                    disabled={!isValidQuantity(isNoPairs ? quantity - 2 : quantity - 1)}
+                    disabled={validQuantities.indexOf(quantity) <= 0}
                     className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                   >
                     <Minus className="h-3 w-3" />
@@ -197,29 +196,25 @@ const FeeGateDialog = ({
                   <span className="text-sm font-bold text-foreground w-6 text-center">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    disabled={!isValidQuantity(isNoPairs ? quantity + 2 : quantity + 1)}
+                    disabled={validQuantities.indexOf(quantity) >= validQuantities.length - 1}
                     className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                   >
                     <Plus className="h-3 w-3" />
                   </button>
                 </div>
-              )}
-              {isNoSplit && (
-                <span className="text-xs text-muted-foreground">×{quantity} (full set only)</span>
+              ) : (
+                <span className="text-xs text-muted-foreground">×{quantity} {isThreePack ? "(full set)" : ""}</span>
               )}
               <span className="text-foreground font-bold text-base">${subtotal.toFixed(2)}</span>
             </div>
           </div>
 
-          {/* Split type notice */}
-          {splitType && splitType !== "Any" && (
-            <p className="text-[10px] text-muted-foreground text-center italic">
-              {splitType === "No Splitting" && `This listing must be purchased as a full set of ${availableQuantity}.`}
-              {splitType === "No Singles" && "Single tickets cannot be purchased from this listing."}
-              {splitType === "Keep Pairs" && "Tickets must be purchased in pairs."}
-            </p>
-          )}
-
+          {/* Quantity notice */}
+          <p className="text-[10px] text-muted-foreground text-center italic">
+            {isThreePack
+              ? `This listing must be purchased as a full set of 3.`
+              : "Tickets are sold in groups of 2 or 4."}
+          </p>
           {isMember ? (
             /* ---- MEMBER CHECKOUT ---- */
             <div className="space-y-3">

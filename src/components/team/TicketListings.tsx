@@ -135,17 +135,21 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     if (!seatCount) return true;
 
     const remaining = ticket.quantity - ticket.quantity_sold;
-    if (seatCount > remaining) return false;
-
-    if (ticket.split_type === "No Splitting") return seatCount === remaining;
-    if (ticket.split_type === "Keep Pairs") return seatCount % 2 === 0;
-    if (ticket.split_type === "No Singles") return seatCount !== 1 || remaining === 1;
-
-    return true;
+    // 3-packs must be sold as full set
+    if (remaining === 3) return seatCount === 3;
+    // Otherwise only 2 or 4 are valid purchase sizes
+    if (seatCount !== 2 && seatCount !== 4) return false;
+    return seatCount <= remaining;
   };
 
-  const maxAvailableSeats = Math.max(0, ...tickets.map((t) => t.quantity - t.quantity_sold));
-  const seatCountOptions = Array.from({ length: Math.min(maxAvailableSeats, 10) }, (_, idx) => idx + 1);
+  // Derive available group sizes from current inventory
+  const seatCountOptions: number[] = [];
+  const hasThreePack = tickets.some((t) => (t.quantity - t.quantity_sold) === 3);
+  const hasTwoOrMore = tickets.some((t) => (t.quantity - t.quantity_sold) >= 2);
+  const hasFourOrMore = tickets.some((t) => (t.quantity - t.quantity_sold) >= 4 && (t.quantity - t.quantity_sold) !== 3);
+  if (hasTwoOrMore) seatCountOptions.push(2);
+  if (hasThreePack) seatCountOptions.push(3);
+  if (hasFourOrMore) seatCountOptions.push(4);
 
   const sectionFilteredTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
   const allTickets = sectionFilteredTickets.filter((ticket) => canFulfillSeatCount(ticket, selectedSeatCount));
@@ -333,7 +337,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <SelectItem value="any">Any group size</SelectItem>
             {seatCountOptions.map((count) => (
               <SelectItem key={count} value={String(count)}>
-                {count} seat{count > 1 ? "s" : ""}
+                {count === 3 ? "3 seats (full set)" : `${count} seats`}
               </SelectItem>
             ))}
           </SelectContent>
