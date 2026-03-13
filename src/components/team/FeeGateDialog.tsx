@@ -312,7 +312,7 @@ const FeeGateDialog = ({
                         <span className="text-[8px] font-bold bg-gold/20 text-gold px-1 py-0.5 rounded uppercase tracking-wide">Recommended</span>
                       </div>
                       <p className="text-[10px] text-muted-foreground">
-                        $49.95/yr — HST inclusive for 12 months. Cancel anytime.
+                        Annual Membership: HST inclusive ticket pricing for 12 months
                       </p>
                     </div>
                   </div>

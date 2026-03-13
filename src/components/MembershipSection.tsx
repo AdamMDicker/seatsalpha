@@ -3,7 +3,7 @@ import { Crown, Check, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const benefits = [
-  "Zero fees on all ticket purchases for 12 months",
+  "HST inclusive ticket pricing for 12 months",
   "Save hundreds compared to StubHub & Ticketmaster",
   "Bundle savings on travel and ride packages",
 ];

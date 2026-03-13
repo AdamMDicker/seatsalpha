@@ -24,7 +24,7 @@ const competitorFees = [
 ];
 
 const memberBenefits = [
-  "Zero service fees on every ticket purchase for a full year",
+  "HST inclusive ticket pricing for 12 months",
   "Save hundreds compared to competitors like StubHub & Ticketmaster",
   "Bundle savings on travel and ride packages",
 ];
