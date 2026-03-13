@@ -67,24 +67,21 @@ const FeeGateDialog = ({
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
-  // Compute valid quantities based on split type
-  const isNoSplit = splitType === "No Splitting";
-  const isNoPairs = splitType === "Keep Pairs";
-  const isNoSingles = splitType === "No Singles";
+  // Tickets can only be sold in 2 or 4. 3-packs must be sold as full set.
+  const isThreePack = availableQuantity === 3;
 
-  const getInitialQuantity = () => {
-    if (isNoSplit) return availableQuantity;
-    if (isNoPairs) return Math.min(2, availableQuantity);
-    if (isNoSingles && availableQuantity >= 2) return 2;
-    return 1;
+  const getValidQuantities = (): number[] => {
+    if (isThreePack) return [3];
+    const valid: number[] = [];
+    if (availableQuantity >= 2) valid.push(2);
+    if (availableQuantity >= 4) valid.push(4);
+    return valid;
   };
 
-  const isValidQuantity = (q: number) => {
-    if (q < 1 || q > availableQuantity) return false;
-    if (isNoSplit) return q === availableQuantity;
-    if (isNoPairs) return q % 2 === 0;
-    if (isNoSingles) return q !== 1 || availableQuantity === 1;
-    return true;
+  const validQuantities = getValidQuantities();
+
+  const getInitialQuantity = () => {
+    return validQuantities[0] || 2;
   };
 
   // Reset state when dialog opens
@@ -94,12 +91,14 @@ const FeeGateDialog = ({
       setConfirmedDetails(false);
       setQuantity(getInitialQuantity());
     }
-  }, [open, availableQuantity, splitType]);
+  }, [open, availableQuantity]);
 
   const handleQuantityChange = (delta: number) => {
-    let next = quantity + delta;
-    if (isNoPairs) next = quantity + delta * 2;
-    if (isValidQuantity(next)) setQuantity(next);
+    const currentIdx = validQuantities.indexOf(quantity);
+    const nextIdx = currentIdx + delta;
+    if (nextIdx >= 0 && nextIdx < validQuantities.length) {
+      setQuantity(validQuantities[nextIdx]);
+    }
   };
 
   const subtotal = Math.round(ticketPrice * quantity * 100) / 100;
