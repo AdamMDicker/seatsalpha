@@ -129,7 +129,26 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     setFeeGateTicket(ticket);
   };
 
-  const allTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
+  const selectedSeatCount = desiredSeats === "any" ? null : Number(desiredSeats);
+
+  const canFulfillSeatCount = (ticket: TicketInfo, seatCount: number | null) => {
+    if (!seatCount) return true;
+
+    const remaining = ticket.quantity - ticket.quantity_sold;
+    if (seatCount > remaining) return false;
+
+    if (ticket.split_type === "No Splitting") return seatCount === remaining;
+    if (ticket.split_type === "Keep Pairs") return seatCount % 2 === 0;
+    if (ticket.split_type === "No Singles") return seatCount !== 1 || remaining === 1;
+
+    return true;
+  };
+
+  const maxAvailableSeats = Math.max(0, ...tickets.map((t) => t.quantity - t.quantity_sold));
+  const seatCountOptions = Array.from({ length: Math.min(maxAvailableSeats, 10) }, (_, idx) => idx + 1);
+
+  const sectionFilteredTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
+  const allTickets = sectionFilteredTickets.filter((ticket) => canFulfillSeatCount(ticket, selectedSeatCount));
   const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket).slice(0, 4);
   const resellerTickets = allTickets.filter((t) => t.is_reseller_ticket);
 
