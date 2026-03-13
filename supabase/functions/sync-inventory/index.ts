@@ -123,6 +123,10 @@ Deno.serve(async (req) => {
       const { section, row } = parseSeatTrim(seatTrim);
       if (!section) continue;
 
+      // Only import 500-level sections
+      const sectionNum = parseInt(section);
+      if (isNaN(sectionNum) || sectionNum < 500 || sectionNum >= 600) continue;
+
       // Parse date
       const dm = dateStr.match(/^(\w+)\s+(\d+)/);
       if (!dm) continue;
@@ -157,7 +161,7 @@ Deno.serve(async (req) => {
 
       gameMap.get(gameKey)!.tickets.push({
         section, row_name: row, price, quantity: qty,
-        quantity_sold: 0, is_active: true, is_reseller_ticket: false,
+        quantity_sold: 0, is_active: true, is_reseller_ticket: true,
         seat_notes: promo || null,
       });
     }
