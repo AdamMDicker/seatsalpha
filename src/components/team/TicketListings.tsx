@@ -66,6 +66,8 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [lightboxImages, setLightboxImages] = useState<SeatImage[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [desiredSeats, setDesiredSeats] = useState("any");
+  const [filterAisle, setFilterAisle] = useState(false);
+  const [filterRow1, setFilterRow1] = useState(false);
   const { user, isMember } = useAuth();
   const { toast } = useToast();
 
@@ -151,8 +153,15 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   if (hasThreePack) seatCountOptions.push(3);
   if (hasFourOrMore) seatCountOptions.push(4);
 
+  // Check if aisle / row1 perks exist in current inventory
+  const hasAisleTickets = tickets.some((t) => t.perks?.includes("aisle"));
+  const hasRow1Tickets = tickets.some((t) => t.perks?.includes("row1"));
+
   const sectionFilteredTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
-  const allTickets = sectionFilteredTickets.filter((ticket) => canFulfillSeatCount(ticket, selectedSeatCount));
+  const allTickets = sectionFilteredTickets
+    .filter((ticket) => canFulfillSeatCount(ticket, selectedSeatCount))
+    .filter((ticket) => !filterAisle || ticket.perks?.includes("aisle"))
+    .filter((ticket) => !filterRow1 || ticket.perks?.includes("row1"));
   const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket).slice(0, 4);
   const resellerTickets = allTickets.filter((t) => t.is_reseller_ticket);
 
@@ -350,6 +359,35 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               ))}
             </SelectContent>
           </Select>
+        {(hasAisleTickets || hasRow1Tickets) && (
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-xs text-muted-foreground font-medium">Filter:</span>
+            {hasAisleTickets && (
+              <button
+                onClick={() => setFilterAisle((v) => !v)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                  filterAisle
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                }`}
+              >
+                🪑 Aisle Seats
+              </button>
+            )}
+            {hasRow1Tickets && (
+              <button
+                onClick={() => setFilterRow1((v) => !v)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                  filterRow1
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                }`}
+              >
+                🥇 Row 1
+              </button>
+            )}
+          </div>
+        )}
         </div>
       </div>
 
