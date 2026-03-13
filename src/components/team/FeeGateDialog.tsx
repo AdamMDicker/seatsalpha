@@ -58,6 +58,7 @@ const FeeGateDialog = ({
   gameTitle,
   eventDate,
   isMember = false,
+  isAdmin = false,
   availableQuantity,
   splitType,
 }: FeeGateDialogProps) => {
