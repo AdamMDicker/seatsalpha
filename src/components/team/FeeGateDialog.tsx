@@ -183,14 +183,14 @@ const FeeGateDialog = ({
           </div>
 
           {/* Quantity selector + ticket price */}
-          <div className="flex justify-between items-center py-2 border-b border-border">
-            <div>
-              <span className="text-foreground font-semibold text-sm">Tickets</span>
-              <span className="text-muted-foreground text-xs ml-1.5">(${ticketPrice.toFixed(2)} each)</span>
-            </div>
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between py-2 border-b border-border">
+            <span className="text-foreground font-semibold text-sm">
+              Tickets
+              <span className="text-muted-foreground text-xs font-normal ml-1">(${ticketPrice.toFixed(2)} each)</span>
+            </span>
+            <div className="flex items-center gap-2">
               {validQuantities.length > 1 ? (
-                <div className="flex items-center gap-0 border-2 border-primary/30 rounded-lg bg-primary/5">
+                <div className="inline-flex items-center border-2 border-primary/30 rounded-lg bg-primary/5">
                   <button
                     onClick={() => handleQuantityChange(-1)}
                     disabled={validQuantities.indexOf(quantity) <= 0}
@@ -198,7 +198,7 @@ const FeeGateDialog = ({
                   >
                     <Minus className="h-3.5 w-3.5" />
                   </button>
-                  <span className="text-lg font-display font-bold text-primary w-7 text-center">{quantity}</span>
+                  <span className="text-base font-display font-bold text-primary w-6 text-center">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
                     disabled={validQuantities.indexOf(quantity) >= validQuantities.length - 1}
@@ -208,11 +208,7 @@ const FeeGateDialog = ({
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 border-2 border-primary/30 rounded-lg bg-primary/5 px-2.5 py-1">
-                  <span className="text-xs text-muted-foreground">×</span>
-                  <span className="text-lg font-display font-bold text-primary">{quantity}</span>
-                  {isThreePack && <span className="text-[10px] text-muted-foreground">(full set)</span>}
-                </div>
+                <span className="text-xs text-muted-foreground font-medium">×{quantity}{isThreePack ? " (full set)" : ""}</span>
               )}
               <span className="text-foreground font-bold text-base font-display">${subtotal.toFixed(2)}</span>
             </div>
