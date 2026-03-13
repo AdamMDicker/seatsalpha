@@ -31,6 +31,7 @@ interface FeeGateDialogProps {
   gameTitle?: string;
   eventDate?: string;
   isMember?: boolean;
+  isAdmin?: boolean;
   availableQuantity: number;
   splitType?: string | null;
 }
