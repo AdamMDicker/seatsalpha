@@ -123,6 +123,10 @@ Deno.serve(async (req) => {
       const { section, row } = parseSeatTrim(seatTrim);
       if (!section) continue;
 
+      // Only import 500-level sections
+      const sectionNum = parseInt(section);
+      if (isNaN(sectionNum) || sectionNum < 500 || sectionNum >= 600) continue;
+
       // Parse date
       const dm = dateStr.match(/^(\w+)\s+(\d+)/);
       if (!dm) continue;
