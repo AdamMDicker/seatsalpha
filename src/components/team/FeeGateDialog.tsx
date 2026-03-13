@@ -184,11 +184,11 @@ const FeeGateDialog = ({
               <span className="text-muted-foreground text-xs ml-1.5">(${ticketPrice.toFixed(2)} each)</span>
             </div>
             <div className="flex items-center gap-2">
-              {!isNoSplit && (
+              {validQuantities.length > 1 ? (
                 <div className="flex items-center gap-1 border border-border rounded-md">
                   <button
                     onClick={() => handleQuantityChange(-1)}
-                    disabled={!isValidQuantity(isNoPairs ? quantity - 2 : quantity - 1)}
+                    disabled={validQuantities.indexOf(quantity) <= 0}
                     className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                   >
                     <Minus className="h-3 w-3" />
@@ -196,27 +196,25 @@ const FeeGateDialog = ({
                   <span className="text-sm font-bold text-foreground w-6 text-center">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    disabled={!isValidQuantity(isNoPairs ? quantity + 2 : quantity + 1)}
+                    disabled={validQuantities.indexOf(quantity) >= validQuantities.length - 1}
                     className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                   >
                     <Plus className="h-3 w-3" />
                   </button>
                 </div>
-              )}
-              {isNoSplit && (
-                <span className="text-xs text-muted-foreground">×{quantity} (full set only)</span>
+              ) : (
+                <span className="text-xs text-muted-foreground">×{quantity} {isThreePack ? "(full set)" : ""}</span>
               )}
               <span className="text-foreground font-bold text-base">${subtotal.toFixed(2)}</span>
             </div>
           </div>
 
-          {/* Split type notice */}
-          {splitType && splitType !== "Any" && (
-            <p className="text-[10px] text-muted-foreground text-center italic">
-              {splitType === "No Splitting" && `This listing must be purchased as a full set of ${availableQuantity}.`}
-              {splitType === "No Singles" && "Single tickets cannot be purchased from this listing."}
-              {splitType === "Keep Pairs" && "Tickets must be purchased in pairs."}
-            </p>
+          {/* Quantity notice */}
+          <p className="text-[10px] text-muted-foreground text-center italic">
+            {isThreePack
+              ? `This listing must be purchased as a full set of 3.`
+              : "Tickets are sold in groups of 2 or 4."}
+          </p>
           )}
 
           {isMember ? (
