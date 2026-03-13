@@ -1,0 +1,1 @@
+UPDATE resellers SET email = 'lmkconsulting@gmail.com' WHERE user_id = '8904900d-db33-4f03-bdb1-ca4d5b6dfa8f';

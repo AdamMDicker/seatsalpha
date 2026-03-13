@@ -26,6 +26,7 @@ interface FeeGateDialogProps {
   rowName?: string | null;
   onProceedWithFees: (qty: number) => void;
   onProceedNoFees?: (qty: number) => void;
+  ticketId?: string;
   loading: boolean;
   venueName?: string;
   gameTitle?: string;
@@ -61,6 +62,7 @@ const FeeGateDialog = ({
   isAdmin = false,
   availableQuantity,
   splitType,
+  ticketId,
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>(isMember ? "hst" : "membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
@@ -126,6 +128,7 @@ const FeeGateDialog = ({
           tier,
           venue: venueName || "",
           eventDate: eventDate || "",
+          ticketId: ticketId || "",
         },
       });
       if (error) throw error;

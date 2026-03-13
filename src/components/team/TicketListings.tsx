@@ -412,6 +412,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           ticketPrice={feeGateTicket.price}
           section={feeGateTicket.section}
           rowName={feeGateTicket.row_name}
+          ticketId={feeGateTicket.id}
           onProceedWithFees={(qty) => processPayment(feeGateTicket, true, qty)}
           onProceedNoFees={(qty) => processPayment(feeGateTicket, false, qty)}
           loading={buyingTicketId === feeGateTicket.id}

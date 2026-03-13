@@ -117,6 +117,7 @@ serve(async (req) => {
           ticket_tier: ticketInfo.tier || "",
           venue: ticketInfo.venue || "",
           event_date: ticketInfo.eventDate || "",
+          ticket_id: ticketInfo.ticketId || "",
         },
       } : {}),
     });
