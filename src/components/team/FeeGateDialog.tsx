@@ -31,6 +31,7 @@ interface FeeGateDialogProps {
   gameTitle?: string;
   eventDate?: string;
   isMember?: boolean;
+  isAdmin?: boolean;
   availableQuantity: number;
   splitType?: string | null;
 }
@@ -57,6 +58,7 @@ const FeeGateDialog = ({
   gameTitle,
   eventDate,
   isMember = false,
+  isAdmin = false,
   availableQuantity,
   splitType,
 }: FeeGateDialogProps) => {
@@ -227,12 +229,14 @@ const FeeGateDialog = ({
           </div>
 
           <div className="space-y-1.5">
-            {/* Option: No fees (members only) */}
-            {isMember && (
+            {/* Option: No fees (members only, or admins always see it) */}
+            {(isMember || isAdmin) && (
               <button
                 onClick={() => setSelectedOption("hst")}
                 className={`w-full text-left rounded-md border-2 p-2 transition-all ${
-                  selectedOption === "hst"
+                  selectedOption === "hst" && isMember
+                    ? "border-gold bg-gold/5"
+                    : selectedOption === "hst" && !isMember
                     ? "border-gold bg-gold/5"
                     : "border-border bg-card hover:border-muted-foreground/30"
                 }`}
@@ -259,12 +263,12 @@ const FeeGateDialog = ({
               </button>
             )}
 
-            {/* Option: HST (non-members only) */}
-            {!isMember && (
+            {/* Option: HST (non-members, or admins always see it) */}
+            {(!isMember || isAdmin) && (
               <button
-                onClick={() => setSelectedOption("hst")}
+                onClick={() => setSelectedOption(isAdmin && !isMember ? "hst" : "hst")}
                 className={`w-full text-left rounded-md border-2 p-2 transition-all ${
-                  selectedOption === "hst"
+                  selectedOption === "hst" && !isMember
                     ? "border-destructive bg-destructive/5"
                     : "border-border bg-card hover:border-muted-foreground/30"
                 }`}
@@ -272,12 +276,12 @@ const FeeGateDialog = ({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-1">
                     <div className={`h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                      selectedOption === "hst" ? "border-destructive bg-destructive" : "border-muted-foreground/40"
+                      selectedOption === "hst" && !isMember ? "border-destructive bg-destructive" : "border-muted-foreground/40"
                     }`}>
-                      {selectedOption === "hst" && <Check className="h-2 w-2 text-destructive-foreground" />}
+                      {selectedOption === "hst" && !isMember && <Check className="h-2 w-2 text-destructive-foreground" />}
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground text-xs">Buy Tickets — No Membership</p>
+                      <p className="font-semibold text-foreground text-xs">Non-Member Pricing</p>
                       <p className="text-[10px] text-muted-foreground">
                         {quantity}× ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
                       </p>
@@ -289,7 +293,7 @@ const FeeGateDialog = ({
             )}
 
             {/* Option: Add membership (non-members only) */}
-            {!isMember && (
+            {(!isMember || isAdmin) && (
               <button
                 onClick={() => setSelectedOption("membership")}
                 className={`w-full text-left rounded-md border-2 p-2 transition-all ${
@@ -320,7 +324,7 @@ const FeeGateDialog = ({
               </button>
             )}
 
-            {!isMember && selectedOption === "membership" && (
+            {(!isMember || isAdmin) && selectedOption === "membership" && (
               <div className="text-center">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -408,7 +412,7 @@ const FeeGateDialog = ({
                 <>{isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)}`}</>
               )}
             </Button>
-            {!isMember && selectedOption === "hst" && (
+            {(!isMember || isAdmin) && selectedOption === "hst" && (
               <p className="text-center text-[10px] text-muted-foreground">
                 Includes ${hstAmount.toFixed(2)} HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
               </p>
