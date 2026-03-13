@@ -324,7 +324,7 @@ const FeeGateDialog = ({
               </button>
             )}
 
-            {!isMember && selectedOption === "membership" && (
+            {(!isMember || isAdmin) && selectedOption === "membership" && (
               <div className="text-center">
                 <Popover>
                   <PopoverTrigger asChild>
