@@ -152,7 +152,7 @@ const FeeGateDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
         {/* Compact Header */}
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-5 pt-4 pb-3">
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-4 pt-3 pb-2 flex-shrink-0">
           <DialogHeader>
             <DialogTitle className="font-display text-xl text-foreground">Checkout</DialogTitle>
             <DialogDescription className="text-muted-foreground text-xs">
