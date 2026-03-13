@@ -182,28 +182,24 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2">
-              <Ticket className="h-7 w-7 text-primary" />
-              <span className="font-display text-xl font-bold tracking-tight">
+        <div className="flex items-center justify-between h-14">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <Link to="/" className="flex items-center gap-1.5">
+              <Ticket className="h-6 w-6 text-primary" />
+              <span className="font-display text-lg font-bold tracking-tight">
                 seats<span className="text-primary">.ca</span>
               </span>
             </Link>
-            <Link to="/membership" className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors">
+            <Link to="/membership" className="hidden lg:block text-xs font-semibold text-gold hover:text-gold/80 transition-colors whitespace-nowrap">
               Become a Member
             </Link>
-            <Link to="/reseller" className="text-sm font-semibold text-gold hover:text-gold/80 transition-colors">
+            <Link to="/reseller" className="hidden xl:block text-xs font-semibold text-gold hover:text-gold/80 transition-colors whitespace-nowrap">
               Become a Seller
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-6" ref={dropdownRef}>
-            <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              All Events
-            </Link>
+          <div className="hidden md:flex items-center gap-3 lg:gap-4 overflow-x-auto" ref={dropdownRef}>
             {ALL_LEAGUES.filter((l) => visibleLeagues.has(l)).map((league) => {
-              // Check for single-team override
               const singleSlug = singleTeamOverrides[league];
               if (singleSlug && SINGLE_TEAM_MAP[league]?.[singleSlug]) {
                 const team = SINGLE_TEAM_MAP[league][singleSlug];
@@ -211,7 +207,7 @@ const Navbar = () => {
                   <Link
                     key={league}
                     to={team.path}
-                    className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                    className="text-xs font-semibold text-foreground hover:text-primary transition-colors whitespace-nowrap"
                   >
                     {team.name} Tickets
                   </Link>
@@ -225,10 +221,10 @@ const Navbar = () => {
                   <div key={league} className="relative">
                     <button
                       onClick={() => setOpenDropdown(openDropdown === league ? null : league)}
-                      className="text-sm font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1"
+                      className="text-xs font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-0.5 whitespace-nowrap"
                     >
                       {league}
-                      <ChevronDown className={`h-3.5 w-3.5 transition-transform ${openDropdown === league ? "rotate-180" : ""}`} />
+                      <ChevronDown className={`h-3 w-3 transition-transform ${openDropdown === league ? "rotate-180" : ""}`} />
                     </button>
                     {openDropdown === league && (
                       <div className="absolute top-full left-0 mt-2 w-64 max-h-[70vh] overflow-y-auto rounded-xl bg-card border border-border shadow-xl z-50 py-2 animate-fade-in">
@@ -261,42 +257,42 @@ const Navbar = () => {
                 <Link
                   key={league}
                   to={`/?category=${league.toLowerCase()}`}
-                  className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                  className="text-xs font-semibold text-foreground hover:text-primary transition-colors whitespace-nowrap"
                 >
                   {league}
                 </Link>
               );
             })}
-            <Link to="/about" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+            <Link to="/about" className="text-xs font-semibold text-foreground hover:text-primary transition-colors whitespace-nowrap">
               About Us
             </Link>
-            <Link to="/contact" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+            <Link to="/contact" className="text-xs font-semibold text-foreground hover:text-primary transition-colors whitespace-nowrap">
               Contact Us
             </Link>
-            <Link to="/membership#faq" className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+            <Link to="/membership#faq" className="text-xs font-semibold text-foreground hover:text-primary transition-colors whitespace-nowrap">
               FAQ
             </Link>
             {isAdmin && (
-              <Link to="/admin" className="text-sm font-medium text-gold hover:text-gold/80 transition-colors flex items-center gap-1">
-                <Shield className="h-3.5 w-3.5" /> Admin
+              <Link to="/admin" className="text-xs font-medium text-gold hover:text-gold/80 transition-colors flex items-center gap-1 whitespace-nowrap">
+                <Shield className="h-3 w-3" /> Admin
               </Link>
             )}
             {user && (
-              <Link to="/reseller" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              <Link to="/reseller" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
                 Reseller
               </Link>
             )}
             {user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <NotificationBell />
-                <span className="text-xs text-muted-foreground">{user.email}</span>
-                <Button variant="glass" size="sm" onClick={signOut}>
-                  <LogOut className="h-3.5 w-3.5" /> Sign Out
+                <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">{user.email}</span>
+                <Button variant="glass" size="sm" className="text-xs px-2 py-1 h-7" onClick={signOut}>
+                  <LogOut className="h-3 w-3" />
                 </Button>
               </div>
             ) : (
               <Link to="/auth">
-                <Button variant="hero" size="sm">Sign In</Button>
+                <Button variant="hero" size="sm" className="text-xs px-3 py-1 h-7">Sign In</Button>
               </Link>
             )}
           </div>
