@@ -183,7 +183,7 @@ const FeeGateDialog = ({
           </div>
 
           {/* Quantity selector + ticket price */}
-          <div className="flex items-center justify-between py-2 border-b border-border">
+          <div className="flex items-center justify-center gap-3 py-2 border-b border-border">
             <span className="text-foreground font-semibold text-sm">
               Tickets
               <span className="text-muted-foreground text-xs font-normal ml-1">(${ticketPrice.toFixed(2)} each)</span>
