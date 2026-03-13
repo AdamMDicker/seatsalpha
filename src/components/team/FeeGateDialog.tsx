@@ -181,34 +181,38 @@ const FeeGateDialog = ({
           </div>
 
           {/* Quantity selector + ticket price */}
-          <div className="flex justify-between items-center py-2 border-b border-border">
+          <div className="flex justify-between items-center py-3 border-b border-border">
             <div>
-              <span className="text-foreground font-medium text-sm">Tickets</span>
+              <span className="text-foreground font-semibold text-sm">Tickets</span>
               <span className="text-muted-foreground text-xs ml-1.5">(${ticketPrice.toFixed(2)} each)</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {validQuantities.length > 1 ? (
-                <div className="flex items-center gap-1 border border-border rounded-md">
+                <div className="flex items-center gap-0 border-2 border-primary/30 rounded-lg bg-primary/5">
                   <button
                     onClick={() => handleQuantityChange(-1)}
                     disabled={validQuantities.indexOf(quantity) <= 0}
-                    className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                    className="px-2.5 py-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                   >
-                    <Minus className="h-3 w-3" />
+                    <Minus className="h-4 w-4" />
                   </button>
-                  <span className="text-sm font-bold text-foreground w-6 text-center">{quantity}</span>
+                  <span className="text-lg font-display font-bold text-primary w-8 text-center">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
                     disabled={validQuantities.indexOf(quantity) >= validQuantities.length - 1}
-                    className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                    className="px-2.5 py-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-4 w-4" />
                   </button>
                 </div>
               ) : (
-                <span className="text-xs text-muted-foreground">×{quantity} {isThreePack ? "(full set)" : ""}</span>
+                <div className="flex items-center gap-1.5 border-2 border-primary/30 rounded-lg bg-primary/5 px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground">×</span>
+                  <span className="text-lg font-display font-bold text-primary">{quantity}</span>
+                  {isThreePack && <span className="text-[10px] text-muted-foreground">(full set)</span>}
+                </div>
               )}
-              <span className="text-foreground font-bold text-base">${subtotal.toFixed(2)}</span>
+              <span className="text-foreground font-bold text-lg font-display">${subtotal.toFixed(2)}</span>
             </div>
           </div>
 
