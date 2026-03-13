@@ -418,7 +418,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           venueName={venueName}
           gameTitle={gameTitle}
           eventDate={eventDate}
-          isMember={isMember || isAdmin}
+          isMember={isMember}
           availableQuantity={feeGateTicket.quantity - feeGateTicket.quantity_sold}
           splitType={feeGateTicket.split_type}
         />
