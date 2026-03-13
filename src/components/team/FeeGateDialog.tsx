@@ -154,7 +154,7 @@ const FeeGateDialog = ({
         {/* Compact Header */}
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-4 pt-3 pb-2 flex-shrink-0">
           <DialogHeader>
-            <DialogTitle className="font-display text-xl text-foreground">Checkout</DialogTitle>
+            <DialogTitle className="font-display text-lg text-foreground">Checkout</DialogTitle>
             <DialogDescription className="text-muted-foreground text-xs">
               Section {section}{rowName ? ` · Row ${rowName}` : ""}
               {venueName ? ` · ${venueName}` : ""}
