@@ -128,6 +128,7 @@ const FeeGateDialog = ({
           tier,
           venue: venueName || "",
           eventDate: eventDate || "",
+          ticketId: ticketId || "",
         },
       });
       if (error) throw error;
