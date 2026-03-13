@@ -188,9 +188,9 @@ const FeeGateDialog = ({
               Tickets
               <span className="text-muted-foreground text-xs font-normal ml-1">(${ticketPrice.toFixed(2)} each)</span>
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {validQuantities.length > 1 ? (
-                <div className="inline-flex items-center border-2 border-primary/30 rounded-lg bg-primary/5">
+                <div className="inline-flex items-center border-2 border-primary/40 rounded-lg bg-primary/10">
                   <button
                     onClick={() => handleQuantityChange(-1)}
                     disabled={validQuantities.indexOf(quantity) <= 0}
@@ -198,7 +198,7 @@ const FeeGateDialog = ({
                   >
                     <Minus className="h-3.5 w-3.5" />
                   </button>
-                  <span className="text-base font-display font-bold text-primary w-6 text-center">{quantity}</span>
+                  <span className="text-lg font-display font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
                     disabled={validQuantities.indexOf(quantity) >= validQuantities.length - 1}
@@ -208,8 +208,9 @@ const FeeGateDialog = ({
                   </button>
                 </div>
               ) : (
-                <span className="text-xs text-muted-foreground font-medium">×{quantity}{isThreePack ? " (full set)" : ""}</span>
+                <span className="text-lg font-display font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/30">×{quantity}{isThreePack ? " set" : ""}</span>
               )}
+              <span className="text-muted-foreground text-xs">=</span>
               <span className="text-foreground font-bold text-base font-display">${subtotal.toFixed(2)}</span>
             </div>
           </div>
