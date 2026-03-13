@@ -325,23 +325,32 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">
-          {selectedSeatCount ? `Showing listings that can fulfill ${selectedSeatCount} seat${selectedSeatCount > 1 ? "s" : ""}.` : "Filter listings by seats needed."}
-        </p>
-        <Select value={desiredSeats} onValueChange={setDesiredSeats}>
-          <SelectTrigger className="w-[190px] h-9 bg-secondary border-border">
-            <SelectValue placeholder="Seats needed" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="any">Any group size</SelectItem>
-            {seatCountOptions.map((count) => (
-              <SelectItem key={count} value={String(count)}>
-                {count === 3 ? "3 seats (full set)" : `${count} seats`}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-bold text-foreground flex items-center gap-1.5">
+              🎟️ Quantity of Tickets
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {selectedSeatCount
+                ? `Showing listings with ${selectedSeatCount} ticket${selectedSeatCount > 1 ? "s" : ""} available.`
+                : "Select how many tickets you need to filter results."}
+            </p>
+          </div>
+          <Select value={desiredSeats} onValueChange={setDesiredSeats}>
+            <SelectTrigger className="w-[200px] h-10 bg-card border-primary/30 font-semibold text-foreground">
+              <SelectValue placeholder="Select quantity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">All Quantities</SelectItem>
+              {seatCountOptions.map((count) => (
+                <SelectItem key={count} value={String(count)}>
+                  {count === 3 ? "3 Tickets (full set)" : `${count} Tickets`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">⭐ Featured Tickets</h2>
