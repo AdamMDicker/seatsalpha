@@ -170,9 +170,9 @@ const FeeGateDialog = ({
 
         <div className="px-4 pb-4 space-y-2.5 overflow-y-auto flex-1">
           {/* Sales final warning — always at top */}
-          <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5">
+          <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/30 p-2">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <p className="text-[11px] text-foreground/90">
+            <p className="text-[10px] text-foreground/90 leading-snug">
               All ticket sales are final unless an event is cancelled without a rescheduling opportunity set out by the event organizer.
             </p>
           </div>
