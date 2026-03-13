@@ -65,6 +65,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [feeGateTicket, setFeeGateTicket] = useState<TicketInfo | null>(null);
   const [lightboxImages, setLightboxImages] = useState<SeatImage[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [desiredSeats, setDesiredSeats] = useState("any");
   const { user, isMember } = useAuth();
   const { toast } = useToast();
 
