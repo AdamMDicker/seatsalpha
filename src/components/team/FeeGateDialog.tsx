@@ -168,7 +168,7 @@ const FeeGateDialog = ({
           </DialogHeader>
         </div>
 
-        <div className="px-5 pb-5 space-y-3">
+        <div className="px-4 pb-4 space-y-2.5 overflow-y-auto flex-1">
           {/* Sales final warning — always at top */}
           <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
