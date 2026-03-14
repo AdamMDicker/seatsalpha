@@ -91,6 +91,23 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     fetchImages();
   }, [tickets]);
 
+  // Auto-open FeeGateDialog if returning from auth with buyTicket param
+  useEffect(() => {
+    if (autoOpenHandled || !user || tickets.length === 0) return;
+    const buyTicketId = searchParams.get("buyTicket");
+    if (!buyTicketId) return;
+
+    const ticket = tickets.find((t) => t.id === buyTicketId);
+    if (ticket) {
+      setFeeGateTicket(ticket);
+      // Clean up the URL param
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("buyTicket");
+      setSearchParams(newParams, { replace: true });
+    }
+    setAutoOpenHandled(true);
+  }, [user, tickets, searchParams, autoOpenHandled]);
+
   const openLightbox = (images: SeatImage[], startIndex: number) => {
     setLightboxImages(images);
     setLightboxIndex(startIndex);
@@ -128,7 +145,10 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const handleBuy = (ticket: TicketInfo) => {
     if (!user) {
-      window.location.href = `/auth?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      // Include the ticket ID so we can auto-open checkout after login
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set("buyTicket", ticket.id);
+      window.location.href = `/auth?redirect=${encodeURIComponent(currentUrl.pathname + currentUrl.search)}`;
       return;
     }
     setFeeGateTicket(ticket);
