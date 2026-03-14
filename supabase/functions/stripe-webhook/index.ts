@@ -1,9 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "https://esm.sh/stripe@14.21.0?target=deno&deno-std=0.190.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2025-08-27.basil",
+  apiVersion: "2023-10-16",
 });
 
 const supabase = createClient(
@@ -119,15 +119,26 @@ function sellerEmailHtml(meta: {
 // --- Helper to enqueue an email ---
 async function enqueueEmail(to: string, subject: string, html: string, label: string) {
   const messageId = crypto.randomUUID();
+  // Generate plain text from subject as fallback
+  const text = subject;
+  // Log pending status before enqueue
+  await supabase.from("email_send_log").insert({
+    message_id: messageId,
+    template_name: label,
+    recipient_email: to,
+    status: "pending",
+  });
   const { error } = await supabase.rpc("enqueue_email", {
     queue_name: "transactional_emails",
     payload: {
+      run_id: crypto.randomUUID(),
       message_id: messageId,
       to,
-      from: FROM_EMAIL,
+      from: `seats.ca <${FROM_EMAIL}>`,
       sender_domain: SENDER_DOMAIN,
       subject,
       html,
+      text,
       purpose: "transactional",
       label,
       queued_at: new Date().toISOString(),
@@ -235,10 +246,11 @@ serve(async (req) => {
         .single();
 
       if (ticket?.seller_id) {
+        // seller_id on tickets stores the reseller's user_id, not the reseller table id
         const { data: reseller } = await supabase
           .from("resellers")
           .select("user_id, business_name, email")
-          .eq("id", ticket.seller_id)
+          .eq("user_id", ticket.seller_id)
           .single();
 
         if (reseller) {
