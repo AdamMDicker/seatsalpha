@@ -6,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const SENDER_DOMAIN = "notify.seats.ca";
+const SENDER_DOMAIN = "seats.ca";
 const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
 
 // --- Email HTML builders ---
