@@ -14,10 +14,8 @@ async function sendViaResend(payload: Record<string, unknown>): Promise<void> {
       'Authorization': `Bearer ${resendApiKey}`,
       'Content-Type': 'application/json',
     },
-    // Use RESEND_FROM_EMAIL env var for sender. Falls back to Resend test sender.
-    const resendFrom = Deno.env.get('RESEND_FROM_EMAIL') || 'seats.ca <onboarding@resend.dev>'
     body: JSON.stringify({
-      from: resendFrom,
+      from: Deno.env.get('RESEND_FROM_EMAIL') || 'seats.ca <onboarding@resend.dev>',
       to: [payload.to],
       subject: payload.subject,
       html: payload.html,
