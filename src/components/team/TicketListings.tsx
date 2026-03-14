@@ -125,7 +125,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const handleBuy = (ticket: TicketInfo) => {
     if (!user) {
-      window.location.href = "/auth";
+      window.location.href = `/auth?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
       return;
     }
     setFeeGateTicket(ticket);
