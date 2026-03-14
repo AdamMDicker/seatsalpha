@@ -133,9 +133,28 @@ Deno.serve(async (req) => {
       const monthNum = MONTH_MAP[dm[1].toLowerCase()];
       if (monthNum === undefined) continue;
       const { hours, minutes } = parseTime(timeStr);
-      // Store as UTC directly - the times in the sheet are ET, matching existing DB entries stored as UTC
+      // Times in the sheet are Eastern Time — convert to UTC by adding 4h (EDT) or 5h (EST)
       const day = parseInt(dm[2]);
-      const eventDate = `${2026}-${String(monthNum + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00+00:00`;
+      // DST 2026: starts Mar 8, ends Nov 1 — months 3-10 (April-October) are always EDT,
+      // March after 8th is EDT, November before 1st is EDT
+      const month1 = monthNum + 1; // 1-indexed
+      const isEDT = (month1 > 3 && month1 < 11) || (month1 === 3 && day >= 8) || (month1 === 11 && day < 1);
+      const utcOffsetHours = isEDT ? 4 : 5;
+      let utcHours = hours + utcOffsetHours;
+      let utcDay = day;
+      let utcMonth = monthNum;
+      let utcYear = 2026;
+      if (utcHours >= 24) {
+        utcHours -= 24;
+        // Advance day (simplified — sufficient for game schedule dates)
+        const daysInMonth = new Date(utcYear, utcMonth + 1, 0).getDate();
+        utcDay += 1;
+        if (utcDay > daysInMonth) {
+          utcDay = 1;
+          utcMonth += 1;
+        }
+      }
+      const eventDate = `${utcYear}-${String(utcMonth + 1).padStart(2, "0")}-${String(utcDay).padStart(2, "0")}T${String(utcHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00+00:00`;
 
       const title = `Toronto Blue Jays vs ${opponent}`;
       const promoLower = promo.toLowerCase();
