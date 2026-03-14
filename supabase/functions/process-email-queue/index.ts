@@ -1,6 +1,40 @@
 import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
+// Send transactional emails via Resend (bypasses Lovable run_id requirement)
+async function sendViaResend(payload: Record<string, unknown>): Promise<void> {
+  const resendApiKey = Deno.env.get('RESEND_API_KEY')
+  if (!resendApiKey) {
+    throw new Error('RESEND_API_KEY is not configured')
+  }
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: payload.from || `seats.ca <noreply@notify.seats.ca>`,
+      to: [payload.to],
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text || payload.subject,
+    }),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text()
+    const status = response.status
+    if (status === 429) {
+      const err = new Error(`Resend rate limited: ${errorBody}`)
+      ;(err as unknown as Record<string, unknown>).status = 429
+      throw err
+    }
+    throw new Error(`Resend API error [${status}]: ${errorBody}`)
+  }
+}
+
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
 const DEFAULT_SEND_DELAY_MS = 200
