@@ -15,7 +15,7 @@ async function sendViaResend(payload: Record<string, unknown>): Promise<void> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: Deno.env.get('RESEND_FROM_EMAIL') || 'seats.ca <onboarding@resend.dev>',
+      from: payload.from || Deno.env.get('RESEND_FROM_EMAIL') || 'seats.ca <noreply@notify.seats.ca>',
       to: [payload.to],
       subject: payload.subject,
       html: payload.html,
