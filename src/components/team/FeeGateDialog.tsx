@@ -35,6 +35,7 @@ interface FeeGateDialogProps {
   isAdmin?: boolean;
   availableQuantity: number;
   splitType?: string | null;
+  preferredQuantity?: number;
 }
 
 type CheckoutOption = "hst" | "membership";
