@@ -12,7 +12,7 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-const SENDER_DOMAIN = "notify.seats.ca";
+const SENDER_DOMAIN = "seats.ca";
 const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
 
 // --- Email HTML builders ---
