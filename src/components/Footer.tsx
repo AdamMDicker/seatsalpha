@@ -36,7 +36,7 @@ const Footer = () => {
                 seats<span className="text-primary">.ca</span>
               </span>
             </div>
-            <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-1">Canada's First No-Fee Platform</p>
+            <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-1">Canada's No Extra Fees Platform</p>
             <p className="text-sm text-muted-foreground">
               Not just a seat, an experience. Zero fees on every ticket, every time.
             </p>

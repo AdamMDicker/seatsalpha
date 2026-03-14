@@ -163,7 +163,7 @@ const Auth = () => {
             {isLogin ? "Welcome back" : "Create your account"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {isLogin ? "Sign in to access your tickets" : "Join Canada's no-fee ticket platform"}
+            {isLogin ? "Sign in to access your tickets" : "Join Canada's no extra fees ticket platform"}
           </p>
         </div>
 
