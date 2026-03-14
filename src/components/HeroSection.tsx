@@ -90,7 +90,7 @@ const HeroSection = () => {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground mb-6 animate-pulse-glow hover:brightness-110 transition-all cursor-pointer group shadow-lg"
           >
             <ShieldCheck className="h-5 w-5" />
-            <span className="text-sm font-bold tracking-wide">Pay No Fees — Click Here to Learn How</span>
+            <span className="text-sm font-bold tracking-wide">Pay No Extra Fees — Click Here to Learn How</span>
           </Link>
 
           <p className="text-sm uppercase tracking-[0.3em] text-foreground font-semibold mb-3 animate-fade-in drop-shadow-lg" style={{ animationDelay: "0.05s" }}>
