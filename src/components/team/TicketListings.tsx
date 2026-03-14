@@ -223,8 +223,17 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           </div>
           <div className="flex flex-col items-end gap-2">
             <div className="text-right">
-              <p className="font-display text-xl font-bold text-foreground">${ticket.price}</p>
-              <p className="text-xs text-muted-foreground">per ticket</p>
+              {selectedSeatCount ? (
+                <>
+                  <p className="font-display text-xl font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</p>
+                  <p className="text-[10px] text-muted-foreground">{selectedSeatCount} tickets × ${ticket.price}</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-display text-xl font-bold text-foreground">${ticket.price}</p>
+                  <p className="text-xs text-muted-foreground">per ticket</p>
+                </>
+              )}
               <p className="text-[10px] text-emerald-400 mt-0.5">Members enjoy HST-included pricing</p>
             </div>
             <Button
@@ -295,7 +304,14 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+              {selectedSeatCount ? (
+                <>
+                  <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</span>
+                  <p className="text-[9px] text-muted-foreground">{selectedSeatCount} × ${ticket.price}</p>
+                </>
+              ) : (
+                <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+              )}
               <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
             </div>
             <Button
