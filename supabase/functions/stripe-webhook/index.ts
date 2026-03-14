@@ -235,10 +235,11 @@ serve(async (req) => {
         .single();
 
       if (ticket?.seller_id) {
+        // seller_id on tickets stores the reseller's user_id, not the reseller table id
         const { data: reseller } = await supabase
           .from("resellers")
           .select("user_id, business_name, email")
-          .eq("id", ticket.seller_id)
+          .eq("user_id", ticket.seller_id)
           .single();
 
         if (reseller) {
