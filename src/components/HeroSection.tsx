@@ -94,7 +94,7 @@ const HeroSection = () => {
           </Link>
 
           <p className="text-sm uppercase tracking-[0.3em] text-foreground font-semibold mb-3 animate-fade-in drop-shadow-lg" style={{ animationDelay: "0.05s" }}>
-            Canada's No-Fee Ticket Platform
+            Canada's No Extra Fees Ticket Platform
           </p>
 
           <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight mb-4 animate-fade-in drop-shadow-lg" style={{ animationDelay: "0.1s" }}>
