@@ -42,7 +42,7 @@ const Auth = () => {
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else if (data?.session) {
-        navigate("/");
+        navigate(redirectTo);
       } else {
         toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
         setResendEmail(email);
