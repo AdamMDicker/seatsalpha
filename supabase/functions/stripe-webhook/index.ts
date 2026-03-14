@@ -236,6 +236,8 @@ serve(async (req) => {
     }
 
     // --- SELLER NOTIFICATION + EMAIL ---
+    const ADMIN_EMAIL = "lmkconsulting@gmail.com";
+
     if (meta.ticket_id) {
       const { data: ticket } = await supabase
         .from("tickets")
@@ -243,78 +245,74 @@ serve(async (req) => {
         .eq("id", meta.ticket_id)
         .single();
 
-      if (ticket?.seller_id) {
-        const { data: reseller } = await supabase
-          .from("resellers")
-          .select("user_id, business_name, email")
-          .eq("user_id", ticket.seller_id)
-          .single();
+      if (ticket) {
+        const sectionInfo = ticket.section;
+        const rowInfo = ticket.row_name || "";
+        const salePrice = ticket.price.toFixed(2);
 
-        if (reseller) {
-          const sellerBody = [
-            `Great news! One of your tickets has been sold.`,
-            ``,
-            `Event: ${eventTitle}`,
-            venue ? `Venue: ${venue}` : null,
-            eventDate ? `Date: ${eventDate}` : null,
-            `Section: ${ticket.section}`,
-            ticket.row_name ? `Row: ${ticket.row_name}` : null,
-            `Sale Price: $${ticket.price.toFixed(2)} CAD`,
-            `Buyer: ${customerEmail}`,
-            ``,
-            `Please ensure the tickets are delivered promptly. Thank you for selling on seats.ca!`,
-          ].filter(Boolean).join("\n");
+        const sellerHtml = sellerEmailHtml({
+          eventTitle,
+          venue,
+          eventDate,
+          section: sectionInfo,
+          rowName: rowInfo,
+          salePrice,
+          buyerEmail: customerEmail,
+        });
 
-          // In-app notification
-          await supabase.from("notifications").insert({
-            user_id: reseller.user_id,
-            type: "purchase_seller",
-            title: `Ticket Sold — ${eventTitle}`,
-            body: sellerBody,
-            metadata: {
-              event_title: eventTitle,
-              tier: `Section ${ticket.section}${ticket.row_name ? ` Row ${ticket.row_name}` : ""}`,
-              venue,
-              event_date: eventDate,
-              total_amount: ticket.price.toFixed(2),
-              buyer_email: customerEmail,
-            },
-          });
+        const sellerBody = [
+          `Great news! One of your tickets has been sold.`,
+          ``,
+          `Event: ${eventTitle}`,
+          venue ? `Venue: ${venue}` : null,
+          eventDate ? `Date: ${eventDate}` : null,
+          `Section: ${sectionInfo}`,
+          rowInfo ? `Row: ${rowInfo}` : null,
+          `Sale Price: $${salePrice} CAD`,
+          `Buyer: ${customerEmail}`,
+          ``,
+          `Please ensure the tickets are delivered promptly. Thank you for selling on seats.ca!`,
+        ].filter(Boolean).join("\n");
 
-          // Email notification to seller
-          const sellerEmail = reseller.email;
-          if (sellerEmail) {
-            await enqueueEmail(
-              sellerEmail,
-              `Ticket Sold — ${eventTitle}`,
-              sellerEmailHtml({
-                eventTitle,
+        // Always notify admin
+        await enqueueEmail(
+          ADMIN_EMAIL,
+          `Ticket Sold — ${eventTitle}`,
+          sellerHtml,
+          "seller-notification"
+        );
+
+        if (ticket.seller_id) {
+          const { data: reseller } = await supabase
+            .from("resellers")
+            .select("user_id, business_name, email")
+            .eq("user_id", ticket.seller_id)
+            .single();
+
+          if (reseller) {
+            // In-app notification to reseller
+            await supabase.from("notifications").insert({
+              user_id: reseller.user_id,
+              type: "purchase_seller",
+              title: `Ticket Sold — ${eventTitle}`,
+              body: sellerBody,
+              metadata: {
+                event_title: eventTitle,
+                tier: `Section ${sectionInfo}${rowInfo ? ` Row ${rowInfo}` : ""}`,
                 venue,
-                eventDate,
-                section: ticket.section,
-                rowName: ticket.row_name || "",
-                salePrice: ticket.price.toFixed(2),
-                buyerEmail: customerEmail,
-              }),
-              "seller-notification"
-            );
-          } else {
-            // Fallback: get email from auth user
-            const { data: sellerAuthUsers } = await supabase.auth.admin.listUsers();
-            const sellerUser = sellerAuthUsers?.users?.find((u) => u.id === reseller.user_id);
-            if (sellerUser?.email) {
+                event_date: eventDate,
+                total_amount: salePrice,
+                buyer_email: customerEmail,
+              },
+            });
+
+            // Also email reseller if different from admin
+            const resellerEmail = reseller.email;
+            if (resellerEmail && resellerEmail !== ADMIN_EMAIL) {
               await enqueueEmail(
-                sellerUser.email,
+                resellerEmail,
                 `Ticket Sold — ${eventTitle}`,
-                sellerEmailHtml({
-                  eventTitle,
-                  venue,
-                  eventDate,
-                  section: ticket.section,
-                  rowName: ticket.row_name || "",
-                  salePrice: ticket.price.toFixed(2),
-                  buyerEmail: customerEmail,
-                }),
+                sellerHtml,
                 "seller-notification"
               );
             }
