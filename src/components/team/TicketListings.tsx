@@ -60,6 +60,7 @@ const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
 };
 
 const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, venueName, eventDate }: TicketListingsProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [seatImages, setSeatImages] = useState<Record<string, SeatImage[]>>({});
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [buyingTicketId, setBuyingTicketId] = useState<string | null>(null);
@@ -69,6 +70,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [desiredSeats, setDesiredSeats] = useState("any");
   const [filterAisle, setFilterAisle] = useState(false);
   const [filterRow1, setFilterRow1] = useState(false);
+  const [autoOpenHandled, setAutoOpenHandled] = useState(false);
   const { user, isMember, isAdmin } = useAuth();
   const { toast } = useToast();
 
