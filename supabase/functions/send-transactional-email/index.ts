@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,6 +8,8 @@ const corsHeaders = {
 
 const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
+
+// --- Email HTML builders ---
 
 function buyerConfirmationHtml(meta: {
   eventTitle: string;
@@ -175,10 +177,11 @@ Deno.serve(async (req) => {
       payload: {
         message_id: messageId,
         to,
-        from: FROM_EMAIL,
+        from: `seats.ca <${FROM_EMAIL}>`,
         sender_domain: SENDER_DOMAIN,
         subject,
         html,
+        text: subject,
         purpose: "transactional",
         label,
         queued_at: new Date().toISOString(),

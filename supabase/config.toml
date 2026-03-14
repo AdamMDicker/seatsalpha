@@ -14,7 +14,7 @@ project_id = "fkcszgrewzhswdtsqpad"
   [functions.customer-portal]
     verify_jwt = false
   [functions.process-email-queue]
-    verify_jwt = false
+    verify_jwt = true
   [functions.send-transactional-email]
     verify_jwt = false
   [functions.stripe-webhook]
