@@ -88,7 +88,8 @@ const FeeGateDialog = ({
 
   const getInitialQuantity = () => {
     if (preferredQuantity && validQuantities.includes(preferredQuantity)) return preferredQuantity;
-    return validQuantities[0] || 2;
+    // Default to the largest valid quantity (e.g. 4 if available, not 2)
+    return validQuantities[validQuantities.length - 1] || 2;
   };
 
   // Reset state when dialog opens
