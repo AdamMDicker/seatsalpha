@@ -304,7 +304,14 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+              {selectedSeatCount ? (
+                <>
+                  <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</span>
+                  <p className="text-[9px] text-muted-foreground">{selectedSeatCount} × ${ticket.price}</p>
+                </>
+              ) : (
+                <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+              )}
               <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
             </div>
             <Button
