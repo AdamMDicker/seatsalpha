@@ -87,6 +87,7 @@ const FeeGateDialog = ({
   const validQuantities = getValidQuantities();
 
   const getInitialQuantity = () => {
+    if (preferredQuantity && validQuantities.includes(preferredQuantity)) return preferredQuantity;
     return validQuantities[0] || 2;
   };
 
