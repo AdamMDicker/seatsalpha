@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -59,6 +60,7 @@ const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
 };
 
 const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, venueName, eventDate }: TicketListingsProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [seatImages, setSeatImages] = useState<Record<string, SeatImage[]>>({});
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [buyingTicketId, setBuyingTicketId] = useState<string | null>(null);
@@ -68,6 +70,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [desiredSeats, setDesiredSeats] = useState("any");
   const [filterAisle, setFilterAisle] = useState(false);
   const [filterRow1, setFilterRow1] = useState(false);
+  const [autoOpenHandled, setAutoOpenHandled] = useState(false);
   const { user, isMember, isAdmin } = useAuth();
   const { toast } = useToast();
 
@@ -87,6 +90,23 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     };
     fetchImages();
   }, [tickets]);
+
+  // Auto-open FeeGateDialog if returning from auth with buyTicket param
+  useEffect(() => {
+    if (autoOpenHandled || !user || tickets.length === 0) return;
+    const buyTicketId = searchParams.get("buyTicket");
+    if (!buyTicketId) return;
+
+    const ticket = tickets.find((t) => t.id === buyTicketId);
+    if (ticket) {
+      setFeeGateTicket(ticket);
+      // Clean up the URL param
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("buyTicket");
+      setSearchParams(newParams, { replace: true });
+    }
+    setAutoOpenHandled(true);
+  }, [user, tickets, searchParams, autoOpenHandled]);
 
   const openLightbox = (images: SeatImage[], startIndex: number) => {
     setLightboxImages(images);
@@ -125,7 +145,10 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const handleBuy = (ticket: TicketInfo) => {
     if (!user) {
-      window.location.href = `/auth?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      // Include the ticket ID so we can auto-open checkout after login
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set("buyTicket", ticket.id);
+      window.location.href = `/auth?redirect=${encodeURIComponent(currentUrl.pathname + currentUrl.search)}`;
       return;
     }
     setFeeGateTicket(ticket);
