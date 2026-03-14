@@ -15,7 +15,7 @@ async function sendViaResend(payload: Record<string, unknown>): Promise<void> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: payload.from || `seats.ca <noreply@notify.seats.ca>`,
+      from: payload.sender_domain ? (payload.from || `seats.ca <noreply@${payload.sender_domain}>`) : 'seats.ca <onboarding@resend.dev>',
       to: [payload.to],
       subject: payload.subject,
       html: payload.html,
