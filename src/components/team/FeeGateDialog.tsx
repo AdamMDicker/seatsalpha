@@ -35,6 +35,7 @@ interface FeeGateDialogProps {
   isAdmin?: boolean;
   availableQuantity: number;
   splitType?: string | null;
+  preferredQuantity?: number;
 }
 
 type CheckoutOption = "hst" | "membership";
@@ -62,6 +63,7 @@ const FeeGateDialog = ({
   isAdmin = false,
   availableQuantity,
   splitType,
+  preferredQuantity,
   ticketId,
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>(isMember ? "hst" : "membership");
@@ -85,6 +87,7 @@ const FeeGateDialog = ({
   const validQuantities = getValidQuantities();
 
   const getInitialQuantity = () => {
+    if (preferredQuantity && validQuantities.includes(preferredQuantity)) return preferredQuantity;
     return validQuantities[0] || 2;
   };
 
