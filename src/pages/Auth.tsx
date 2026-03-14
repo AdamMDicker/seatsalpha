@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Ticket, Mail, Lock, User, Eye, EyeOff, RefreshCw, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +22,9 @@ const Auth = () => {
   const [forgotSent, setForgotSent] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,14 +35,14 @@ const Auth = () => {
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
-        navigate("/");
+        navigate(redirectTo);
       }
     } else {
       const { error, data } = await signUp(email, password, fullName);
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else if (data?.session) {
-        navigate("/");
+        navigate(redirectTo);
       } else {
         toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
         setResendEmail(email);
