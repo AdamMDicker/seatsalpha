@@ -119,12 +119,20 @@ function sellerEmailHtml(meta: {
 // --- Helper to enqueue an email ---
 async function enqueueEmail(to: string, subject: string, html: string, label: string) {
   const messageId = crypto.randomUUID();
+  // Log pending status before enqueue
+  await supabase.from("email_send_log").insert({
+    message_id: messageId,
+    template_name: label,
+    recipient_email: to,
+    status: "pending",
+  });
   const { error } = await supabase.rpc("enqueue_email", {
     queue_name: "transactional_emails",
     payload: {
+      run_id: crypto.randomUUID(),
       message_id: messageId,
       to,
-      from: FROM_EMAIL,
+      from: `seats.ca <${FROM_EMAIL}>`,
       sender_domain: SENDER_DOMAIN,
       subject,
       html,
