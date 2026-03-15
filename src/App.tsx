@@ -28,7 +28,7 @@ import About from "./pages/About";
 import LiveChat from "./components/LiveChat";
 import ScrollToTop from "./components/ScrollToTop";
 import NotificationDetail from "./pages/NotificationDetail";
-import ComingSoonGate from "./components/ComingSoonGate";
+
 
 const queryClient = new QueryClient();
 
