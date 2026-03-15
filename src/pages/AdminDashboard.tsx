@@ -27,6 +27,7 @@ const tabs = [
   { id: "visibility", label: "Visibility", icon: Eye },
   { id: "hero", label: "Hero Image", icon: Image },
   { id: "newsletter", label: "Newsletter", icon: Mail },
+  { id: "emails", label: "Email Monitor", icon: Activity },
 ];
 
 const AdminDashboard = () => {
