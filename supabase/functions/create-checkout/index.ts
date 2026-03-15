@@ -35,9 +35,7 @@ serve(async (req) => {
       // No body or invalid JSON — membership-only checkout
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-03-31.basil",
-    });
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "");
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
