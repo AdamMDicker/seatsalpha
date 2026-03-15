@@ -61,6 +61,8 @@ const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
 
 const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, venueName, eventDate }: TicketListingsProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [seatImages, setSeatImages] = useState<Record<string, SeatImage[]>>({});
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [buyingTicketId, setBuyingTicketId] = useState<string | null>(null);
