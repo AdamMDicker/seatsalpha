@@ -38,7 +38,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <ComingSoonGate>
+        
           <BrowserRouter>
             <ScrollToTop />
             <LiveChat />
