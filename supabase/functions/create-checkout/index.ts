@@ -48,7 +48,7 @@ serve(async (req) => {
     // Build line items: always include membership subscription
     const lineItems: any[] = [
       {
-        price: "price_1T94FDCLZKdkEf5NxVKaPzEh",
+        price: "price_1TBJRrPaNQ7oa9pD6aR65Xxx",
         quantity: 1,
       },
     ];
