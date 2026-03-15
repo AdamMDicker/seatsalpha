@@ -13,7 +13,8 @@ import AdminBannedUsers from "@/components/admin/AdminBannedUsers";
 import AdminLeagueVisibility from "@/components/admin/AdminLeagueVisibility";
 import AdminHeroImage from "@/components/admin/AdminHeroImage";
 import AdminNewsletter from "@/components/admin/AdminNewsletter";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail } from "lucide-react";
+import AdminEmailMonitor from "@/components/admin/AdminEmailMonitor";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity } from "lucide-react";
 
 const tabs = [
   { id: "events", label: "Events", icon: Calendar },
@@ -26,6 +27,7 @@ const tabs = [
   { id: "visibility", label: "Visibility", icon: Eye },
   { id: "hero", label: "Hero Image", icon: Image },
   { id: "newsletter", label: "Newsletter", icon: Mail },
+  { id: "emails", label: "Email Monitor", icon: Activity },
 ];
 
 const AdminDashboard = () => {
@@ -90,6 +92,7 @@ const AdminDashboard = () => {
         {activeTab === "visibility" && <AdminLeagueVisibility />}
         {activeTab === "hero" && <AdminHeroImage />}
         {activeTab === "newsletter" && <AdminNewsletter />}
+        {activeTab === "emails" && <AdminEmailMonitor />}
       </div>
     </div>
   );
