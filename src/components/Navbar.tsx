@@ -198,7 +198,7 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-3 lg:gap-4 overflow-x-auto" ref={dropdownRef}>
+          <div className="hidden md:flex items-center gap-3 lg:gap-4" ref={dropdownRef}>
             {ALL_LEAGUES.filter((l) => visibleLeagues.has(l)).map((league) => {
               const singleSlug = singleTeamOverrides[league];
               if (singleSlug && SINGLE_TEAM_MAP[league]?.[singleSlug]) {
