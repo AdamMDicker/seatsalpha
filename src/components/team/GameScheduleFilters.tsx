@@ -89,24 +89,8 @@ const GameScheduleFilters = ({
 
   return (
     <div className="space-y-3 mb-6">
-      {/* Row 1: Home/Away + Month + Opponent */}
+      {/* Row 1: Month + Opponent */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Home/Away tabs */}
-        {(["all", "home", "away"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              filter === f
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            }`}
-          >
-            {f === "all" ? "All" : f === "home" ? "Home" : "Away"}
-          </button>
-        ))}
-
-        <div className="h-5 w-px bg-border mx-1 hidden sm:block" />
 
         {/* Month picker */}
         <Select value={selectedMonth} onValueChange={setSelectedMonth}>
