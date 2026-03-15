@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isMember, setIsMember] = useState(false);
   const [membershipEnd, setMembershipEnd] = useState<string | null>(null);
+  const initialized = useRef(false);
 
   const checkAdmin = async (userId: string) => {
     const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
@@ -43,12 +44,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    // Set up listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        // Admin check is fast (RPC) — run immediately
         setTimeout(() => checkAdmin(session.user.id), 0);
-        setTimeout(() => checkMembership(), 0);
+        // Membership check is slow (edge function) — defer to not block sign-in
+        setTimeout(() => checkMembership(), 100);
       } else {
         setIsAdmin(false);
         setIsMember(false);
@@ -57,15 +61,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdmin(session.user.id);
-        checkMembership();
-      }
-      setIsLoading(false);
-    });
+    // Only initialize once to avoid double calls
+    if (!initialized.current) {
+      initialized.current = true;
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          checkAdmin(session.user.id);
+          // Defer membership check on initial load too
+          setTimeout(() => checkMembership(), 0);
+        }
+        setIsLoading(false);
+      });
+    }
 
     return () => subscription.unsubscribe();
   }, []);
