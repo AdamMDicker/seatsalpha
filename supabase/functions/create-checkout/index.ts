@@ -118,6 +118,9 @@ serve(async (req) => {
           venue: ticketInfo.venue || "",
           event_date: ticketInfo.eventDate || "",
           ticket_id: ticketInfo.ticketId || "",
+          service_fee: "0",
+          ticket_unit_price: String(ticketInfo.ticketAmount / ticketQty),
+          membership_amount: "49.95",
         },
       } : {}),
     });
