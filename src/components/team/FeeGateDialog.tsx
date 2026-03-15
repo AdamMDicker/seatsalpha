@@ -16,6 +16,7 @@ import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import { format } from "date-fns";
 
 interface FeeGateDialogProps {

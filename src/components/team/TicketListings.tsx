@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
+import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import FeeGateDialog from "./FeeGateDialog";
 
 interface TicketInfo {
