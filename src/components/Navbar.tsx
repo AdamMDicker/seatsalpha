@@ -198,7 +198,7 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-3 lg:gap-4 overflow-x-auto" ref={dropdownRef}>
+          <div className="hidden md:flex items-center gap-3 lg:gap-4" ref={dropdownRef}>
             {ALL_LEAGUES.filter((l) => visibleLeagues.has(l)).map((league) => {
               const singleSlug = singleTeamOverrides[league];
               if (singleSlug && SINGLE_TEAM_MAP[league]?.[singleSlug]) {
@@ -304,13 +304,20 @@ const Navbar = () => {
 
         {isOpen && (
           <div className="md:hidden pb-4 space-y-2 animate-fade-in">
-            <Link to="/" className="block py-2 text-sm text-muted-foreground hover:text-foreground">Events</Link>
-            <Link to="/contact" className="block py-2 text-sm text-muted-foreground hover:text-foreground">Contact Us</Link>
-            {isAdmin && <Link to="/admin" className="block py-2 text-sm text-gold">Admin Dashboard</Link>}
+            <Link to="/" className="block py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setIsOpen(false)}>Events</Link>
+            <Link to="/membership" className="block py-2 text-sm text-gold hover:text-gold/80" onClick={() => setIsOpen(false)}>Become a Member</Link>
+            <Link to="/contact" className="block py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setIsOpen(false)}>Contact Us</Link>
+            {isAdmin && <Link to="/admin" className="block py-2 text-sm text-gold" onClick={() => setIsOpen(false)}>Admin Dashboard</Link>}
+            {user && (
+              <div className="flex items-center gap-3 py-2">
+                <NotificationBell />
+                <span className="text-sm text-muted-foreground">Notifications</span>
+              </div>
+            )}
             {user ? (
               <Button variant="glass" size="sm" className="w-full" onClick={signOut}>Sign Out</Button>
             ) : (
-              <Link to="/auth"><Button variant="hero" size="sm" className="w-full">Sign In</Button></Link>
+              <Link to="/auth" onClick={() => setIsOpen(false)}><Button variant="hero" size="sm" className="w-full">Sign In</Button></Link>
             )}
           </div>
         )}
