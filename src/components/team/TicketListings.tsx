@@ -147,10 +147,14 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const handleBuy = (ticket: TicketInfo) => {
     if (!user) {
-      // Include the ticket ID so we can auto-open checkout after login
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set("buyTicket", ticket.id);
-      window.location.href = `/auth?redirect=${encodeURIComponent(currentUrl.pathname + currentUrl.search)}`;
+      // Build redirect URL preserving current path + buyTicket param + qty filter
+      const params = new URLSearchParams(searchParams);
+      params.set("buyTicket", ticket.id);
+      if (desiredSeats !== "any") {
+        params.set("buyQty", desiredSeats);
+      }
+      const redirectPath = `${location.pathname}?${params.toString()}`;
+      navigate(`/auth?redirect=${encodeURIComponent(redirectPath)}`);
       return;
     }
     setFeeGateTicket(ticket);
