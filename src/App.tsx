@@ -70,7 +70,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-        </ComingSoonGate>
+        
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
