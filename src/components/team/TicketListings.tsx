@@ -142,7 +142,11 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         },
       });
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) {
+        window.location.assign(data.url);
+        return;
+      }
+      throw new Error("Checkout URL was not returned");
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Could not start checkout", variant: "destructive" });
     } finally {
