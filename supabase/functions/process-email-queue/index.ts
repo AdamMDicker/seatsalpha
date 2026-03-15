@@ -1,6 +1,36 @@
 import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
+const VERIFIED_FROM_EMAIL = 'seats.ca <noreply@seats.ca>'
+const ALLOWED_RESEND_FROM_DOMAINS = new Set(['seats.ca'])
+
+function extractEmailDomain(fromValue: string): string | null {
+  const bracketMatch = fromValue.match(/<([^>]+)>/)
+  const email = (bracketMatch?.[1] ?? fromValue).trim().toLowerCase()
+  const at = email.lastIndexOf('@')
+  if (at === -1 || at === email.length - 1) return null
+  return email.slice(at + 1)
+}
+
+function resolveResendFrom(payload: Record<string, unknown>): string {
+  const payloadFrom = typeof payload.from === 'string' ? payload.from.trim() : ''
+  const envFrom = Deno.env.get('RESEND_FROM_EMAIL')?.trim() ?? ''
+  const candidate = payloadFrom || envFrom
+
+  if (!candidate) return VERIFIED_FROM_EMAIL
+
+  const domain = extractEmailDomain(candidate)
+  if (!domain || !ALLOWED_RESEND_FROM_DOMAINS.has(domain)) {
+    console.warn('Overriding unsupported transactional sender domain', {
+      original_from: candidate,
+      fallback_from: VERIFIED_FROM_EMAIL,
+    })
+    return VERIFIED_FROM_EMAIL
+  }
+
+  return candidate
+}
+
 // Send transactional emails via Resend (bypasses Lovable run_id requirement)
 async function sendViaResend(payload: Record<string, unknown>): Promise<void> {
   const resendApiKey = Deno.env.get('RESEND_API_KEY')
@@ -15,7 +45,7 @@ async function sendViaResend(payload: Record<string, unknown>): Promise<void> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: payload.from || Deno.env.get('RESEND_FROM_EMAIL') || 'seats.ca <noreply@seats.ca>',
+      from: resolveResendFrom(payload),
       to: [payload.to],
       subject: payload.subject,
       html: payload.html,
