@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +61,8 @@ const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
 
 const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, venueName, eventDate }: TicketListingsProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [seatImages, setSeatImages] = useState<Record<string, SeatImage[]>>({});
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [buyingTicketId, setBuyingTicketId] = useState<string | null>(null);
@@ -99,12 +101,18 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
     const ticket = tickets.find((t) => t.id === buyTicketId);
     if (ticket) {
+      // Restore quantity filter if it was preserved
+      const buyQty = searchParams.get("buyQty");
+      if (buyQty && ["2", "3", "4"].includes(buyQty)) {
+        setDesiredSeats(buyQty);
+      }
       setFeeGateTicket(ticket);
-      // Clean up the URL param
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete("buyTicket");
-      setSearchParams(newParams, { replace: true });
     }
+    // Clean up the URL params
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("buyTicket");
+    newParams.delete("buyQty");
+    setSearchParams(newParams, { replace: true });
     setAutoOpenHandled(true);
   }, [user, tickets, searchParams, autoOpenHandled]);
 
@@ -145,10 +153,14 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const handleBuy = (ticket: TicketInfo) => {
     if (!user) {
-      // Include the ticket ID so we can auto-open checkout after login
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set("buyTicket", ticket.id);
-      window.location.href = `/auth?redirect=${encodeURIComponent(currentUrl.pathname + currentUrl.search)}`;
+      // Build redirect URL preserving current path + buyTicket param + qty filter
+      const params = new URLSearchParams(searchParams);
+      params.set("buyTicket", ticket.id);
+      if (desiredSeats !== "any") {
+        params.set("buyQty", desiredSeats);
+      }
+      const redirectPath = `${location.pathname}?${params.toString()}`;
+      navigate(`/auth?redirect=${encodeURIComponent(redirectPath)}`);
       return;
     }
     setFeeGateTicket(ticket);
