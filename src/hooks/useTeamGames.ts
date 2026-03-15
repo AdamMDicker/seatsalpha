@@ -35,7 +35,7 @@ export function useTeamGames(searchTerm: string | undefined) {
   const [games, setGames] = useState<GameEvent[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "home" | "away">("all");
+  const [filter, setFilter] = useState<"all" | "home" | "away">("home");
   const now = new Date();
   const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey);
