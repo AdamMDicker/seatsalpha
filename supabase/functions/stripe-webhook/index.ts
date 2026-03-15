@@ -238,6 +238,9 @@ serve(async (req) => {
     // --- SELLER NOTIFICATION + EMAIL ---
     const ADMIN_EMAIL = "lmkconsulting@gmail.com";
 
+    // Always send seller notification to admin, even without ticket_id
+    let sellerNotificationSent = false;
+
     if (meta.ticket_id) {
       const { data: ticket } = await supabase
         .from("tickets")
@@ -281,6 +284,7 @@ serve(async (req) => {
           sellerHtml,
           "seller-notification"
         );
+        sellerNotificationSent = true;
 
         if (ticket.seller_id) {
           const { data: reseller } = await supabase
@@ -319,6 +323,25 @@ serve(async (req) => {
           }
         }
       }
+    }
+
+    // Fallback: if no ticket_id or ticket not found, still notify admin
+    if (!sellerNotificationSent) {
+      const fallbackHtml = sellerEmailHtml({
+        eventTitle,
+        venue,
+        eventDate,
+        section: tier.replace("Section ", "").split(",")[0] || "N/A",
+        rowName: "",
+        salePrice: totalAmount,
+        buyerEmail: customerEmail,
+      });
+      await enqueueEmail(
+        ADMIN_EMAIL,
+        `Ticket Sold — ${eventTitle}`,
+        fallbackHtml,
+        "seller-notification"
+      );
     }
   }
 
