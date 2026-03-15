@@ -92,6 +92,7 @@ const AdminDashboard = () => {
         {activeTab === "visibility" && <AdminLeagueVisibility />}
         {activeTab === "hero" && <AdminHeroImage />}
         {activeTab === "newsletter" && <AdminNewsletter />}
+        {activeTab === "emails" && <AdminEmailMonitor />}
       </div>
     </div>
   );
