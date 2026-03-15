@@ -27,7 +27,7 @@ serve(async (req) => {
     const { eventTitle, totalAmount, quantity, tier, uberAdded, hotelAdded, flightAdded, serviceFee, venue, eventDate, ticketId } = await req.json();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: "2025-03-31.basil",
     });
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
