@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
+import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import FeeGateDialog from "./FeeGateDialog";
 
 interface TicketInfo {
@@ -143,7 +144,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       });
       if (error) throw error;
       if (data?.url) {
-        window.location.assign(data.url);
+        redirectToStripeCheckout(data.url);
         return;
       }
       throw new Error("Checkout URL was not returned");
