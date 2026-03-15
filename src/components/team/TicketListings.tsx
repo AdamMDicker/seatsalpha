@@ -144,7 +144,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       });
       if (error) throw error;
       if (data?.url) {
-        window.location.assign(data.url);
+        redirectToStripeCheckout(data.url);
         return;
       }
       throw new Error("Checkout URL was not returned");
