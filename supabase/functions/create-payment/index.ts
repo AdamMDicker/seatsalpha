@@ -125,6 +125,9 @@ serve(async (req) => {
         ticket_id: ticketId || "",
         venue: venue || "",
         event_date: eventDate || "",
+        service_fee: serviceFee ? String(serviceFee) : "0",
+        ticket_unit_price: String(totalAmount / (quantity || 1)),
+        membership_amount: "0",
       },
     });
 

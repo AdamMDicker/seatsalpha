@@ -15,16 +15,63 @@ const supabase = createClient(
 const SENDER_DOMAIN = "seats.ca";
 const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
 
+// --- Date formatting helper ---
+function formatEventDateET(raw: string): string {
+  if (!raw) return "";
+  try {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw;
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const estOffset = -5 * 60;
+    const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+    const est = new Date(utc + estOffset * 60000);
+    const day = days[est.getDay()];
+    const month = months[est.getMonth()];
+    const date = est.getDate();
+    const year = est.getFullYear();
+    let hours = est.getHours();
+    const minutes = est.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${day}, ${month} ${date}, ${year} · ${hours}:${minutes} ${ampm} ET`;
+  } catch {
+    return raw;
+  }
+}
+
+function shortDateForSubject(raw: string): string {
+  if (!raw) return "";
+  try {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return "";
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const estOffset = -5 * 60;
+    const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+    const est = new Date(utc + estOffset * 60000);
+    return `${months[est.getMonth()]} ${est.getDate()}`;
+  } catch {
+    return "";
+  }
+}
+
 // --- Email HTML builders ---
 
 function buyerEmailHtml(meta: {
   eventTitle: string;
   venue: string;
   eventDate: string;
+  formattedDate: string;
   tier: string;
   quantity: string;
+  ticketSubtotal: string;
+  hstAmount: string;
+  membershipAmount: string;
   totalAmount: string;
 }): string {
+  const hasHst = meta.hstAmount && parseFloat(meta.hstAmount) > 0;
+  const hasMembership = meta.membershipAmount && parseFloat(meta.membershipAmount) > 0;
+
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -39,21 +86,35 @@ function buyerEmailHtml(meta: {
 <tr><td style="padding:32px 40px;">
   <h2 style="margin:0 0 20px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-    ${meta.eventDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;width:120px;">Date</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.eventDate}</td></tr>` : ""}
+    ${meta.formattedDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;width:120px;">Date</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.formattedDate}</td></tr>` : ""}
     ${meta.venue ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Venue</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.venue}</td></tr>` : ""}
     ${meta.tier ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Seats</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.tier}</td></tr>` : ""}
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Quantity</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.quantity}</td></tr>
   </table>
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f8fa;border-radius:8px;">
     <tr><td style="padding:16px;">
-      <table width="100%"><tr>
-        <td style="color:#71717a;font-size:14px;">Total Paid</td>
-        <td align="right" style="color:#18181b;font-size:22px;font-weight:800;">$${meta.totalAmount} CAD</td>
-      </tr></table>
+      <table width="100%">
+        <tr>
+          <td style="color:#71717a;font-size:13px;padding:4px 0;">Tickets</td>
+          <td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.ticketSubtotal} CAD</td>
+        </tr>
+        ${hasHst ? `<tr>
+          <td style="color:#71717a;font-size:13px;padding:4px 0;">HST (13%)</td>
+          <td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.hstAmount} CAD</td>
+        </tr>` : ""}
+        ${hasMembership ? `<tr>
+          <td style="color:#71717a;font-size:13px;padding:4px 0;">Annual Membership</td>
+          <td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.membershipAmount} CAD</td>
+        </tr>` : ""}
+        <tr>
+          <td style="color:#71717a;font-size:14px;padding:8px 0 0;border-top:1px solid #e0e0e0;">Total Paid</td>
+          <td align="right" style="color:#18181b;font-size:22px;font-weight:800;padding:8px 0 0;border-top:1px solid #e0e0e0;">$${meta.totalAmount} CAD</td>
+        </tr>
+      </table>
     </td></tr>
   </table>
   <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
-    Your tickets will be delivered to your email before the event. If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
+    Your tickets will be delivered to your email 48 hours before the event. If the seller does not upload proof of delivery within that timeline, a penalty may be assessed — even if tickets are eventually delivered. If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
   </p>
 </td></tr>
 <tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
@@ -71,6 +132,7 @@ function sellerEmailHtml(meta: {
   eventTitle: string;
   venue: string;
   eventDate: string;
+  formattedDate: string;
   section: string;
   rowName: string;
   salePrice: string;
@@ -90,7 +152,7 @@ function sellerEmailHtml(meta: {
 <tr><td style="padding:32px 40px;">
   <h2 style="margin:0 0 20px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-    ${meta.eventDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;width:120px;">Date</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.eventDate}</td></tr>` : ""}
+    ${meta.formattedDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;width:120px;">Date</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.formattedDate}</td></tr>` : ""}
     ${meta.venue ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Venue</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.venue}</td></tr>` : ""}
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Section</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.section}${meta.rowName ? ` · Row ${meta.rowName}` : ""}</td></tr>
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Buyer</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.buyerEmail}</td></tr>
@@ -187,6 +249,19 @@ serve(async (req) => {
     const eventDate = meta.event_date || "";
     const totalAmount = session.amount_total ? (session.amount_total / 100).toFixed(2) : "0.00";
 
+    // Format the date
+    const formattedDate = formatEventDateET(eventDate);
+    const shortDate = shortDateForSubject(eventDate);
+    const subjectSuffix = shortDate ? ` · ${shortDate}` : "";
+
+    // Parse breakdown amounts from metadata
+    const serviceFeeAmount = meta.service_fee ? parseFloat(meta.service_fee).toFixed(2) : "0.00";
+    const membershipAmount = meta.membership_amount ? parseFloat(meta.membership_amount).toFixed(2) : "0.00";
+    const ticketUnitPrice = meta.ticket_unit_price ? parseFloat(meta.ticket_unit_price) : 0;
+    const ticketSubtotal = ticketUnitPrice > 0
+      ? (ticketUnitPrice * parseInt(quantity)).toFixed(2)
+      : (parseFloat(totalAmount) - parseFloat(serviceFeeAmount) - parseFloat(membershipAmount)).toFixed(2);
+
     // Find buyer by email
     const { data: buyerUsers } = await supabase.auth.admin.listUsers();
     const buyer = buyerUsers?.users?.find((u) => u.email === customerEmail);
@@ -198,12 +273,12 @@ serve(async (req) => {
         ``,
         `Event: ${eventTitle}`,
         venue ? `Venue: ${venue}` : null,
-        eventDate ? `Date: ${eventDate}` : null,
+        formattedDate ? `Date: ${formattedDate}` : null,
         tier ? `Seats: ${tier}` : null,
         `Quantity: ${quantity}`,
         `Total: $${totalAmount} CAD`,
         ``,
-        `Your tickets will be delivered to your email before the event. If you have any questions, please contact us at support@seats.ca.`,
+        `Your tickets will be delivered to your email 48 hours before the event.`,
         ``,
         `Thank you for choosing seats.ca!`,
       ].filter(Boolean).join("\n");
@@ -212,7 +287,7 @@ serve(async (req) => {
       await supabase.from("notifications").insert({
         user_id: buyer.id,
         type: "purchase_buyer",
-        title: `Order Confirmed — ${eventTitle}`,
+        title: `Order Confirmed — ${eventTitle}${subjectSuffix}`,
         body: buyerBody,
         metadata: {
           event_title: eventTitle,
@@ -228,8 +303,19 @@ serve(async (req) => {
       if (customerEmail) {
         await enqueueEmail(
           customerEmail,
-          `Order Confirmed — ${eventTitle}`,
-          buyerEmailHtml({ eventTitle, venue, eventDate, tier, quantity, totalAmount }),
+          `Order Confirmed — ${eventTitle}${subjectSuffix}`,
+          buyerEmailHtml({
+            eventTitle,
+            venue,
+            eventDate,
+            formattedDate,
+            tier,
+            quantity,
+            ticketSubtotal,
+            hstAmount: serviceFeeAmount,
+            membershipAmount,
+            totalAmount,
+          }),
           "buyer-confirmation"
         );
       }
@@ -257,6 +343,7 @@ serve(async (req) => {
           eventTitle,
           venue,
           eventDate,
+          formattedDate,
           section: sectionInfo,
           rowName: rowInfo,
           salePrice,
@@ -268,7 +355,7 @@ serve(async (req) => {
           ``,
           `Event: ${eventTitle}`,
           venue ? `Venue: ${venue}` : null,
-          eventDate ? `Date: ${eventDate}` : null,
+          formattedDate ? `Date: ${formattedDate}` : null,
           `Section: ${sectionInfo}`,
           rowInfo ? `Row: ${rowInfo}` : null,
           `Sale Price: $${salePrice} CAD`,
@@ -280,7 +367,7 @@ serve(async (req) => {
         // Always notify admin
         await enqueueEmail(
           ADMIN_EMAIL,
-          `Ticket Sold — ${eventTitle}`,
+          `Ticket Sold — ${eventTitle}${subjectSuffix}`,
           sellerHtml,
           "seller-notification"
         );
@@ -298,7 +385,7 @@ serve(async (req) => {
             await supabase.from("notifications").insert({
               user_id: reseller.user_id,
               type: "purchase_seller",
-              title: `Ticket Sold — ${eventTitle}`,
+              title: `Ticket Sold — ${eventTitle}${subjectSuffix}`,
               body: sellerBody,
               metadata: {
                 event_title: eventTitle,
@@ -315,7 +402,7 @@ serve(async (req) => {
             if (resellerEmail && resellerEmail !== ADMIN_EMAIL) {
               await enqueueEmail(
                 resellerEmail,
-                `Ticket Sold — ${eventTitle}`,
+                `Ticket Sold — ${eventTitle}${subjectSuffix}`,
                 sellerHtml,
                 "seller-notification"
               );
@@ -331,6 +418,7 @@ serve(async (req) => {
         eventTitle,
         venue,
         eventDate,
+        formattedDate,
         section: tier.replace("Section ", "").split(",")[0] || "N/A",
         rowName: "",
         salePrice: totalAmount,
@@ -338,7 +426,7 @@ serve(async (req) => {
       });
       await enqueueEmail(
         ADMIN_EMAIL,
-        `Ticket Sold — ${eventTitle}`,
+        `Ticket Sold — ${eventTitle}${subjectSuffix}`,
         fallbackHtml,
         "seller-notification"
       );

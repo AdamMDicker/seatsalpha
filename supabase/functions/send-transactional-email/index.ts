@@ -9,6 +9,46 @@ const corsHeaders = {
 const SENDER_DOMAIN = "seats.ca";
 const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
 
+// --- Date formatting helper ---
+function formatEventDateET(raw: string): string {
+  if (!raw) return "";
+  try {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw;
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const estOffset = -5 * 60;
+    const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+    const est = new Date(utc + estOffset * 60000);
+    const day = days[est.getDay()];
+    const month = months[est.getMonth()];
+    const date = est.getDate();
+    const year = est.getFullYear();
+    let hours = est.getHours();
+    const minutes = est.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${day}, ${month} ${date}, ${year} · ${hours}:${minutes} ${ampm} ET`;
+  } catch {
+    return raw;
+  }
+}
+
+function shortDateForSubject(raw: string): string {
+  if (!raw) return "";
+  try {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return "";
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const estOffset = -5 * 60;
+    const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+    const est = new Date(utc + estOffset * 60000);
+    return `${months[est.getMonth()]} ${est.getDate()}`;
+  } catch {
+    return "";
+  }
+}
+
 // --- Email HTML builders ---
 
 function buyerConfirmationHtml(meta: {
@@ -18,7 +58,15 @@ function buyerConfirmationHtml(meta: {
   tier: string;
   quantity: string;
   totalAmount: string;
+  ticketSubtotal?: string;
+  hstAmount?: string;
+  membershipAmount?: string;
 }): string {
+  const formattedDate = formatEventDateET(meta.eventDate);
+  const hasHst = meta.hstAmount && parseFloat(meta.hstAmount) > 0;
+  const hasMembership = meta.membershipAmount && parseFloat(meta.membershipAmount) > 0;
+  const ticketSubtotal = meta.ticketSubtotal || meta.totalAmount;
+
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -38,7 +86,7 @@ function buyerConfirmationHtml(meta: {
   <h2 style="margin:0 0 20px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
   
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-    ${meta.eventDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;width:120px;">Date</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.eventDate}</td></tr>` : ""}
+    ${formattedDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;width:120px;">Date</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${formattedDate}</td></tr>` : ""}
     ${meta.venue ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Venue</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.venue}</td></tr>` : ""}
     ${meta.tier ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Seats</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.tier}</td></tr>` : ""}
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Quantity</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.quantity}</td></tr>
@@ -46,15 +94,29 @@ function buyerConfirmationHtml(meta: {
 
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f8fa;border-radius:8px;padding:16px;">
     <tr><td style="padding:16px;">
-      <table width="100%"><tr>
-        <td style="color:#71717a;font-size:14px;">Total Paid</td>
-        <td align="right" style="color:#18181b;font-size:22px;font-weight:800;">$${meta.totalAmount} CAD</td>
-      </tr></table>
+      <table width="100%">
+        <tr>
+          <td style="color:#71717a;font-size:13px;padding:4px 0;">Tickets</td>
+          <td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${ticketSubtotal} CAD</td>
+        </tr>
+        ${hasHst ? `<tr>
+          <td style="color:#71717a;font-size:13px;padding:4px 0;">HST (13%)</td>
+          <td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.hstAmount} CAD</td>
+        </tr>` : ""}
+        ${hasMembership ? `<tr>
+          <td style="color:#71717a;font-size:13px;padding:4px 0;">Annual Membership</td>
+          <td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.membershipAmount} CAD</td>
+        </tr>` : ""}
+        <tr>
+          <td style="color:#71717a;font-size:14px;padding:8px 0 0;border-top:1px solid #e0e0e0;">Total Paid</td>
+          <td align="right" style="color:#18181b;font-size:22px;font-weight:800;padding:8px 0 0;border-top:1px solid #e0e0e0;">$${meta.totalAmount} CAD</td>
+        </tr>
+      </table>
     </td></tr>
   </table>
 
   <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
-    Your tickets will be delivered to your email before the event. If you have any questions, please contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
+    Your tickets will be delivered to your email 48 hours before the event. If the seller does not upload proof of delivery within that timeline, a penalty may be assessed — even if tickets are eventually delivered. If you have any questions, please contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
   </p>
 </td></tr>
 
@@ -80,6 +142,8 @@ function sellerNotificationHtml(meta: {
   salePrice: string;
   buyerEmail: string;
 }): string {
+  const formattedDate = formatEventDateET(meta.eventDate);
+
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -99,7 +163,7 @@ function sellerNotificationHtml(meta: {
   <h2 style="margin:0 0 20px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
   
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-    ${meta.eventDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;width:120px;">Date</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.eventDate}</td></tr>` : ""}
+    ${formattedDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;width:120px;">Date</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${formattedDate}</td></tr>` : ""}
     ${meta.venue ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Venue</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.venue}</td></tr>` : ""}
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Section</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.section}${meta.rowName ? ` · Row ${meta.rowName}` : ""}</td></tr>
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Buyer</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.buyerEmail}</td></tr>
@@ -151,16 +215,19 @@ Deno.serve(async (req) => {
       });
     }
 
+    const shortDate = shortDateForSubject(meta?.eventDate || "");
+    const subjectSuffix = shortDate ? ` · ${shortDate}` : "";
+
     let subject: string;
     let html: string;
     let label: string;
 
     if (type === "buyer_confirmation") {
-      subject = `Order Confirmed — ${meta.eventTitle}`;
+      subject = `Order Confirmed — ${meta.eventTitle}${subjectSuffix}`;
       html = buyerConfirmationHtml(meta);
       label = "buyer-confirmation";
     } else if (type === "seller_notification") {
-      subject = `Ticket Sold — ${meta.eventTitle}`;
+      subject = `Ticket Sold — ${meta.eventTitle}${subjectSuffix}`;
       html = sellerNotificationHtml(meta);
       label = "seller-notification";
     } else {
