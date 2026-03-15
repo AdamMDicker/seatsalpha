@@ -101,12 +101,18 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
     const ticket = tickets.find((t) => t.id === buyTicketId);
     if (ticket) {
+      // Restore quantity filter if it was preserved
+      const buyQty = searchParams.get("buyQty");
+      if (buyQty && ["2", "3", "4"].includes(buyQty)) {
+        setDesiredSeats(buyQty);
+      }
       setFeeGateTicket(ticket);
-      // Clean up the URL param
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete("buyTicket");
-      setSearchParams(newParams, { replace: true });
     }
+    // Clean up the URL params
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("buyTicket");
+    newParams.delete("buyQty");
+    setSearchParams(newParams, { replace: true });
     setAutoOpenHandled(true);
   }, [user, tickets, searchParams, autoOpenHandled]);
 
