@@ -14,18 +14,17 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } }
   );
 
   try {
     const authHeader = req.headers.get("Authorization");
-    console.log("Auth header present:", !!authHeader);
     if (!authHeader) throw new Error("No authorization header");
     const token = authHeader.replace("Bearer ", "");
     const { data, error: authError } = await supabaseClient.auth.getUser(token);
-    console.log("Auth result:", { user: data?.user?.email, error: authError?.message });
+    if (authError || !data?.user?.email) throw new Error("User not authenticated");
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated");
 
     // Parse optional ticket info from body
     let ticketInfo = null;
