@@ -76,6 +76,11 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [filterAisle, setFilterAisle] = useState(false);
   const [filterRow1, setFilterRow1] = useState(false);
   const [autoOpenHandled, setAutoOpenHandled] = useState(false);
+  const [showAuthSheet, setShowAuthSheet] = useState(false);
+  const [pendingBuyTicket, setPendingBuyTicket] = useState<TicketInfo | null>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const filterBarRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   const { user, isMember, isAdmin } = useAuth();
   const { toast } = useToast();
 
