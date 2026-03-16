@@ -462,7 +462,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         </div>
       )}
 
-      <div className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+      <div ref={filterBarRef} className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-bold text-foreground flex items-center gap-1.5">
