@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +15,9 @@ import {
 import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
+import { useIsMobile } from "@/hooks/use-mobile";
 import FeeGateDialog from "./FeeGateDialog";
+import MobileAuthSheet from "./MobileAuthSheet";
 
 interface TicketInfo {
   id: string;
