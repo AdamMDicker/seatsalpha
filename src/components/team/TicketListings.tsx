@@ -620,6 +620,34 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Mobile auth sheet */}
+      <MobileAuthSheet
+        open={showAuthSheet}
+        onOpenChange={(open) => {
+          setShowAuthSheet(open);
+          if (!open) setPendingBuyTicket(null);
+        }}
+        onSuccess={handleAuthSuccess}
+      />
+
+      {/* Mobile sticky buy bar */}
+      {isMobile && showStickyBar && cheapestPrice !== null && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-2.5 flex items-center justify-between safe-area-inset-bottom">
+          <div>
+            <p className="text-xs text-muted-foreground">Tickets from</p>
+            <p className="text-lg font-display font-bold text-foreground">${cheapestPrice}</p>
+          </div>
+          <Button
+            variant="hero"
+            size="sm"
+            className="animate-pulse-glow h-9 px-5"
+            onClick={() => filterBarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          >
+            View Tickets
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
