@@ -28,7 +28,7 @@ const FeaturesSection = () => {
     <section className="py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-14">
-          <p className="text-xs uppercase tracking-[0.25em] text-primary font-semibold mb-2">Canada's First No-Fee Platform</p>
+          <p className="text-xs uppercase tracking-[0.25em] text-primary font-semibold mb-2">Canada's No-Fee Platform</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">
             Why <span className="text-gradient">seats.ca</span>?
           </h2>
