@@ -165,7 +165,13 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const handleBuy = (ticket: TicketInfo) => {
     if (!user) {
-      // Build redirect URL preserving current path + buyTicket param + qty filter
+      if (isMobile) {
+        // Mobile: open auth sheet instead of redirecting
+        setPendingBuyTicket(ticket);
+        setShowAuthSheet(true);
+        return;
+      }
+      // Desktop: redirect flow
       const params = new URLSearchParams(searchParams);
       params.set("buyTicket", ticket.id);
       if (desiredSeats !== "any") {
@@ -176,6 +182,16 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       return;
     }
     setFeeGateTicket(ticket);
+  };
+
+  const handleAuthSuccess = () => {
+    // After mobile auth succeeds, auto-open fee gate for the pending ticket
+    if (pendingBuyTicket) {
+      setTimeout(() => {
+        setFeeGateTicket(pendingBuyTicket);
+        setPendingBuyTicket(null);
+      }, 300);
+    }
   };
 
   const selectedSeatCount = desiredSeats === "any" ? null : Number(desiredSeats);
