@@ -529,7 +529,9 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         <span>Tickets ({resellerTickets.length})</span>
       </h2>
       {resellerTickets.length > 0 ? (
-        <div className="space-y-1">{resellerTickets.map((t) => <CompactTicketCard key={t.id} ticket={t} />)}</div>
+        <div className="space-y-1">
+          {resellerTickets.map((t) => isMobile ? <MobileCompactCard key={t.id} ticket={t} /> : <CompactTicketCard key={t.id} ticket={t} />)}
+        </div>
       ) : (
         <p className="text-muted-foreground text-sm">No other tickets for this selection.</p>
       )}
