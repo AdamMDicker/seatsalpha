@@ -398,6 +398,55 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     );
   };
 
+  // Mobile compact card: no expand needed, always shows Buy
+  const MobileCompactCard = ({ ticket }: { ticket: TicketInfo }) => {
+    const perks = ticket.perks || [];
+    return (
+      <div className="flex items-center justify-between gap-2 px-3 py-2.5 glass rounded-lg border-border/50">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-sm font-medium text-foreground">Sec {ticket.section}</span>
+            {ticket.row_name && <span className="text-xs text-muted-foreground">· Row {ticket.row_name}</span>}
+            {perks.length > 0 && <Star className="h-3 w-3 text-primary/60" />}
+          </div>
+          <span className="text-[10px] text-muted-foreground">{ticket.quantity - ticket.quantity_sold} avail</span>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="text-right">
+            {selectedSeatCount ? (
+              <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</span>
+            ) : (
+              <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+            )}
+            <p className="text-[9px] text-emerald-400">No fees for members</p>
+          </div>
+          <Button
+            variant="hero"
+            size="sm"
+            className="h-8 text-xs px-3 animate-pulse-glow"
+            onClick={() => handleBuy(ticket)}
+            disabled={buyingTicketId === ticket.id}
+          >
+            {buyingTicketId === ticket.id ? "..." : "Buy"}
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // Sticky bar: track filter bar visibility on mobile
+  useEffect(() => {
+    if (!isMobile || !filterBarRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(filterBarRef.current);
+    return () => observer.disconnect();
+  }, [isMobile]);
+
+  const cheapestPrice = allTickets.length > 0 ? Math.min(...allTickets.map(t => t.price)) : null;
+
   return (
     <div>
       {selectedSection && (
