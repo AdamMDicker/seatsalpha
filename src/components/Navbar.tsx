@@ -136,14 +136,13 @@ const Navbar = () => {
     };
 
     const fetchTeamsWithInventory = async () => {
-      const { data: tickets } = await supabase
-        .from("tickets")
-        .select("event_id")
-        .eq("is_active", true);
+      const { data: tickets } = await (supabase
+        .from("public_tickets" as any)
+        .select("event_id") as any);
 
       if (!tickets || tickets.length === 0) return;
 
-      const eventIds = [...new Set(tickets.map((t) => t.event_id))];
+      const eventIds = [...new Set((tickets as any[]).map((t: any) => t.event_id))] as string[];
 
       const { data: events } = await supabase
         .from("events")

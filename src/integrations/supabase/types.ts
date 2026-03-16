@@ -384,6 +384,13 @@ export type Database = {
             foreignKeyName: "order_items_ticket_id_fkey"
             columns: ["ticket_id"]
             isOneToOne: false
+            referencedRelation: "public_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
             referencedRelation: "tickets"
             referencedColumns: ["id"]
           },
@@ -571,6 +578,13 @@ export type Database = {
             foreignKeyName: "seat_images_ticket_id_fkey"
             columns: ["ticket_id"]
             isOneToOne: false
+            referencedRelation: "public_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seat_images_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
             referencedRelation: "tickets"
             referencedColumns: ["id"]
           },
@@ -718,7 +732,80 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_tickets: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          hide_seat_numbers: boolean | null
+          id: string | null
+          is_active: boolean | null
+          is_reseller_ticket: boolean | null
+          perks: string[] | null
+          price: number | null
+          quantity: number | null
+          quantity_sold: number | null
+          row_name: string | null
+          sales_tax_paid: boolean | null
+          seat_notes: string | null
+          seat_number: string | null
+          seat_type: string | null
+          section: string | null
+          seller_id: string | null
+          split_type: string | null
+          stock_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          hide_seat_numbers?: boolean | null
+          id?: string | null
+          is_active?: boolean | null
+          is_reseller_ticket?: boolean | null
+          perks?: string[] | null
+          price?: number | null
+          quantity?: number | null
+          quantity_sold?: number | null
+          row_name?: string | null
+          sales_tax_paid?: boolean | null
+          seat_notes?: string | null
+          seat_number?: never
+          seat_type?: string | null
+          section?: string | null
+          seller_id?: string | null
+          split_type?: string | null
+          stock_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          hide_seat_numbers?: boolean | null
+          id?: string | null
+          is_active?: boolean | null
+          is_reseller_ticket?: boolean | null
+          perks?: string[] | null
+          price?: number | null
+          quantity?: number | null
+          quantity_sold?: number | null
+          row_name?: string | null
+          sales_tax_paid?: boolean | null
+          seat_notes?: string | null
+          seat_number?: never
+          seat_type?: string | null
+          section?: string | null
+          seller_id?: string | null
+          split_type?: string | null
+          stock_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       delete_email: {

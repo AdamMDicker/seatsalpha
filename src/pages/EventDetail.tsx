@@ -56,12 +56,11 @@ const EventDetail = () => {
 
       if (ev) {
         setEvent(ev);
-        const { data: tix } = await supabase
-          .from("tickets")
+        const { data: tix } = await (supabase
+          .from("public_tickets" as any)
           .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers")
           .eq("event_id", ev.id)
-          .eq("is_active", true)
-          .order("price", { ascending: true });
+          .order("price", { ascending: true }) as any);
         setTickets(tix || []);
       }
       setLoading(false);
