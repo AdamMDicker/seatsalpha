@@ -70,11 +70,10 @@ export function useTeamGames(searchTerm: string | undefined) {
 
       // Step 2: Fetch ALL tickets for these events in a single batch query
       const eventIds = events.map((e) => e.id);
-      const { data: allTickets } = await supabase
-        .from("tickets")
+      const { data: allTickets } = await (supabase
+        .from("public_tickets" as any)
         .select("id, event_id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers, split_type")
-        .in("event_id", eventIds)
-        .eq("is_active", true);
+        .in("event_id", eventIds) as any);
 
       // Step 3: Group tickets by event_id client-side
       const ticketsByEvent: Record<string, TicketInfo[]> = {};

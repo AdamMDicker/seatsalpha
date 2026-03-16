@@ -68,12 +68,11 @@ const EventsSection = () => {
       if (dbEvents && dbEvents.length > 0) {
         const eventsWithInfo: Event[] = [];
         for (const ev of dbEvents) {
-          const { data: tickets } = await supabase
-            .from("tickets")
+          const { data: tickets } = await (supabase
+            .from("public_tickets" as any)
             .select("is_reseller_ticket, price")
             .eq("event_id", ev.id)
-            .eq("is_active", true)
-            .limit(50);
+            .limit(50) as any);
 
           const hasInternalTickets = tickets?.some(t => !t.is_reseller_ticket) ?? false;
           const minPrice = tickets && tickets.length > 0 ? Math.min(...tickets.map(t => t.price)) : 0;
