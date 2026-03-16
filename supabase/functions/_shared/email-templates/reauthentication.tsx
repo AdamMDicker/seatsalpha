@@ -9,6 +9,7 @@ import {
   Heading,
   Hr,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -18,19 +19,24 @@ interface ReauthenticationEmailProps {
   token: string
 }
 
+const LOGO_URL = 'https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png'
+
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your seats.ca verification code</Preview>
+    <Preview>Your seats.ca verification code 🔑</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={accentBar} />
+
         <Section style={header}>
-          <Text style={logoText}>
-            seats<span style={logoDot}>.ca</span>
-          </Text>
+          <Img src={LOGO_URL} width="160" height="auto" alt="seats.ca" style={logoImg} />
         </Section>
 
         <Section style={content}>
+          <Section style={iconCircle}>
+            <Text style={iconEmoji}>🔑</Text>
+          </Section>
           <Heading style={h1}>Verification code</Heading>
           <Text style={text}>
             Use the code below to confirm your identity on seats.ca:
@@ -40,16 +46,18 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
             <Text style={codeStyle}>{token}</Text>
           </Section>
 
-          <Text style={subtext}>
-            This code will expire shortly. Do not share it with anyone.
-          </Text>
+          <Section style={warningBox}>
+            <Text style={warningText}>
+              ⏰ This code will expire shortly. Do not share it with anyone.
+            </Text>
+          </Section>
         </Section>
 
         <Hr style={divider} />
 
         <Section style={footerSection}>
           <Text style={footer}>
-            © {new Date().getFullYear()} seats.ca — Tickets without the fees.
+            © {new Date().getFullYear()} seats.ca — Canada's No Extra Fees Platform
           </Text>
           <Text style={footerSub}>
             If you didn't request this code, you can safely ignore this email.
@@ -62,35 +70,39 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
 
 export default ReauthenticationEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: "'Space Grotesk', 'Inter', Arial, sans-serif" }
-const container = { maxWidth: '560px', margin: '0 auto' }
-const header = { backgroundColor: '#E31837', padding: '24px 32px', borderRadius: '12px 12px 0 0', textAlign: 'center' as const }
-const logoText = { fontSize: '28px', fontWeight: '700' as const, color: '#ffffff', margin: '0', letterSpacing: '-0.5px' }
-const logoDot = { color: '#ffffff', opacity: '0.85' }
-const content = { padding: '32px 32px 24px', backgroundColor: '#fafafa' }
-const h1 = { fontSize: '24px', fontWeight: '700' as const, color: '#1a1a2e', margin: '0 0 16px', lineHeight: '1.3' }
-const text = { fontSize: '15px', color: '#4a4a5a', lineHeight: '1.6', margin: '0 0 16px' }
+const main = { backgroundColor: '#f0f0f5', fontFamily: "'Space Grotesk', 'Inter', Arial, sans-serif", padding: '20px 0' }
+const container = { maxWidth: '580px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '16px', overflow: 'hidden' as const, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }
+const accentBar = { height: '4px', background: 'linear-gradient(90deg, #E31837, #ff4d6a, #E31837)', margin: '0' }
+const header = { padding: '32px 32px 16px', textAlign: 'center' as const, backgroundColor: '#ffffff' }
+const logoImg = { margin: '0 auto', display: 'block' }
+const content = { padding: '8px 40px 32px', backgroundColor: '#ffffff' }
+const iconCircle = { textAlign: 'center' as const, margin: '0 0 8px' }
+const iconEmoji = { fontSize: '40px', margin: '0', lineHeight: '1' }
+const h1 = { fontSize: '28px', fontWeight: '700' as const, color: '#1a1a2e', margin: '0 0 16px', lineHeight: '1.2', textAlign: 'center' as const }
+const text = { fontSize: '15px', color: '#4a4a5a', lineHeight: '1.7', margin: '0 0 14px', textAlign: 'center' as const }
 
 const codeContainer = {
   textAlign: 'center' as const,
-  margin: '24px 0',
-  padding: '16px',
-  backgroundColor: '#ffffff',
-  borderRadius: '8px',
-  border: '2px dashed #E31837',
+  margin: '24px auto',
+  padding: '20px 24px',
+  backgroundColor: '#1a1a2e',
+  borderRadius: '12px',
+  maxWidth: '280px',
 }
 
 const codeStyle = {
-  fontFamily: "'Space Grotesk', Courier, monospace",
-  fontSize: '32px',
+  fontFamily: "'Space Grotesk', 'Courier New', monospace",
+  fontSize: '36px',
   fontWeight: '700' as const,
-  color: '#E31837',
-  letterSpacing: '6px',
+  color: '#ffffff',
+  letterSpacing: '8px',
   margin: '0',
+  textAlign: 'center' as const,
 }
 
-const subtext = { fontSize: '13px', color: '#8a8a9a', lineHeight: '1.5', margin: '16px 0 8px' }
+const warningBox = { backgroundColor: '#FFF8E1', borderRadius: '8px', padding: '12px 16px', margin: '16px 0 0', border: '1px solid #FFE082' }
+const warningText = { fontSize: '13px', color: '#6D4C00', margin: '0', textAlign: 'center' as const }
 const divider = { borderColor: '#eaeaea', margin: '0' }
-const footerSection = { padding: '20px 32px', backgroundColor: '#f5f5f5', borderRadius: '0 0 12px 12px' }
-const footer = { fontSize: '13px', color: '#999999', margin: '0 0 4px', textAlign: 'center' as const }
-const footerSub = { fontSize: '12px', color: '#bbbbbb', margin: '0', textAlign: 'center' as const }
+const footerSection = { padding: '20px 32px', backgroundColor: '#ffffff' }
+const footer = { fontSize: '12px', color: '#999999', margin: '0 0 4px', textAlign: 'center' as const }
+const footerSub = { fontSize: '11px', color: '#cccccc', margin: '0', textAlign: 'center' as const }
