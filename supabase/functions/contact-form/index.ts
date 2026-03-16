@@ -91,7 +91,7 @@ Sent from seats.ca contact form
   } catch (error) {
     console.error("Contact form error:", error);
     return new Response(
-      JSON.stringify({ error: "Something went wrong. Please try again or email us directly at michaelkurtz66@hotmail.com." }),
+      JSON.stringify({ error: "Something went wrong. Please try again or email us at support@seats.ca." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
