@@ -94,7 +94,7 @@ const TeamNHLPage = () => {
           />
 
           {filteredGames.length > 0 ? (
-            <div className="flex gap-3 overflow-x-auto pb-4 mb-8 scrollbar-hide">
+            <div className="flex flex-col gap-2 md:flex-row md:gap-3 md:overflow-x-auto pb-4 mb-8 scrollbar-hide">
               {filteredGames.map((game) => (
                 <GameCard
                   key={game.id}

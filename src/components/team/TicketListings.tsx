@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +15,9 @@ import {
 import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
+import { useIsMobile } from "@/hooks/use-mobile";
 import FeeGateDialog from "./FeeGateDialog";
+import MobileAuthSheet from "./MobileAuthSheet";
 
 interface TicketInfo {
   id: string;
@@ -74,6 +76,11 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [filterAisle, setFilterAisle] = useState(false);
   const [filterRow1, setFilterRow1] = useState(false);
   const [autoOpenHandled, setAutoOpenHandled] = useState(false);
+  const [showAuthSheet, setShowAuthSheet] = useState(false);
+  const [pendingBuyTicket, setPendingBuyTicket] = useState<TicketInfo | null>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const filterBarRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   const { user, isMember, isAdmin } = useAuth();
   const { toast } = useToast();
 
@@ -158,7 +165,13 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const handleBuy = (ticket: TicketInfo) => {
     if (!user) {
-      // Build redirect URL preserving current path + buyTicket param + qty filter
+      if (isMobile) {
+        // Mobile: open auth sheet instead of redirecting
+        setPendingBuyTicket(ticket);
+        setShowAuthSheet(true);
+        return;
+      }
+      // Desktop: redirect flow
       const params = new URLSearchParams(searchParams);
       params.set("buyTicket", ticket.id);
       if (desiredSeats !== "any") {
@@ -169,6 +182,16 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       return;
     }
     setFeeGateTicket(ticket);
+  };
+
+  const handleAuthSuccess = () => {
+    // After mobile auth succeeds, auto-open fee gate for the pending ticket
+    if (pendingBuyTicket) {
+      setTimeout(() => {
+        setFeeGateTicket(pendingBuyTicket);
+        setPendingBuyTicket(null);
+      }, 300);
+    }
   };
 
   const selectedSeatCount = desiredSeats === "any" ? null : Number(desiredSeats);
@@ -375,6 +398,55 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     );
   };
 
+  // Mobile compact card: no expand needed, always shows Buy
+  const MobileCompactCard = ({ ticket }: { ticket: TicketInfo }) => {
+    const perks = ticket.perks || [];
+    return (
+      <div className="flex items-center justify-between gap-2 px-3 py-2.5 glass rounded-lg border-border/50">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-sm font-medium text-foreground">Sec {ticket.section}</span>
+            {ticket.row_name && <span className="text-xs text-muted-foreground">· Row {ticket.row_name}</span>}
+            {perks.length > 0 && <Star className="h-3 w-3 text-primary/60" />}
+          </div>
+          <span className="text-[10px] text-muted-foreground">{ticket.quantity - ticket.quantity_sold} avail</span>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="text-right">
+            {selectedSeatCount ? (
+              <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</span>
+            ) : (
+              <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+            )}
+            <p className="text-[9px] text-emerald-400">No fees for members</p>
+          </div>
+          <Button
+            variant="hero"
+            size="sm"
+            className="h-8 text-xs px-3 animate-pulse-glow"
+            onClick={() => handleBuy(ticket)}
+            disabled={buyingTicketId === ticket.id}
+          >
+            {buyingTicketId === ticket.id ? "..." : "Buy"}
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // Sticky bar: track filter bar visibility on mobile
+  useEffect(() => {
+    if (!isMobile || !filterBarRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(filterBarRef.current);
+    return () => observer.disconnect();
+  }, [isMobile]);
+
+  const cheapestPrice = allTickets.length > 0 ? Math.min(...allTickets.map(t => t.price)) : null;
+
   return (
     <div>
       {selectedSection && (
@@ -390,7 +462,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         </div>
       )}
 
-      <div className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+      <div ref={filterBarRef} className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-bold text-foreground flex items-center gap-1.5">
@@ -457,7 +529,9 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         <span>Tickets ({resellerTickets.length})</span>
       </h2>
       {resellerTickets.length > 0 ? (
-        <div className="space-y-1">{resellerTickets.map((t) => <CompactTicketCard key={t.id} ticket={t} />)}</div>
+        <div className="space-y-1">
+          {resellerTickets.map((t) => isMobile ? <MobileCompactCard key={t.id} ticket={t} /> : <CompactTicketCard key={t.id} ticket={t} />)}
+        </div>
       ) : (
         <p className="text-muted-foreground text-sm">No other tickets for this selection.</p>
       )}
@@ -546,6 +620,34 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Mobile auth sheet */}
+      <MobileAuthSheet
+        open={showAuthSheet}
+        onOpenChange={(open) => {
+          setShowAuthSheet(open);
+          if (!open) setPendingBuyTicket(null);
+        }}
+        onSuccess={handleAuthSuccess}
+      />
+
+      {/* Mobile sticky buy bar */}
+      {isMobile && showStickyBar && cheapestPrice !== null && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-2.5 flex items-center justify-between safe-area-inset-bottom">
+          <div>
+            <p className="text-xs text-muted-foreground">Tickets from</p>
+            <p className="text-lg font-display font-bold text-foreground">${cheapestPrice}</p>
+          </div>
+          <Button
+            variant="hero"
+            size="sm"
+            className="animate-pulse-glow h-9 px-5"
+            onClick={() => filterBarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          >
+            View Tickets
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
