@@ -289,12 +289,12 @@ const Navbar = () => {
 
         {/* Mobile menu */}
         {isOpen && (
-          <div className="md:hidden pb-6 pt-2 space-y-1 animate-fade-in border-t border-border">
+          <div className="md:hidden pb-6 pt-3 space-y-1 animate-fade-in border-t border-border">
             {pageLinks.map((link) => (
               <button
                 key={link.label}
                 onClick={link.action}
-                className="block w-full text-left px-3 py-3 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                className="block w-full text-left px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]"
               >
                 {link.label}
               </button>
@@ -303,32 +303,32 @@ const Navbar = () => {
             <Link
               to="/teams/blue-jays"
               onClick={() => setIsOpen(false)}
-              className="block px-3 py-3 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+              className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]"
             >
               Blue Jays Tickets
             </Link>
 
             {isAdmin && (
-              <Link to="/admin" onClick={() => setIsOpen(false)} className="block px-3 py-3 text-sm font-medium text-gold rounded-lg">
+              <Link to="/admin" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-gold rounded-lg min-h-[48px]">
                 Admin Dashboard
               </Link>
             )}
 
             {user && (
-              <div className="flex items-center gap-3 px-3 py-3">
+              <div className="flex items-center gap-3 px-4 py-3.5 min-h-[48px]">
                 <NotificationBell />
-                <span className="text-sm text-muted-foreground">Notifications</span>
+                <span className="text-base text-muted-foreground">Notifications</span>
               </div>
             )}
 
-            <div className="px-3 pt-2">
+            <div className="px-4 pt-3">
               {user ? (
-                <Button variant="ghost" size="sm" className="w-full justify-start" onClick={signOut}>
+                <Button variant="ghost" size="lg" className="w-full justify-start min-h-[52px] text-base" onClick={signOut}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign Out
                 </Button>
               ) : (
                 <Link to="/auth" onClick={() => setIsOpen(false)}>
-                  <Button variant="hero" size="sm" className="w-full">Sign In</Button>
+                  <Button variant="hero" size="lg" className="w-full min-h-[52px] text-base">Sign In</Button>
                 </Link>
               )}
             </div>
