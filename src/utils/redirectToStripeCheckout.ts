@@ -8,10 +8,23 @@ export const redirectToStripeCheckout = (url: string) => {
   })();
 
   if (isEmbeddedContext) {
-    const redirected = window.open(url, "_top");
-    if (!redirected) {
-      window.location.assign(url);
+    // In iframe: try multiple approaches
+    try {
+      // First try to navigate the top frame directly
+      if (window.top) {
+        window.top.location.href = url;
+        return;
+      }
+    } catch {
+      // Cross-origin — top frame not accessible
     }
+
+    // Fallback: open in new tab
+    const win = window.open(url, "_blank");
+    if (win) return;
+
+    // Last resort: navigate the current frame
+    window.location.href = url;
     return;
   }
 
