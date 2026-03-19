@@ -56,6 +56,7 @@ interface TicketListingsProps {
 const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
   aisle: { label: "Aisle Seat", emoji: "🪑" },
   row1: { label: "Row 1", emoji: "🥇" },
+  accessible: { label: "Accessible", emoji: "♿" },
   food: { label: "Food Included", emoji: "🍔" },
   drinks: { label: "Drinks Included", emoji: "🍺" },
   lounge: { label: "Lounge Access", emoji: "🛋️" },
@@ -76,6 +77,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [desiredSeats, setDesiredSeats] = useState("any");
   const [filterAisle, setFilterAisle] = useState(false);
   const [filterRow1, setFilterRow1] = useState(false);
+  const [filterAccessible, setFilterAccessible] = useState(false);
   const [autoOpenHandled, setAutoOpenHandled] = useState(false);
   const [showAuthSheet, setShowAuthSheet] = useState(false);
   const [pendingBuyTicket, setPendingBuyTicket] = useState<TicketInfo | null>(null);
@@ -223,12 +225,14 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   // Check if aisle / row1 perks exist in current inventory
   const hasAisleTickets = tickets.some((t) => t.perks?.includes("aisle"));
   const hasRow1Tickets = tickets.some((t) => t.perks?.includes("row1"));
+  const hasAccessibleTickets = tickets.some((t) => t.perks?.includes("accessible"));
 
   const sectionFilteredTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
   const allTickets = sectionFilteredTickets
     .filter((ticket) => canFulfillSeatCount(ticket, selectedSeatCount))
     .filter((ticket) => !filterAisle || ticket.perks?.includes("aisle"))
-    .filter((ticket) => !filterRow1 || ticket.perks?.includes("row1"));
+    .filter((ticket) => !filterRow1 || ticket.perks?.includes("row1"))
+    .filter((ticket) => !filterAccessible || ticket.perks?.includes("accessible"));
   const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket).slice(0, 4);
   const resellerTickets = allTickets.filter((t) => t.is_reseller_ticket);
 
@@ -466,6 +470,48 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         </div>
       )}
 
+      {(hasAisleTickets || hasRow1Tickets || hasAccessibleTickets) && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground font-medium">Filter:</span>
+          {hasRow1Tickets && (
+            <button
+              onClick={() => setFilterRow1((v) => !v)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                filterRow1
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+              }`}
+            >
+              🥇 Row 1
+            </button>
+          )}
+          {hasAisleTickets && (
+            <button
+              onClick={() => setFilterAisle((v) => !v)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                filterAisle
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+              }`}
+            >
+              🪑 Aisle Seats
+            </button>
+          )}
+          {hasAccessibleTickets && (
+            <button
+              onClick={() => setFilterAccessible((v) => !v)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                filterAccessible
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+              }`}
+            >
+              ♿ Accessible
+            </button>
+          )}
+        </div>
+      )}
+
       <div ref={filterBarRef} className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -491,35 +537,6 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               ))}
             </SelectContent>
           </Select>
-        {(hasAisleTickets || hasRow1Tickets) && (
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-xs text-muted-foreground font-medium">Filter:</span>
-            {hasAisleTickets && (
-              <button
-                onClick={() => setFilterAisle((v) => !v)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                  filterAisle
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-                }`}
-              >
-                🪑 Aisle Seats
-              </button>
-            )}
-            {hasRow1Tickets && (
-              <button
-                onClick={() => setFilterRow1((v) => !v)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                  filterRow1
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-                }`}
-              >
-                🥇 Row 1
-              </button>
-            )}
-          </div>
-        )}
         </div>
       </div>
 
