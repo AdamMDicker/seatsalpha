@@ -2,10 +2,11 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import TrustBar from "@/components/TrustBar";
 import ProblemSection from "@/components/ProblemSection";
+import SolutionSection from "@/components/SolutionSection";
 import HowItWorks from "@/components/HowItWorks";
-import EventsSection from "@/components/EventsSection";
 import FeaturesSection from "@/components/FeaturesSection";
-import MembershipSection from "@/components/MembershipSection";
+import SocialProof from "@/components/SocialProof";
+import FinalCTA from "@/components/FinalCTA";
 import NewsletterSection from "@/components/NewsletterSection";
 import Footer from "@/components/Footer";
 
@@ -16,10 +17,11 @@ const Index = () => {
       <HeroSection />
       <TrustBar />
       <ProblemSection />
+      <SolutionSection />
       <HowItWorks />
-      <EventsSection />
       <FeaturesSection />
-      <MembershipSection />
+      <SocialProof />
+      <FinalCTA />
       <NewsletterSection />
       <Footer />
     </div>
