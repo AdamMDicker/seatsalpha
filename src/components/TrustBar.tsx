@@ -3,7 +3,7 @@ import { ShieldCheck, BadgeDollarSign, RotateCcw, Users, TrendingUp } from "luci
 const items = [
   { icon: ShieldCheck, label: "Verified Authentic" },
   { icon: BadgeDollarSign, label: "No Hidden Fees" },
-  { icon: RotateCcw, label: "Full Refund if Cancelled" },
+  { icon: RotateCcw, label: "Full Refund if Event Cancelled" },
 ];
 
 const TrustBar = () => {
