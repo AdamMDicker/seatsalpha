@@ -77,6 +77,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [desiredSeats, setDesiredSeats] = useState("any");
   const [filterAisle, setFilterAisle] = useState(false);
   const [filterRow1, setFilterRow1] = useState(false);
+  const [filterAccessible, setFilterAccessible] = useState(false);
   const [autoOpenHandled, setAutoOpenHandled] = useState(false);
   const [showAuthSheet, setShowAuthSheet] = useState(false);
   const [pendingBuyTicket, setPendingBuyTicket] = useState<TicketInfo | null>(null);
