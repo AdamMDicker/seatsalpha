@@ -77,23 +77,23 @@ const HeroSection = () => {
 
       <div className="container mx-auto px-4 relative z-10 pt-24 pb-16 flex flex-col items-center text-center">
         <div className="max-w-2xl flex flex-col items-center">
-          <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight mb-6 animate-fade-in drop-shadow-lg">
-            Tickets Without
+          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] mb-6 animate-fade-in drop-shadow-lg">
+            Compare Every Seat.
             <br />
-            <span className="text-gradient">the Fees.</span>
+            <span className="text-gradient">Skip Every Fee.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-foreground/80 max-w-lg mb-10 animate-fade-in leading-relaxed" style={{ animationDelay: "0.1s" }}>
-            Seats.ca is a Canadian ticket marketplace where members never pay HST or service fees. Find your event and save.
+          <p className="text-base sm:text-lg md:text-xl text-foreground/80 max-w-lg mb-10 animate-fade-in leading-relaxed" style={{ animationDelay: "0.1s" }}>
+            Seats.ca shows you real ticket prices across sections and rows — and members never pay service fees or HST on top. You save $30+ per ticket, every time.
           </p>
 
-          {/* Search bar */}
-          <div className="flex flex-col sm:flex-row gap-3 max-w-xl w-full mb-8 animate-fade-in relative" style={{ animationDelay: "0.2s" }} ref={resultsRef}>
+          {/* Search */}
+          <div className="flex flex-col sm:flex-row gap-3 max-w-xl w-full mb-6 animate-fade-in relative" style={{ animationDelay: "0.2s" }} ref={resultsRef}>
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search events, teams, artists..."
+                placeholder="Search by team, event, or artist..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setShowResults(true); }}
                 onFocus={() => setShowResults(true)}
@@ -123,14 +123,14 @@ const HeroSection = () => {
           </div>
 
           {/* Primary CTA */}
-          <div className="flex flex-col items-center gap-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <div className="flex flex-col items-center gap-3 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <Link to="/teams/blue-jays">
-              <Button variant="hero" size="lg" className="text-base px-8 py-3 h-auto">
-                Browse Blue Jays Tickets
+              <Button variant="hero" size="lg" className="text-base px-8 py-3.5 h-auto">
+                Find Blue Jays Tickets from $18
               </Button>
             </Link>
-            <p className="text-sm text-muted-foreground">
-              Currently in beta — more teams coming soon.
+            <p className="text-xs text-muted-foreground">
+              Currently in beta · More teams coming soon
             </p>
           </div>
         </div>
