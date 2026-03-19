@@ -12,7 +12,7 @@ const steps = [
   {
     icon: LayoutGrid,
     number: "2",
-    title: "Compare seats and views",
+    title: "Compare seats",
     description: "See every section, row, and price laid out clearly. No guessing — you'll know exactly what you're getting.",
   },
   {
