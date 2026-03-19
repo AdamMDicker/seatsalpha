@@ -4,25 +4,25 @@ import { ArrowRight } from "lucide-react";
 
 const FinalCTA = () => {
   return (
-    <section id="final-cta" className="py-32">
-      <div className="container mx-auto px-4">
+    <section id="final-cta" className="py-20 sm:py-32">
+      <div className="container mx-auto px-5 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="font-display text-3xl md:text-5xl font-bold mb-6 leading-tight">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
             Ready to stop overpaying?
           </h2>
-          <p className="text-muted-foreground text-base md:text-lg max-w-md mx-auto mb-12 leading-relaxed">
+          <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-md mx-auto mb-10 sm:mb-12 leading-relaxed">
             Browse real prices, compare seats, and pay exactly what's listed.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/teams/blue-jays">
-              <Button variant="hero" size="lg" className="text-base px-10 py-4 h-auto rounded-xl shadow-xl shadow-primary/20">
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 items-center justify-center">
+            <Link to="/teams/blue-jays" className="w-full sm:w-auto">
+              <Button variant="hero" size="lg" className="w-full sm:w-auto text-base px-10 py-4 h-auto rounded-xl shadow-xl shadow-primary/20 min-h-[52px]">
                 Browse Tickets
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </Link>
-            <Link to="/membership">
-              <Button variant="outline" size="lg" className="text-base px-10 py-4 h-auto rounded-xl">
+            <Link to="/membership" className="w-full sm:w-auto">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto text-base px-10 py-4 h-auto rounded-xl min-h-[52px]">
                 Learn About Membership
               </Button>
             </Link>

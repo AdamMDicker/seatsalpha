@@ -25,29 +25,29 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section id="features" className="py-32">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-20">
-          <p className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-4">Why fans choose us</p>
-          <h2 className="font-display text-3xl md:text-5xl font-bold mb-6 leading-tight">
+    <section id="features" className="py-20 sm:py-32">
+      <div className="container mx-auto px-5 sm:px-6">
+        <div className="text-center mb-14 sm:mb-20">
+          <p className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-3 sm:mb-4">Why fans choose us</p>
+          <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
             A better way to buy tickets
           </h2>
-          <p className="text-muted-foreground text-base md:text-lg max-w-md mx-auto leading-relaxed">
+          <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-md mx-auto leading-relaxed">
             Every feature saves you money, time, or stress. Usually all three.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-8 max-w-3xl mx-auto">
           {features.map((feature, i) => (
             <div
               key={i}
-              className="rounded-2xl p-10 bg-card border border-border hover:border-primary/30 transition-all duration-300 animate-fade-in group"
+              className="rounded-2xl p-7 sm:p-10 bg-card border border-border hover:border-primary/30 transition-all duration-300 animate-fade-in group"
               style={{ animationDelay: `${i * 0.1}s` }}
             >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/15 transition-colors">
-                <feature.icon className="h-6 w-6 text-primary" />
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 sm:mb-6 group-hover:bg-primary/15 transition-colors">
+                <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-3 leading-snug">{feature.title}</h3>
+              <h3 className="font-display font-semibold text-base sm:text-lg mb-2 sm:mb-3 leading-snug">{feature.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
             </div>
           ))}
