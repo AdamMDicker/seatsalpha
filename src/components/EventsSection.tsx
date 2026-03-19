@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import EventCard from "@/components/EventCard";
 import { categories } from "@/data/mockEvents";
@@ -6,42 +8,19 @@ import type { Event } from "@/data/mockEvents";
 import { MLB_LOGOS } from "@/data/mlbLogos";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 
-// Map common team name keywords to their logo slugs
 const TEAM_KEYWORD_TO_SLUG: Record<string, string> = {
-  "yankees": "yankees",
-  "red sox": "red-sox",
-  "rays": "rays",
-  "orioles": "orioles",
-  "guardians": "guardians",
-  "tigers": "tigers",
-  "royals": "royals",
-  "twins": "twins",
-  "white sox": "white-sox",
-  "astros": "astros",
-  "rangers": "rangers",
-  "mariners": "mariners",
-  "angels": "angels",
-  "athletics": "athletics",
-  "braves": "braves",
-  "mets": "mets",
-  "phillies": "phillies",
-  "marlins": "marlins",
-  "nationals": "nationals",
-  "cubs": "cubs",
-  "brewers": "brewers",
-  "cardinals": "cardinals",
-  "reds": "reds",
-  "pirates": "pirates",
-  "dodgers": "dodgers",
-  "padres": "padres",
-  "giants": "giants",
-  "diamondbacks": "diamondbacks",
+  "yankees": "yankees", "red sox": "red-sox", "rays": "rays", "orioles": "orioles",
+  "guardians": "guardians", "tigers": "tigers", "royals": "royals", "twins": "twins",
+  "white sox": "white-sox", "astros": "astros", "rangers": "rangers", "mariners": "mariners",
+  "angels": "angels", "athletics": "athletics", "braves": "braves", "mets": "mets",
+  "phillies": "phillies", "marlins": "marlins", "nationals": "nationals", "cubs": "cubs",
+  "brewers": "brewers", "cardinals": "cardinals", "reds": "reds", "pirates": "pirates",
+  "dodgers": "dodgers", "padres": "padres", "giants": "giants", "diamondbacks": "diamondbacks",
   "rockies": "rockies",
 };
 
 const getOpponentLogo = (title: string): string | null => {
   const lower = title.toLowerCase();
-  // Skip Blue Jays themselves — find the opponent
   for (const [keyword, slug] of Object.entries(TEAM_KEYWORD_TO_SLUG)) {
     if (lower.includes(keyword) && slug !== "blue-jays") {
       return MLB_LOGOS[slug] || null;
@@ -76,8 +55,6 @@ const EventsSection = () => {
 
           const hasInternalTickets = tickets?.some(t => !t.is_reseller_ticket) ?? false;
           const minPrice = tickets && tickets.length > 0 ? Math.min(...tickets.map(t => t.price)) : 0;
-
-          // Use opponent logo if available, otherwise fall back to event image
           const opponentLogo = getOpponentLogo(ev.title);
 
           eventsWithInfo.push({
@@ -93,7 +70,6 @@ const EventsSection = () => {
             isOwn: hasInternalTickets,
           });
         }
-        // Sort: internal (featured) tickets first
         eventsWithInfo.sort((a, b) => (b.isOwn ? 1 : 0) - (a.isOwn ? 1 : 0));
         setEvents(eventsWithInfo);
       }
@@ -106,18 +82,18 @@ const EventsSection = () => {
     ? events
     : events.filter((e) => e.category === activeCategory);
 
-  // Only show the next 6 upcoming games
   const displayEvents = filteredEvents.slice(0, 6);
 
   return (
-    <section className="py-20">
+    <section className="py-24">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">
-            Upcoming <span className="text-gradient">Events</span>
+          <p className="text-xs uppercase tracking-[0.25em] text-primary font-semibold mb-3">Don't miss out</p>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
+            Upcoming Events
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Browse thousands of events across Canada. No hidden fees, ever.
+            Browse games and lock in your seats — no hidden fees, ever.
           </p>
         </div>
 
@@ -140,18 +116,32 @@ const EventsSection = () => {
         {loading ? (
           <div className="text-center text-muted-foreground py-12">Loading events...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayEvents.map((event, i) => (
-              <div key={event.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-                <EventCard event={event} />
-              </div>
-            ))}
-            {displayEvents.length === 0 && (
-              <div className="col-span-full text-center text-muted-foreground py-12">
-                No events found in this category.
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayEvents.map((event, i) => (
+                <div key={event.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <EventCard event={event} />
+                </div>
+              ))}
+              {displayEvents.length === 0 && (
+                <div className="col-span-full text-center text-muted-foreground py-12">
+                  No events found in this category.
+                </div>
+              )}
+            </div>
+
+            {displayEvents.length > 0 && (
+              <div className="text-center mt-10">
+                <Link
+                  to="/teams/blue-jays"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline underline-offset-4 transition-colors"
+                >
+                  View All Blue Jays Games
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </section>
