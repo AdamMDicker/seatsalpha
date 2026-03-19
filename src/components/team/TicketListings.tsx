@@ -48,6 +48,7 @@ interface TicketListingsProps {
   isGiveaway?: boolean;
   giveawayItem?: string | null;
   gameTitle?: string;
+  gameId?: string;
   venueName?: string;
   eventDate?: string;
 }
