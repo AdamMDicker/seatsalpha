@@ -42,14 +42,18 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       <button
         onClick={onClick}
         className={`w-full text-left rounded-lg p-3 transition-all border relative ${
-          isSelected
-            ? isAway
-              ? "bg-amber-500/10 border-amber-500/50"
-              : "bg-emerald-500/10 border-emerald-500/50"
-            : "bg-card border-border hover:border-primary/30"
+          game.is_giveaway
+            ? isSelected
+              ? "bg-primary/15 border-primary/60 ring-1 ring-primary/30"
+              : "bg-primary/5 border-primary/30 hover:border-primary/50"
+            : isSelected
+              ? isAway
+                ? "bg-amber-500/10 border-amber-500/50"
+                : "bg-emerald-500/10 border-emerald-500/50"
+              : "bg-card border-border hover:border-primary/30"
         }`}
       >
-        <div className={`absolute top-0 left-0 right-0 h-0.5 ${isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
+        <div className={`absolute top-0 left-0 right-0 h-0.5 ${game.is_giveaway ? "bg-primary" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
         <div className="flex items-center gap-3">
           {teamLogo && <img src={teamLogo} alt="" className="w-8 h-8 object-contain flex-shrink-0" />}
           <div className="flex-1 min-w-0">
@@ -69,12 +73,19 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
             <p className="text-sm font-medium text-foreground truncate">
               {isAway ? "@ " : "vs "}{opponent ? expandTeamNames(opponent) : expandTeamNames(game.title)}
             </p>
+            {game.is_giveaway && (
+              <div className="flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 w-fit">
+                <Gift className="h-3 w-3 text-primary animate-bounce" />
+                <span className="text-[10px] font-bold text-primary uppercase tracking-wide">
+                  {game.giveaway_item || "Giveaway"}
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex flex-col items-end flex-shrink-0">
             {cheapest !== null ? (
               <>
                 <span className="text-sm text-emerald-400 font-semibold">${cheapest}</span>
-                {game.is_giveaway && <Gift className="h-3 w-3 text-primary mt-0.5" />}
               </>
             ) : (
               <span className="text-xs text-muted-foreground">—</span>
