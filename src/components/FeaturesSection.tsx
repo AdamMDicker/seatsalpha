@@ -1,4 +1,6 @@
-import { Banknote, ShieldCheck, Plane, Car } from "lucide-react";
+import { Banknote, ShieldCheck, Plane, Car, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const features = [
   {
@@ -51,6 +53,15 @@ const FeaturesSection = () => {
               <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
             </div>
           ))}
+        </div>
+
+        <div className="text-center mt-12 sm:mt-16">
+          <Link to="/teams/blue-jays" className="w-full sm:w-auto inline-block">
+            <Button variant="hero" size="lg" className="w-full sm:w-auto text-base px-10 py-4 h-auto rounded-xl shadow-xl shadow-primary/20 min-h-[52px] font-semibold">
+              Find Seats Now
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

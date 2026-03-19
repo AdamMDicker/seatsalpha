@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, ArrowRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,16 +108,22 @@ const HeroSection = () => {
           </div>
 
           {/* CTA */}
-          <div className="w-full animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <Link to="/teams/blue-jays" className="block">
-              <Button variant="hero" size="lg" className="w-full sm:w-auto text-base px-10 py-4 h-auto rounded-xl shadow-xl shadow-primary/20 min-h-[52px]">
-                Find Blue Jays Tickets from $18
+          <div className="w-full animate-fade-in flex flex-col items-center gap-3 sm:flex-row sm:justify-center" style={{ animationDelay: "0.3s" }}>
+            <Link to="/teams/blue-jays" className="w-full sm:w-auto">
+              <Button variant="hero" size="lg" className="w-full sm:w-auto text-lg px-10 py-5 h-auto rounded-xl shadow-xl shadow-primary/25 min-h-[56px] font-bold">
+                Find Seats Now
+                <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
-            <p className="text-xs text-muted-foreground mt-4">
-              Currently in beta · More teams coming soon
-            </p>
+            <Link to="/membership" className="w-full sm:w-auto">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto text-base px-8 py-5 h-auto rounded-xl min-h-[56px] border-primary/30 hover:border-primary/60">
+                See Membership Benefits
+              </Button>
+            </Link>
           </div>
+          <p className="text-xs text-muted-foreground mt-5 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+            Currently in beta · More teams coming soon
+          </p>
         </div>
       </div>
     </section>
