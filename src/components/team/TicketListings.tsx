@@ -63,7 +63,7 @@ const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
   giveaway_guaranteed: { label: "Giveaway Guaranteed", emoji: "🎁" },
 };
 
-const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, venueName, eventDate }: TicketListingsProps) => {
+const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, gameId, venueName, eventDate }: TicketListingsProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
