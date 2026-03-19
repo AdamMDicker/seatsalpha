@@ -17,32 +17,32 @@ const SolutionSection = () => {
           <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
             What you see is what you pay
           </h2>
-          <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-md mx-auto leading-relaxed">
-            The listed price is the final price. No fees added at checkout.
+          <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-lg mx-auto leading-relaxed">
+            Everyone sees transparent prices. Members get the best deal — no service fees and HST included in every ticket.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-10 max-w-xl mx-auto mb-12 sm:mb-16">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-10 max-w-xl mx-auto mb-8 sm:mb-10">
           {/* Competitor */}
           <div className="rounded-2xl border border-border bg-card p-8 sm:p-10 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 sm:mb-6">Other platforms</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 sm:mb-6">StubHub / Ticketmaster</p>
             <p className="font-display text-5xl sm:text-6xl font-bold text-destructive mb-3 sm:mb-4">$132</p>
             <div className="space-y-1.5 text-sm text-muted-foreground">
               <p>$100 ticket</p>
-              <p>+ $19 service fee</p>
-              <p>+ $13 HST</p>
+              <p className="text-destructive/70">+ $19 service fee</p>
+              <p className="text-destructive/70">+ $13 HST</p>
             </div>
           </div>
 
           {/* Seats.ca */}
           <div className="rounded-2xl border-2 border-primary bg-card p-8 sm:p-10 text-center relative">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-5 py-1.5 rounded-full shadow-lg shadow-primary/25">
-              Seats.ca
+              Seats.ca Member
             </span>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 sm:mb-6">For members</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 sm:mb-6">$49.95/yr membership</p>
             <p className="font-display text-5xl sm:text-6xl font-bold text-foreground mb-3 sm:mb-4">$100</p>
             <div className="space-y-2 text-sm text-muted-foreground">
-              {["No service fees", "HST included", "Final price"].map((text) => (
+              {["No service fees", "HST included", "What you see = what you pay"].map((text) => (
                 <div key={text} className="flex items-center justify-center gap-2">
                   <Check className="h-4 w-4 text-primary shrink-0" />
                   <span>{text}</span>
@@ -51,6 +51,11 @@ const SolutionSection = () => {
             </div>
           </div>
         </div>
+
+        {/* Non-member clarification */}
+        <p className="text-center text-xs text-muted-foreground mb-10 sm:mb-12 max-w-md mx-auto">
+          Not a member yet? You can still browse and buy — a small service fee applies at checkout. Membership removes it entirely.
+        </p>
 
         {/* Trust guarantees */}
         <div className="flex flex-col gap-4 sm:flex-row items-center justify-center sm:gap-10 mb-10 sm:mb-12">
