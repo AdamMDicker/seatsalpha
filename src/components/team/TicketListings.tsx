@@ -461,11 +461,13 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         <button onClick={() => setSelectedSection(null)} className="text-sm text-primary hover:underline mb-4 flex items-center gap-1">← All Sections</button>
       )}
       {isGiveaway && giveawayItem && (
-        <div className="glass rounded-xl p-3 mb-4 flex items-center gap-2 border-primary/20 bg-primary/5">
-          <Gift className="h-4 w-4 text-primary flex-shrink-0" />
+        <div className="rounded-xl p-4 mb-4 flex items-center gap-3 border-2 border-primary/50 bg-primary/10 shadow-lg shadow-primary/15 animate-pulse-glow">
+          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+            <Gift className="h-5 w-5 text-primary animate-bounce" />
+          </div>
           <div>
-            <p className="text-xs font-semibold text-primary">Giveaway Game!</p>
-            <p className="text-xs text-muted-foreground">{giveawayItem}</p>
+            <p className="text-sm font-bold text-primary uppercase tracking-wide">🎁 Giveaway Game!</p>
+            <p className="text-sm text-foreground font-medium">{giveawayItem}</p>
           </div>
         </div>
       )}
