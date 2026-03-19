@@ -1,29 +1,25 @@
-import { ShieldCheck, Banknote, Car, Plane } from "lucide-react";
+import { Banknote, ShieldCheck, Plane, Car } from "lucide-react";
 
 const features = [
   {
     icon: Banknote,
-    title: "Zero Fees for Members",
-    benefit: "Keep more money in your pocket",
-    description: "Members pay the listed ticket price — no HST, no service charges. You'll save $30+ on every purchase.",
+    title: "Keep more money for the things you love",
+    description: "Members pay exactly what's listed — no service fees, no HST added at checkout. Most fans save $30+ per ticket compared to other platforms.",
   },
   {
     icon: ShieldCheck,
-    title: "Every Ticket Guaranteed",
-    benefit: "Buy with total confidence",
-    description: "Every ticket is verified authentic. If an event is cancelled, you get a full refund — no questions asked.",
+    title: "Buy with confidence, every single time",
+    description: "Every ticket is verified authentic before it reaches you. If your event gets cancelled, you get a full refund automatically — no forms, no waiting.",
   },
   {
     icon: Plane,
-    title: "Travel Packages",
-    benefit: "Save on the whole trip",
-    description: "Travelling for the game? Bundle hotel and flight deals at checkout so you save beyond just the ticket.",
+    title: "Save on the whole trip, not just the ticket",
+    description: "Travelling to catch the game? Bundle discounted hotel and flight deals at checkout so your entire trip costs less.",
   },
   {
     icon: Car,
-    title: "Ride to the Venue",
-    benefit: "One less thing to plan",
-    description: "Add an Uber ride to and from your event at checkout. Get dropped off at the door, stress-free.",
+    title: "Get to the venue without the hassle",
+    description: "Add a round-trip Uber ride at checkout and get dropped off at the door. No parking, no stress — just show up and enjoy.",
   },
 ];
 
@@ -32,12 +28,12 @@ const FeaturesSection = () => {
     <section id="features" className="py-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <p className="text-xs uppercase tracking-[0.25em] text-primary font-semibold mb-3">Why Seats.ca</p>
+          <p className="text-xs uppercase tracking-[0.25em] text-primary font-semibold mb-3">Why fans choose us</p>
           <h2 className="font-display text-3xl md:text-5xl font-bold mb-5">
-            Built for fans, not for fees
+            A better way to buy tickets
           </h2>
-          <p className="text-muted-foreground text-lg max-w-md mx-auto">
-            Everything you need for a better ticket-buying experience — and nothing you don't.
+          <p className="text-muted-foreground text-lg max-w-lg mx-auto">
+            Every feature exists to save you money, time, or stress. Usually all three.
           </p>
         </div>
 
@@ -51,8 +47,7 @@ const FeaturesSection = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
                 <feature.icon className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-display font-semibold text-xl mb-1">{feature.title}</h3>
-              <p className="text-sm font-medium text-primary mb-3">{feature.benefit}</p>
+              <h3 className="font-display font-semibold text-lg mb-3 leading-snug">{feature.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
             </div>
           ))}
