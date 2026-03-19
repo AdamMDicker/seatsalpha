@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, Lock, CreditCard, Headphones } from "lucide-react";
+
+const guarantees = [
+  { icon: Lock, label: "Secure checkout with Stripe" },
+  { icon: CreditCard, label: "All major cards accepted" },
+  { icon: Headphones, label: "Canadian support team" },
+];
 
 const SolutionSection = () => {
   return (
@@ -44,6 +50,16 @@ const SolutionSection = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Trust guarantees */}
+        <div className="flex flex-col gap-4 sm:flex-row items-center justify-center sm:gap-10 mb-10 sm:mb-12">
+          {guarantees.map((g) => (
+            <div key={g.label} className="flex items-center gap-2.5 text-foreground/50">
+              <g.icon className="h-4 w-4 text-primary/70 shrink-0" />
+              <span className="text-xs font-medium">{g.label}</span>
+            </div>
+          ))}
         </div>
 
         <div className="text-center">
