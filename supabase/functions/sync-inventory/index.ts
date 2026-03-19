@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
         .from("tickets")
         .select("id, event_id, section, row_name, price, quantity")
         .in("event_id", batch)
-        .eq("is_reseller_ticket", false);
+        .eq("is_reseller_ticket", true);
       (tickets || []).forEach((t) => {
         const key = `${t.event_id}|${t.section}|${t.row_name || ""}|${t.price}`;
         existingTicketsMap.set(key, { id: t.id, quantity: t.quantity });
