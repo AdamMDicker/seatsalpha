@@ -1,4 +1,4 @@
-import { Search, LayoutGrid, CreditCard } from "lucide-react";
+import { Search, LayoutGrid, ThumbsUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -6,20 +6,20 @@ const steps = [
   {
     icon: Search,
     number: "1",
-    title: "Find your event",
-    description: "Search by team, date, or venue to find upcoming games and events near you.",
+    title: "Search for your event",
+    description: "Type in a team name, artist, or date. We'll show you every upcoming event with tickets available.",
   },
   {
     icon: LayoutGrid,
     number: "2",
-    title: "Compare your seats",
-    description: "See every available section, row, and price side by side so you know exactly what you're getting.",
+    title: "Compare seats and views",
+    description: "See every section, row, and price laid out clearly. No guessing — you'll know exactly what you're getting.",
   },
   {
-    icon: CreditCard,
+    icon: ThumbsUp,
     number: "3",
-    title: "Pay the listed price",
-    description: "No service fees, no processing charges, no HST on top. The price you see is the price you pay.",
+    title: "Pick the best option for your budget",
+    description: "Choose the seats that work for you and pay the listed price. Members pay zero fees on top.",
   },
 ];
 
@@ -33,34 +33,40 @@ const HowItWorks = () => {
             Three steps to better tickets
           </h2>
           <p className="text-muted-foreground text-lg max-w-md mx-auto">
-            No account needed to browse. Membership unlocks fee-free pricing.
+            No account needed to browse. Just search, compare, and pick.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-4xl mx-auto mb-14">
-          {steps.map((step, i) => (
-            <div
-              key={step.number}
-              className="text-center flex flex-col items-center animate-fade-in"
-              style={{ animationDelay: `${i * 0.1}s` }}
-            >
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 relative">
-                <step.icon className="h-7 w-7 text-primary" />
-                <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center shadow-lg">
-                  {step.number}
-                </span>
+        <div className="max-w-4xl mx-auto mb-14">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-0 relative">
+            {/* Connector line (desktop only) */}
+            <div className="hidden md:block absolute top-10 left-[calc(16.67%+28px)] right-[calc(16.67%+28px)] h-px bg-border" />
+
+            {steps.map((step, i) => (
+              <div
+                key={step.number}
+                className="relative flex flex-col items-center text-center px-4 animate-fade-in"
+                style={{ animationDelay: `${i * 0.15}s` }}
+              >
+                {/* Number circle */}
+                <div className="w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center mb-6 relative z-10">
+                  <step.icon className="h-8 w-8 text-primary" />
+                  <span className="absolute -top-1.5 -right-1.5 w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center shadow-lg shadow-primary/25">
+                    {step.number}
+                  </span>
+                </div>
+
+                <h3 className="font-display font-semibold text-xl mb-3">{step.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-[260px]">{step.description}</p>
               </div>
-              <h3 className="font-display font-semibold text-xl mb-3">{step.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px]">{step.description}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
-        {/* Connector line on desktop */}
         <div className="text-center">
           <Link to="/teams/blue-jays">
             <Button variant="hero" size="lg" className="text-base px-8 py-3.5 h-auto">
-              Try It Now — Browse Events
+              Try It — Browse Events
             </Button>
           </Link>
         </div>
