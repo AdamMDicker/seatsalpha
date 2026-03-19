@@ -1,0 +1,56 @@
+
+-- Delete tickets for duplicate events (03:07 UTC offset duplicates)
+DELETE FROM tickets WHERE event_id IN (
+  '7dd29e66-8e6d-4ea7-ac31-77854b0cdf2a',
+  '5f9c9345-5509-44ef-ade7-0ee8ba705668',
+  'f2aa4105-9779-41e8-b11d-63ea3687ca46',
+  '1ca68948-c6eb-4456-a996-f1f1bb346b64',
+  'f93b2678-ad6c-452b-b069-09b481d1b347',
+  '65874492-4192-45d1-9585-bf5ac5f103af',
+  'e4ae3030-e721-47ae-be21-4f88f3f45740',
+  'af173278-9cdf-47f3-9e85-f4f558a58833',
+  '9f8ccd5e-2913-43ca-b536-2870b3637b7a',
+  'eede4f26-65b1-4c28-97d6-234493765771',
+  '9f33a859-c1f3-4f48-a850-ef79fd790526',
+  'fb8cc9f7-578e-4848-826e-e3f39e031098',
+  '875684d8-8c7d-4fed-8668-79ac0e6666ad',
+  '25fb6b7b-110d-4fb6-80d2-18496f1e27df',
+  '144edca1-9ebe-4ed2-8525-acf2fc0a96b8',
+  'd80c5f5a-9721-44fd-bea5-dcffc53df7ae',
+  '91c2cf5a-b099-4f89-bc9a-2ac876aff7a9',
+  'b0b31292-ea88-4401-8fed-a9c995352cfb',
+  'a941e727-6698-4294-96dd-b89857d899cf',
+  '759027aa-6b56-4f73-acb8-cca04abd476f',
+  '1d672c86-de48-4ec4-a6c9-45738ea6c4ad',
+  'ef5c9ebb-b1b4-42f7-9cc3-5ad3a615d5af',
+  '531d4c4e-7206-4804-b642-3dfa98d53265',
+  'cb664283-e3e9-47bf-a97f-c177e2e6c708'
+);
+
+-- Delete the duplicate events themselves
+DELETE FROM events WHERE id IN (
+  '7dd29e66-8e6d-4ea7-ac31-77854b0cdf2a',
+  '5f9c9345-5509-44ef-ade7-0ee8ba705668',
+  'f2aa4105-9779-41e8-b11d-63ea3687ca46',
+  '1ca68948-c6eb-4456-a996-f1f1bb346b64',
+  'f93b2678-ad6c-452b-b069-09b481d1b347',
+  '65874492-4192-45d1-9585-bf5ac5f103af',
+  'e4ae3030-e721-47ae-be21-4f88f3f45740',
+  'af173278-9cdf-47f3-9e85-f4f558a58833',
+  '9f8ccd5e-2913-43ca-b536-2870b3637b7a',
+  'eede4f26-65b1-4c28-97d6-234493765771',
+  '9f33a859-c1f3-4f48-a850-ef79fd790526',
+  'fb8cc9f7-578e-4848-826e-e3f39e031098',
+  '875684d8-8c7d-4fed-8668-79ac0e6666ad',
+  '25fb6b7b-110d-4fb6-80d2-18496f1e27df',
+  '144edca1-9ebe-4ed2-8525-acf2fc0a96b8',
+  'd80c5f5a-9721-44fd-bea5-dcffc53df7ae',
+  '91c2cf5a-b099-4f89-bc9a-2ac876aff7a9',
+  'b0b31292-ea88-4401-8fed-a9c995352cfb',
+  'a941e727-6698-4294-96dd-b89857d899cf',
+  '759027aa-6b56-4f73-acb8-cca04abd476f',
+  '1d672c86-de48-4ec4-a6c9-45738ea6c4ad',
+  'ef5c9ebb-b1b4-42f7-9cc3-5ad3a615d5af',
+  '531d4c4e-7206-4804-b642-3dfa98d53265',
+  'cb664283-e3e9-47bf-a97f-c177e2e6c708'
+);
