@@ -343,11 +343,19 @@ serve(async (req) => {
     if (meta.ticket_id) {
       const { data: ticket } = await supabase
         .from("tickets")
-        .select("seller_id, section, row_name, seat_number, price, event_id")
+        .select("seller_id, section, row_name, seat_number, price, event_id, quantity_sold")
         .eq("id", meta.ticket_id)
         .single();
 
       if (ticket) {
+        // Increment quantity_sold to prevent overselling
+        const purchasedQty = parseInt(quantity) || 1;
+        const newQtySold = (ticket.quantity_sold || 0) + purchasedQty;
+        await supabase
+          .from("tickets")
+          .update({ quantity_sold: newQtySold })
+          .eq("id", meta.ticket_id);
+        console.log(`Updated quantity_sold for ticket ${meta.ticket_id}: ${ticket.quantity_sold} → ${newQtySold}`);
         const sectionInfo = ticket.section;
         const rowInfo = ticket.row_name || "";
         const salePrice = ticket.price.toFixed(2);
