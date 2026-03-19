@@ -172,9 +172,12 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         setShowAuthSheet(true);
         return;
       }
-      // Desktop: redirect flow
+      // Desktop: redirect flow — include game ID so the correct game is re-selected
       const params = new URLSearchParams(searchParams);
       params.set("buyTicket", ticket.id);
+      if (gameId) {
+        params.set("game", gameId);
+      }
       if (desiredSeats !== "any") {
         params.set("buyQty", desiredSeats);
       }

@@ -98,8 +98,10 @@ export function useTeamGames(searchTerm: string | undefined) {
         : null;
       if (targetGame) {
         setSelectedGame(targetGame);
-        // Clear the query param after selecting
-        setSearchParams({}, { replace: true });
+        // Only clear the game param, preserve others (e.g. buyTicket)
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete("game");
+        setSearchParams(newParams, { replace: true });
       } else if (gamesWithTickets.length > 0) {
         setSelectedGame(gamesWithTickets[0]);
       }
