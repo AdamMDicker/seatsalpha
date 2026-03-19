@@ -225,12 +225,14 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   // Check if aisle / row1 perks exist in current inventory
   const hasAisleTickets = tickets.some((t) => t.perks?.includes("aisle"));
   const hasRow1Tickets = tickets.some((t) => t.perks?.includes("row1"));
+  const hasAccessibleTickets = tickets.some((t) => t.perks?.includes("accessible"));
 
   const sectionFilteredTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
   const allTickets = sectionFilteredTickets
     .filter((ticket) => canFulfillSeatCount(ticket, selectedSeatCount))
     .filter((ticket) => !filterAisle || ticket.perks?.includes("aisle"))
-    .filter((ticket) => !filterRow1 || ticket.perks?.includes("row1"));
+    .filter((ticket) => !filterRow1 || ticket.perks?.includes("row1"))
+    .filter((ticket) => !filterAccessible || ticket.perks?.includes("accessible"));
   const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket).slice(0, 4);
   const resellerTickets = allTickets.filter((t) => t.is_reseller_ticket);
 
