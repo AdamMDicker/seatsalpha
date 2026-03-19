@@ -470,6 +470,48 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         </div>
       )}
 
+      {(hasAisleTickets || hasRow1Tickets || hasAccessibleTickets) && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground font-medium">Filter:</span>
+          {hasRow1Tickets && (
+            <button
+              onClick={() => setFilterRow1((v) => !v)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                filterRow1
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+              }`}
+            >
+              🥇 Row 1
+            </button>
+          )}
+          {hasAisleTickets && (
+            <button
+              onClick={() => setFilterAisle((v) => !v)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                filterAisle
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+              }`}
+            >
+              🪑 Aisle Seats
+            </button>
+          )}
+          {hasAccessibleTickets && (
+            <button
+              onClick={() => setFilterAccessible((v) => !v)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                filterAccessible
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+              }`}
+            >
+              ♿ Accessible
+            </button>
+          )}
+        </div>
+      )}
+
       <div ref={filterBarRef} className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -495,35 +537,6 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               ))}
             </SelectContent>
           </Select>
-        {(hasAisleTickets || hasRow1Tickets) && (
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-xs text-muted-foreground font-medium">Filter:</span>
-            {hasAisleTickets && (
-              <button
-                onClick={() => setFilterAisle((v) => !v)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                  filterAisle
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-                }`}
-              >
-                🪑 Aisle Seats
-              </button>
-            )}
-            {hasRow1Tickets && (
-              <button
-                onClick={() => setFilterRow1((v) => !v)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                  filterRow1
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-                }`}
-              >
-                🥇 Row 1
-              </button>
-            )}
-          </div>
-        )}
         </div>
       </div>
 
