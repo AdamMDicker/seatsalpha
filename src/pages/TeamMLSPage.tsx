@@ -137,6 +137,7 @@ const TeamMLSPage = () => {
                 isGiveaway={selectedGame.is_giveaway}
                 giveawayItem={selectedGame.giveaway_item}
                 gameTitle={selectedGame.title}
+                gameId={selectedGame.id}
                 venueName={selectedGame.venue}
                 eventDate={selectedGame.event_date}
               />

@@ -48,6 +48,7 @@ interface TicketListingsProps {
   isGiveaway?: boolean;
   giveawayItem?: string | null;
   gameTitle?: string;
+  gameId?: string;
   venueName?: string;
   eventDate?: string;
 }
@@ -62,7 +63,7 @@ const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
   giveaway_guaranteed: { label: "Giveaway Guaranteed", emoji: "🎁" },
 };
 
-const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, venueName, eventDate }: TicketListingsProps) => {
+const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, gameId, venueName, eventDate }: TicketListingsProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -171,9 +172,12 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         setShowAuthSheet(true);
         return;
       }
-      // Desktop: redirect flow
+      // Desktop: redirect flow — include game ID so the correct game is re-selected
       const params = new URLSearchParams(searchParams);
       params.set("buyTicket", ticket.id);
+      if (gameId) {
+        params.set("game", gameId);
+      }
       if (desiredSeats !== "any") {
         params.set("buyQty", desiredSeats);
       }
