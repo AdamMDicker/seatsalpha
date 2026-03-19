@@ -56,6 +56,7 @@ interface TicketListingsProps {
 const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
   aisle: { label: "Aisle Seat", emoji: "🪑" },
   row1: { label: "Row 1", emoji: "🥇" },
+  accessible: { label: "Accessible", emoji: "♿" },
   food: { label: "Food Included", emoji: "🍔" },
   drinks: { label: "Drinks Included", emoji: "🍺" },
   lounge: { label: "Lounge Access", emoji: "🛋️" },
