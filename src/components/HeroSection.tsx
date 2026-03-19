@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Search, ArrowRight } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { ArrowRight, Ticket } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 import heroCanada from "@/assets/hero-arena.jpg";
@@ -19,31 +19,8 @@ const HERO_IMAGES: Record<string, string> = {
   concerts: heroConcerts, stpatricks: heroStPatricks,
 };
 
-const TEAMS = [
-  { name: "Toronto Blue Jays", league: "MLB", path: "/teams/blue-jays" },
-];
-
 const HeroSection = () => {
-  const [search, setSearch] = useState("");
-  const [showResults, setShowResults] = useState(false);
   const [heroImage, setHeroImage] = useState(heroCanada);
-  const resultsRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-
-  const filtered = search.trim().length > 1
-    ? TEAMS.filter((t) =>
-        t.name.toLowerCase().includes(search.toLowerCase()) ||
-        t.league.toLowerCase().includes(search.toLowerCase())
-      )
-    : [];
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (resultsRef.current && !resultsRef.current.contains(e.target as Node)) setShowResults(false);
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   useEffect(() => {
     const fetchHero = async () => {
@@ -60,69 +37,38 @@ const HeroSection = () => {
 
       <div className="container mx-auto px-5 sm:px-6 relative z-10 pt-24 sm:pt-28 pb-16 sm:pb-20 flex flex-col items-center text-center">
         <div className="max-w-2xl w-full flex flex-col items-center">
-          <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-[4.5rem] font-bold leading-[1.1] mb-6 sm:mb-8 animate-fade-in">
+          {/* Descriptor badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/60 backdrop-blur border border-border/50 mb-6 sm:mb-8 animate-fade-in">
+            <Ticket className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-semibold text-foreground/80">Canada's fee-free ticket marketplace</span>
+          </div>
+
+          <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-[4.5rem] font-bold leading-[1.1] mb-5 sm:mb-6 animate-fade-in">
             Compare Every Seat.
             <br />
             <span className="text-gradient">Skip Every Fee.</span>
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-foreground/70 max-w-md mb-8 sm:mb-12 animate-fade-in leading-relaxed px-2" style={{ animationDelay: "0.1s" }}>
-            See real ticket prices across sections and rows. Members never pay service fees or HST.
+          <p className="text-base sm:text-lg md:text-xl text-foreground/70 max-w-lg mb-8 sm:mb-10 animate-fade-in leading-relaxed px-2" style={{ animationDelay: "0.1s" }}>
+            Browse real ticket prices by section and row. Members pay exactly what's listed — no service fees, no HST on top.
           </p>
 
-          {/* Search */}
-          <div className="w-full max-w-lg mb-8 sm:mb-10 animate-fade-in relative" style={{ animationDelay: "0.2s" }} ref={resultsRef}>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search by team or event..."
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setShowResults(true); }}
-                  onFocus={() => setShowResults(true)}
-                  className="w-full pl-11 pr-4 py-4 rounded-xl bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 text-base sm:text-sm text-foreground placeholder:text-muted-foreground"
-                />
-                {showResults && filtered.length > 0 && (
-                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl shadow-2xl z-50 py-2 animate-fade-in">
-                    {filtered.map((team) => (
-                      <button
-                        key={team.path}
-                        onClick={() => { navigate(team.path); setShowResults(false); setSearch(""); }}
-                        className="w-full text-left px-4 py-3.5 hover:bg-secondary transition-colors flex items-center justify-between"
-                      >
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">{team.name}</p>
-                          <p className="text-xs text-muted-foreground">{team.league} · View tickets</p>
-                        </div>
-                        <span className="text-xs font-medium text-primary">→</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <Button variant="hero" className="px-8 py-4 h-auto text-base sm:text-sm font-semibold rounded-xl min-h-[52px]">
-                Search
-              </Button>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div className="w-full animate-fade-in flex flex-col items-center gap-3 sm:flex-row sm:justify-center" style={{ animationDelay: "0.3s" }}>
+          {/* CTAs */}
+          <div className="w-full animate-fade-in flex flex-col items-center gap-3 sm:flex-row sm:justify-center" style={{ animationDelay: "0.2s" }}>
             <Link to="/teams/blue-jays" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto text-lg px-10 py-5 h-auto rounded-xl shadow-xl shadow-primary/25 min-h-[56px] font-bold">
-                Find Seats Now
+                Browse Blue Jays Tickets
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
             <Link to="/membership" className="w-full sm:w-auto">
               <Button variant="outline" size="lg" className="w-full sm:w-auto text-base px-8 py-5 h-auto rounded-xl min-h-[56px] border-primary/30 hover:border-primary/60">
-                See Membership Benefits
+                How Membership Works
               </Button>
             </Link>
           </div>
-          <p className="text-xs text-muted-foreground mt-5 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            Currently in beta · More teams coming soon
+          <p className="text-xs text-muted-foreground/70 mt-5 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            Starting with Toronto Blue Jays · More teams launching soon
           </p>
         </div>
       </div>

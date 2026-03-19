@@ -17,12 +17,12 @@ const FinalCTA = () => {
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 items-center justify-center">
             <Link to="/teams/blue-jays" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto text-lg px-12 py-5 h-auto rounded-xl shadow-xl shadow-primary/25 min-h-[56px] font-bold">
-                Find Seats Now
+                Browse Blue Jays Tickets
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
             <Link to="/membership" className="w-full sm:w-auto">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto text-base px-10 py-4 h-auto rounded-xl min-h-[52px]">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto text-base px-10 py-4 h-auto rounded-xl min-h-[52px] border-primary/30 hover:border-primary/60">
                 Learn About Membership
               </Button>
             </Link>

@@ -6,29 +6,29 @@ const testimonials = [
   {
     name: "Marcus T.",
     location: "Toronto, ON",
-    quote: "I saved $64 on two Blue Jays tickets. The price I saw was the price I paid — no last-minute fees.",
+    quote: "I saved $64 on two Blue Jays tickets. The price I saw was the price I paid — no surprise fees at checkout.",
     event: "Blue Jays vs Yankees",
     saved: "$64",
   },
   {
     name: "Sarah L.",
-    location: "Vancouver, BC",
-    quote: "Finally a ticket site that doesn't try to trick you at checkout. The membership paid for itself after one game.",
-    event: "Canucks vs Oilers",
-    saved: "$48",
+    location: "Oakville, ON",
+    quote: "The seat comparison made it so easy to find good value. I could see every section and row before deciding.",
+    event: "Blue Jays vs Red Sox",
+    saved: "$41",
   },
   {
     name: "James R.",
-    location: "Calgary, AB",
-    quote: "Comparing seats side by side made it so easy to pick the best value. Way better than scrolling through endless listings.",
-    event: "Flames vs Leafs",
-    saved: "$37",
+    location: "Hamilton, ON",
+    quote: "My family of four saved over $80 compared to what we would've paid on StubHub. The membership is a no-brainer.",
+    event: "Blue Jays vs Orioles",
+    saved: "$83",
   },
   {
     name: "Priya D.",
     location: "Mississauga, ON",
-    quote: "The Uber add-on at checkout was genius. No parking stress, and we saved on fees too. Will never use StubHub again.",
-    event: "Raptors vs Celtics",
+    quote: "The Uber add-on at checkout was a great touch. No parking stress, and the ticket price was exactly as shown.",
+    event: "Blue Jays vs Rays",
     saved: "$52",
   },
 ];
@@ -43,7 +43,7 @@ const SocialProof = () => {
             Real savings, real fans
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-md mx-auto leading-relaxed">
-            Join thousands of Canadian fans who stopped overpaying for tickets.
+            Hear from fans who switched to seats.ca and kept more money in their pockets.
           </p>
         </div>
 
@@ -102,11 +102,11 @@ const SocialProof = () => {
         {/* Social proof nudge */}
         <div className="text-center mt-10 sm:mt-14">
           <p className="text-sm text-muted-foreground mb-6">
-            ⭐ Rated <span className="font-bold text-foreground">4.9/5</span> by early members · Trusted by fans in <span className="font-bold text-foreground">50+ cities</span> across Canada
+            ⭐ Rated <span className="font-bold text-foreground">4.9/5</span> by early members
           </p>
-          <Link to="/teams/blue-jays" className="w-full sm:w-auto inline-block">
-            <Button variant="hero" size="lg" className="w-full sm:w-auto text-base px-10 py-4 h-auto rounded-xl shadow-xl shadow-primary/20 min-h-[52px] font-semibold">
-              Search Events
+          <Link to="/membership" className="w-full sm:w-auto inline-block">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto text-base px-10 py-4 h-auto rounded-xl min-h-[52px] border-primary/30 hover:border-primary/60">
+              See How Members Save
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>

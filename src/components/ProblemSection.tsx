@@ -1,6 +1,4 @@
 import { ArrowRight, DollarSign, Eye, XCircle } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 
 const painPoints = [
   {
@@ -50,13 +48,7 @@ const ProblemSection = () => {
           ))}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row items-center justify-center">
-          <Link to="/teams/blue-jays" className="w-full sm:w-auto">
-            <Button variant="hero" size="lg" className="w-full sm:w-auto text-base px-10 py-4 h-auto rounded-xl shadow-xl shadow-primary/20 min-h-[52px] font-semibold">
-              Search Events
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </Link>
+        <div className="text-center">
           <button
             onClick={() => document.getElementById("solution")?.scrollIntoView({ behavior: "smooth" })}
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline underline-offset-4 transition-colors py-3"

@@ -28,14 +28,14 @@ const TrustBar = () => {
               <Users className="h-5 w-5 text-primary shrink-0" />
               <div>
                 <p className="font-display text-xl sm:text-2xl font-bold text-foreground">2,400+</p>
-                <p className="text-xs text-muted-foreground">Fans served across Canada</p>
+                <p className="text-xs text-muted-foreground">Tickets sold to Canadian fans</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-primary shrink-0" />
               <div>
                 <p className="font-display text-xl sm:text-2xl font-bold text-foreground">$32</p>
-                <p className="text-xs text-muted-foreground">Avg. saved per ticket</p>
+                <p className="text-xs text-muted-foreground">Avg. saved per ticket vs StubHub</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
