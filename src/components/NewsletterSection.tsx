@@ -30,13 +30,13 @@ const NewsletterSection = () => {
   };
 
   return (
-    <section className="py-20 border-t border-border/30">
-      <div className="container mx-auto px-4">
+    <section className="py-16 sm:py-20 border-t border-border/30">
+      <div className="container mx-auto px-5 sm:px-6">
         <div className="max-w-md mx-auto text-center">
-          <h3 className="font-display text-2xl font-bold mb-3">
+          <h3 className="font-display text-xl sm:text-2xl font-bold mb-3">
             Stay in the loop
           </h3>
-          <p className="text-sm text-muted-foreground mb-8">
+          <p className="text-sm text-muted-foreground mb-6 sm:mb-8">
             New ticket drops and platform updates. No spam.
           </p>
 
@@ -46,16 +46,16 @@ const NewsletterSection = () => {
               <span className="font-medium text-sm">You're on the list!</span>
             </div>
           ) : (
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
+            <form onSubmit={handleSubscribe} className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 px-4 py-3.5 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                className="flex-1 px-4 py-4 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-base sm:text-sm"
                 disabled={status === "loading"}
               />
-              <Button variant="hero" type="submit" disabled={status === "loading"} className="px-8 py-3.5 h-auto rounded-xl">
+              <Button variant="hero" type="submit" disabled={status === "loading"} className="px-8 py-4 h-auto rounded-xl min-h-[52px]">
                 {status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Subscribe"}
               </Button>
             </form>
