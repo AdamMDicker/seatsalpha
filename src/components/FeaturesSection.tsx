@@ -25,7 +25,7 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section className="py-24">
+    <section id="features" className="py-24">
       <div className="container mx-auto px-4">
         <div className="text-center mb-14">
           <p className="text-xs uppercase tracking-[0.25em] text-primary font-semibold mb-3">Why Seats.ca</p>
