@@ -149,7 +149,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       <div className="mt-auto pt-2">
         {cheapest !== null ? (
           <>
-            <p className="text-sm text-emerald-400 font-semibold">From ${cheapest}</p>
+            <p className="text-sm text-emerald-400 font-semibold">From ${cheapest} CAD</p>
             <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
           </>
         ) : (

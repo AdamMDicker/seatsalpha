@@ -659,7 +659,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-2.5 flex items-center justify-between safe-area-inset-bottom">
           <div>
             <p className="text-xs text-muted-foreground">Tickets from</p>
-            <p className="text-lg font-display font-bold text-foreground">${cheapestPrice}</p>
+            <p className="text-lg font-display font-bold text-foreground">${cheapestPrice} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
           </div>
           <Button
             variant="hero"
