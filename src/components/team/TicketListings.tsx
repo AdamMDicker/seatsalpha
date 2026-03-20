@@ -273,12 +273,12 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <div className="text-right">
               {selectedSeatCount ? (
                 <>
-                  <p className="font-display text-xl font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</p>
+                  <p className="font-display text-xl font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
                   <p className="text-[10px] text-muted-foreground">{selectedSeatCount} tickets × ${ticket.price}</p>
                 </>
               ) : (
                 <>
-                  <p className="font-display text-xl font-bold text-foreground">${ticket.price}</p>
+                  <p className="font-display text-xl font-bold text-foreground">${ticket.price} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
                   <p className="text-xs text-muted-foreground">per ticket</p>
                 </>
               )}
