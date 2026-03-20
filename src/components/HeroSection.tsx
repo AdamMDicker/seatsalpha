@@ -67,7 +67,12 @@ const HeroSection = () => {
               </Button>
             </Link>
           </div>
-          <p className="text-xs text-muted-foreground/70 mt-5 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          {/* CAD badge */}
+          <div className="inline-flex items-center gap-2 mt-6 px-4 py-2 rounded-full bg-card/50 backdrop-blur border border-border/40 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <span className="text-base leading-none">🇨🇦</span>
+            <span className="text-xs font-semibold text-foreground/80">All prices in <span className="text-primary font-bold">CAD</span></span>
+          </div>
+          <p className="text-xs text-muted-foreground/70 mt-3 animate-fade-in" style={{ animationDelay: "0.35s" }}>
             Starting with Toronto Blue Jays · More teams launching soon
           </p>
         </div>
