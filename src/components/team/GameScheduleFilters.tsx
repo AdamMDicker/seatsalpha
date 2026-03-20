@@ -151,7 +151,7 @@ const GameScheduleFilters = ({
             className="flex-1"
           />
           <span className="text-xs font-semibold text-foreground w-14 text-right">
-            ${maxBudget ?? priceRange.max}
+            ${maxBudget ?? priceRange.max} CAD
           </span>
           {maxBudget !== null && (
             <button

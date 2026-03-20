@@ -85,7 +85,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
           <div className="flex flex-col items-end flex-shrink-0">
             {cheapest !== null ? (
               <>
-                <span className="text-sm text-emerald-400 font-semibold">${cheapest}</span>
+                <span className="text-sm text-emerald-400 font-semibold">${cheapest} CAD</span>
               </>
             ) : (
               <span className="text-xs text-muted-foreground">—</span>
@@ -149,7 +149,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       <div className="mt-auto pt-2">
         {cheapest !== null ? (
           <>
-            <p className="text-sm text-emerald-400 font-semibold">From ${cheapest}</p>
+            <p className="text-sm text-emerald-400 font-semibold">From ${cheapest} CAD</p>
             <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
           </>
         ) : (

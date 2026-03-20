@@ -192,7 +192,7 @@ const FeeGateDialog = ({
             {/* Quantity */}
             <div className="flex items-center justify-center gap-3 py-2">
               <span className="text-foreground font-semibold text-sm">
-                Tickets <span className="text-muted-foreground text-xs font-normal ml-1">(${ticketPrice.toFixed(2)} each)</span>
+                Tickets <span className="text-muted-foreground text-xs font-normal ml-1">(${ticketPrice.toFixed(2)} CAD each)</span>
               </span>
               <div className="flex items-center gap-1.5">
                 {validQuantities.length > 1 ? (
@@ -209,7 +209,7 @@ const FeeGateDialog = ({
                   <span className="text-lg font-display font-bold text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">×{quantity}{isThreePack ? " set" : ""}</span>
                 )}
                 <span className="text-muted-foreground text-xs">=</span>
-                <span className="text-foreground font-bold text-base font-display">${subtotal.toFixed(2)}</span>
+                <span className="text-foreground font-bold text-base font-display">${subtotal.toFixed(2)} CAD</span>
               </div>
             </div>
 
@@ -232,7 +232,7 @@ const FeeGateDialog = ({
 
             <Button variant="gold" className="w-full h-12 text-base" onClick={handleProceed} disabled={isLoading || !confirmed}>
               <Zap className="h-4 w-4" />
-              {isLoading ? "Processing..." : `Pay $${subtotal.toFixed(2)}`}
+              {isLoading ? "Processing..." : `Pay $${subtotal.toFixed(2)} CAD`}
             </Button>
             <p className="text-[9px] text-muted-foreground text-center">
               By purchasing, you agree to contact Seats.ca support before initiating a payment dispute.
@@ -273,7 +273,7 @@ const FeeGateDialog = ({
           {/* Quantity selector */}
           <div className="flex items-center justify-center gap-3 py-2 border-b border-border">
             <span className="text-foreground font-semibold text-sm">
-              Tickets <span className="text-muted-foreground text-xs font-normal ml-1">(${ticketPrice.toFixed(2)} each)</span>
+              Tickets <span className="text-muted-foreground text-xs font-normal ml-1">(${ticketPrice.toFixed(2)} CAD each)</span>
             </span>
             <div className="flex items-center gap-1.5">
               {validQuantities.length > 1 ? (
@@ -290,7 +290,7 @@ const FeeGateDialog = ({
                 <span className="text-lg font-display font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/30">×{quantity}{isThreePack ? " set" : ""}</span>
               )}
               <span className="text-muted-foreground text-xs">=</span>
-              <span className="text-foreground font-bold text-base font-display">${subtotal.toFixed(2)}</span>
+              <span className="text-foreground font-bold text-base font-display">${subtotal.toFixed(2)} CAD</span>
             </div>
           </div>
 
@@ -325,7 +325,7 @@ const FeeGateDialog = ({
                     </p>
                   </div>
                 </div>
-                <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithHST.toFixed(2)}</span>
+                <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithHST.toFixed(2)} CAD</span>
               </div>
             </button>
 
@@ -355,7 +355,7 @@ const FeeGateDialog = ({
                     </p>
                   </div>
                 </div>
-                <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithMembership.toFixed(2)}</span>
+                <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithMembership.toFixed(2)} CAD</span>
               </div>
             </button>
 
@@ -406,7 +406,7 @@ const FeeGateDialog = ({
           <div className="border-t border-border pt-1.5 space-y-1">
             <div className="flex justify-between items-center">
               <span className="text-foreground font-bold text-sm">Total</span>
-              <span className="text-foreground font-display font-bold text-lg">${currentTotal.toFixed(2)}</span>
+              <span className="text-foreground font-display font-bold text-lg">${currentTotal.toFixed(2)} CAD</span>
             </div>
             <p className="text-[9px] text-muted-foreground text-center">
               By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
@@ -420,15 +420,15 @@ const FeeGateDialog = ({
               {selectedOption === "membership" ? (
                 <>
                   <Zap className="h-4 w-4" />
-                  {isLoading ? "Processing..." : `Get Membership & Pay $${currentTotal.toFixed(2)}`}
+                  {isLoading ? "Processing..." : `Get Membership & Pay $${currentTotal.toFixed(2)} CAD`}
                 </>
               ) : (
-                <>{isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)}`}</>
+                <>{isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)} CAD`}</>
               )}
             </Button>
             {selectedOption === "hst" && (
               <p className="text-center text-[10px] text-muted-foreground">
-                Includes ${hstAmount.toFixed(2)} HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
+                Includes ${hstAmount.toFixed(2)} CAD HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
               </p>
             )}
           </div>

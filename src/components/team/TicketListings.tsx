@@ -273,12 +273,12 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <div className="text-right">
               {selectedSeatCount ? (
                 <>
-                  <p className="font-display text-xl font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</p>
+                  <p className="font-display text-xl font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
                   <p className="text-[10px] text-muted-foreground">{selectedSeatCount} tickets × ${ticket.price}</p>
                 </>
               ) : (
                 <>
-                  <p className="font-display text-xl font-bold text-foreground">${ticket.price}</p>
+                  <p className="font-display text-xl font-bold text-foreground">${ticket.price} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
                   <p className="text-xs text-muted-foreground">per ticket</p>
                 </>
               )}
@@ -354,11 +354,11 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <div className="text-right">
               {selectedSeatCount ? (
                 <>
-                  <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</span>
+                  <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()} <span className="text-[9px] text-muted-foreground font-normal">CAD</span></span>
                   <p className="text-[9px] text-muted-foreground">{selectedSeatCount} × ${ticket.price}</p>
                 </>
               ) : (
-                <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+                <span className="font-display text-sm font-bold text-foreground">${ticket.price} <span className="text-[9px] text-muted-foreground font-normal">CAD</span></span>
               )}
               <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
             </div>
@@ -422,9 +422,9 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="text-right">
             {selectedSeatCount ? (
-              <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</span>
+              <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()} <span className="text-[9px] text-muted-foreground font-normal">CAD</span></span>
             ) : (
-              <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+              <span className="font-display text-sm font-bold text-foreground">${ticket.price} <span className="text-[9px] text-muted-foreground font-normal">CAD</span></span>
             )}
             <p className="text-[9px] text-emerald-400">No fees for members</p>
           </div>
@@ -659,7 +659,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-2.5 flex items-center justify-between safe-area-inset-bottom">
           <div>
             <p className="text-xs text-muted-foreground">Tickets from</p>
-            <p className="text-lg font-display font-bold text-foreground">${cheapestPrice}</p>
+            <p className="text-lg font-display font-bold text-foreground">${cheapestPrice} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
           </div>
           <Button
             variant="hero"
