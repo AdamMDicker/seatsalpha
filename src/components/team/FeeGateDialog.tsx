@@ -423,7 +423,7 @@ const FeeGateDialog = ({
                   {isLoading ? "Processing..." : `Get Membership & Pay $${currentTotal.toFixed(2)} CAD`}
                 </>
               ) : (
-                <>{isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)}`}</>
+                <>{isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)} CAD`}</>
               )}
             </Button>
             {selectedOption === "hst" && (
