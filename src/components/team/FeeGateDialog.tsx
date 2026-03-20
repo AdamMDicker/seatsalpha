@@ -325,7 +325,7 @@ const FeeGateDialog = ({
                     </p>
                   </div>
                 </div>
-                <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithHST.toFixed(2)}</span>
+                <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithHST.toFixed(2)} CAD</span>
               </div>
             </button>
 
