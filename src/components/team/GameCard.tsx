@@ -85,7 +85,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
           <div className="flex flex-col items-end flex-shrink-0">
             {cheapest !== null ? (
               <>
-                <span className="text-sm text-emerald-400 font-semibold">${cheapest}</span>
+                <span className="text-sm text-emerald-400 font-semibold">${cheapest} CAD</span>
               </>
             ) : (
               <span className="text-xs text-muted-foreground">—</span>
