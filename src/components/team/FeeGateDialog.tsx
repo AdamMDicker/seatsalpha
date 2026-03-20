@@ -209,7 +209,7 @@ const FeeGateDialog = ({
                   <span className="text-lg font-display font-bold text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">×{quantity}{isThreePack ? " set" : ""}</span>
                 )}
                 <span className="text-muted-foreground text-xs">=</span>
-                <span className="text-foreground font-bold text-base font-display">${subtotal.toFixed(2)}</span>
+                <span className="text-foreground font-bold text-base font-display">${subtotal.toFixed(2)} CAD</span>
               </div>
             </div>
 
