@@ -192,7 +192,7 @@ const FeeGateDialog = ({
             {/* Quantity */}
             <div className="flex items-center justify-center gap-3 py-2">
               <span className="text-foreground font-semibold text-sm">
-                Tickets <span className="text-muted-foreground text-xs font-normal ml-1">(${ticketPrice.toFixed(2)} each)</span>
+                Tickets <span className="text-muted-foreground text-xs font-normal ml-1">(${ticketPrice.toFixed(2)} CAD each)</span>
               </span>
               <div className="flex items-center gap-1.5">
                 {validQuantities.length > 1 ? (
