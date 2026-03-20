@@ -232,7 +232,7 @@ const FeeGateDialog = ({
 
             <Button variant="gold" className="w-full h-12 text-base" onClick={handleProceed} disabled={isLoading || !confirmed}>
               <Zap className="h-4 w-4" />
-              {isLoading ? "Processing..." : `Pay $${subtotal.toFixed(2)}`}
+              {isLoading ? "Processing..." : `Pay $${subtotal.toFixed(2)} CAD`}
             </Button>
             <p className="text-[9px] text-muted-foreground text-center">
               By purchasing, you agree to contact Seats.ca support before initiating a payment dispute.
