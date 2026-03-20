@@ -428,7 +428,7 @@ const FeeGateDialog = ({
             </Button>
             {selectedOption === "hst" && (
               <p className="text-center text-[10px] text-muted-foreground">
-                Includes ${hstAmount.toFixed(2)} HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
+                Includes ${hstAmount.toFixed(2)} CAD HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
               </p>
             )}
           </div>
