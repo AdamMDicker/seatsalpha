@@ -420,7 +420,7 @@ const FeeGateDialog = ({
               {selectedOption === "membership" ? (
                 <>
                   <Zap className="h-4 w-4" />
-                  {isLoading ? "Processing..." : `Get Membership & Pay $${currentTotal.toFixed(2)}`}
+                  {isLoading ? "Processing..." : `Get Membership & Pay $${currentTotal.toFixed(2)} CAD`}
                 </>
               ) : (
                 <>{isLoading ? "Processing..." : `Pay $${currentTotal.toFixed(2)}`}</>
