@@ -174,7 +174,7 @@ const Membership = () => {
               </div>
               <div className="flex-shrink-0">
                 <div className="w-44 h-44 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center glow-gold">
-                  <span className="font-display text-4xl font-bold text-gold">$49.95</span>
+                  <span className="font-display text-4xl font-bold text-gold">$49.95 CAD</span>
                   <span className="text-sm text-muted-foreground mt-1">per year</span>
                 </div>
               </div>
