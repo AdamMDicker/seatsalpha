@@ -354,11 +354,11 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             <div className="text-right">
               {selectedSeatCount ? (
                 <>
-                  <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()}</span>
+                  <span className="font-display text-sm font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()} <span className="text-[9px] text-muted-foreground font-normal">CAD</span></span>
                   <p className="text-[9px] text-muted-foreground">{selectedSeatCount} × ${ticket.price}</p>
                 </>
               ) : (
-                <span className="font-display text-sm font-bold text-foreground">${ticket.price}</span>
+                <span className="font-display text-sm font-bold text-foreground">${ticket.price} <span className="text-[9px] text-muted-foreground font-normal">CAD</span></span>
               )}
               <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
             </div>
