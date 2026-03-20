@@ -406,7 +406,7 @@ const FeeGateDialog = ({
           <div className="border-t border-border pt-1.5 space-y-1">
             <div className="flex justify-between items-center">
               <span className="text-foreground font-bold text-sm">Total</span>
-              <span className="text-foreground font-display font-bold text-lg">${currentTotal.toFixed(2)}</span>
+              <span className="text-foreground font-display font-bold text-lg">${currentTotal.toFixed(2)} CAD</span>
             </div>
             <p className="text-[9px] text-muted-foreground text-center">
               By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
