@@ -162,7 +162,7 @@ const Contact = () => {
             {/* Sidebar Info */}
             <div className="lg:col-span-2 space-y-5">
               <a
-                href="mailto:michaelkurtz66@hotmail.com"
+                href="mailto:support@seats.ca"
                 className="flex items-start gap-4 bg-card border border-border rounded-xl p-5 shadow-lg hover:border-primary/40 transition-all group"
               >
                 <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
