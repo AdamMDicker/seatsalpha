@@ -22,6 +22,8 @@ const TeamWNBAPage = () => {
     selectedMonth, setSelectedMonth,
     selectedOpponent, setSelectedOpponent,
     maxBudget, setMaxBudget,
+    minTickets, setMinTickets,
+    selectedDate, setSelectedDate,
     loading, resetFilters,
   } = useTeamGames(team?.searchTerm);
 
