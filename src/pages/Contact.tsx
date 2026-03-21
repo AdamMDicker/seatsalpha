@@ -51,7 +51,7 @@ const Contact = () => {
       toast({ title: "Message sent! ✉️", description: "We'll get back to you within 24 hours." });
     } catch (err: any) {
       setStatus("idle");
-      toast({ title: "Error", description: err.message || "Could not send message. Please email michaelkurtz66@hotmail.com directly.", variant: "destructive" });
+      toast({ title: "Error", description: err.message || "Could not send message. Please email support@seats.ca directly.", variant: "destructive" });
     }
   };
 
