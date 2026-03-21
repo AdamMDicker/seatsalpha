@@ -41,6 +41,8 @@ export function useTeamGames(searchTerm: string | undefined) {
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey);
   const [selectedOpponent, setSelectedOpponent] = useState("all");
   const [maxBudget, setMaxBudget] = useState<number | null>(null);
+  const [minTickets, setMinTickets] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,9 +55,10 @@ export function useTeamGames(searchTerm: string | undefined) {
     setSelectedMonth(currentMonthKey);
     setSelectedOpponent("all");
     setMaxBudget(null);
+    setMinTickets(null);
+    setSelectedDate(null);
 
     const fetchGames = async () => {
-      // Step 1: Fetch all events in a single query
       const { data: events } = await supabase
         .from("events")
         .select("id, title, venue, city, province, event_date, description, is_giveaway, giveaway_item")
@@ -68,21 +71,18 @@ export function useTeamGames(searchTerm: string | undefined) {
         return;
       }
 
-      // Step 2: Fetch ALL tickets for these events in a single batch query
       const eventIds = events.map((e) => e.id);
       const { data: allTickets } = await (supabase
         .from("public_tickets" as any)
         .select("id, event_id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers, split_type")
         .in("event_id", eventIds) as any);
 
-      // Step 3: Group tickets by event_id client-side
       const ticketsByEvent: Record<string, TicketInfo[]> = {};
       (allTickets || []).forEach((t) => {
         if (!ticketsByEvent[t.event_id]) ticketsByEvent[t.event_id] = [];
         ticketsByEvent[t.event_id].push(t);
       });
 
-      // Step 4: Merge and sort
       const gamesWithTickets: GameEvent[] = events.map((game) => {
         const tickets = (ticketsByEvent[game.id] || []).sort(
           (a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)
@@ -91,14 +91,12 @@ export function useTeamGames(searchTerm: string | undefined) {
       });
 
       setGames(gamesWithTickets);
-      // Auto-select game from ?game= query param, or default to first
       const gameParam = searchParams.get("game");
       const targetGame = gameParam
         ? gamesWithTickets.find((g) => g.id === gameParam)
         : null;
       if (targetGame) {
         setSelectedGame(targetGame);
-        // Only clear the game param, preserve others (e.g. buyTicket)
         const newParams = new URLSearchParams(searchParams);
         newParams.delete("game");
         setSearchParams(newParams, { replace: true });
@@ -116,6 +114,8 @@ export function useTeamGames(searchTerm: string | undefined) {
     setSelectedMonth(currentMonthKey);
     setSelectedOpponent("all");
     setMaxBudget(null);
+    setMinTickets(null);
+    setSelectedDate(null);
   };
 
   return {
@@ -132,6 +132,10 @@ export function useTeamGames(searchTerm: string | undefined) {
     setSelectedOpponent,
     maxBudget,
     setMaxBudget,
+    minTickets,
+    setMinTickets,
+    selectedDate,
+    setSelectedDate,
     loading,
     resetFilters,
   };

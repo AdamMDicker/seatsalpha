@@ -24,6 +24,8 @@ const TeamMLBPage = () => {
     selectedMonth, setSelectedMonth,
     selectedOpponent, setSelectedOpponent,
     maxBudget, setMaxBudget,
+    minTickets, setMinTickets,
+    selectedDate, setSelectedDate,
     loading, resetFilters,
   } = useTeamGames(team?.searchTerm);
 
@@ -43,9 +45,17 @@ const TeamMLBPage = () => {
         const cheapest = g.tickets.length > 0 ? Math.min(...g.tickets.map((t) => t.price)) : Infinity;
         if (cheapest > maxBudget) return false;
       }
+      if (minTickets !== null) {
+        const hasEnough = g.tickets.some((t) => (t.quantity - t.quantity_sold) >= minTickets);
+        if (!hasEnough) return false;
+      }
+      if (selectedDate) {
+        const gDate = new Date(g.event_date).toDateString();
+        if (gDate !== selectedDate.toDateString()) return false;
+      }
       return true;
     });
-  }, [games, filter, selectedMonth, selectedOpponent, maxBudget]);
+  }, [games, filter, selectedMonth, selectedOpponent, maxBudget, minTickets, selectedDate]);
 
   const availableSections = selectedGame
     ? [...new Set(selectedGame.tickets.map((t) => t.section))]
@@ -94,6 +104,10 @@ const TeamMLBPage = () => {
             setSelectedOpponent={setSelectedOpponent}
             maxBudget={maxBudget}
             setMaxBudget={setMaxBudget}
+            minTickets={minTickets}
+            setMinTickets={setMinTickets}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
           />
 
           {filteredGames.length > 0 ? (

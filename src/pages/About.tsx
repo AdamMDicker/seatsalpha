@@ -35,10 +35,10 @@ const About = () => {
               <h2 className="font-display text-2xl md:text-3xl font-bold">The Problem We Set Out to Solve</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              If you've ever bought tickets online in Canada, you already know the frustration. You find the perfect seats, get excited, head to checkout — and suddenly the price has jumped 25%, sometimes even 30%. Service fees. Processing fees. Facility charges. Order fees. The list goes on, and every major platform does it.
+              If you've ever bought tickets online in Canada, you already know the frustration. You find the perfect seats, get excited, head to checkout — and suddenly the price has jumped. Service fees. Processing fees. Facility charges. Order fees. The list goes on, and every major platform does it.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              For a family of four going to a Blue Jays game, that can mean an extra $50 to $80 in fees alone — money that could have gone toward parking, food, or simply staying within budget. For concert-goers, hockey fans, and anyone who just wants to enjoy live entertainment, these hidden costs have become an accepted part of the experience. We don't think they should be.
+              For a family of four going to an event, that can mean an extra $50 plus in fees alone — money that could have gone toward parking, food, or simply staying within budget.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               That frustration is exactly what drove us to build seats.ca. We asked a simple question: <strong className="text-foreground">what if there was a platform where the price you see is actually the price you pay?</strong>
@@ -58,13 +58,13 @@ const About = () => {
               <h2 className="font-display text-2xl md:text-3xl font-bold">Our Mission</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              seats.ca was founded with a single, clear mission: <strong className="text-foreground">to give Canadians access to live event tickets without the burden of unfair service fees.</strong> We believe that going to a game, a concert, or a show should be accessible and affordable — and that starts with honest, transparent pricing.
+              seats.ca was founded with a single, clear mission: <strong className="text-foreground">to give Canadians access to live event tickets without the burden of unfair service fees.</strong> We believe that going to an event should be accessible and affordable — and that starts with honest, transparent pricing.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              We're not trying to reinvent the wheel. We're trying to fix what's broken. The ticketing industry in Canada has long been dominated by a handful of massive platforms that have normalized hidden fees as a revenue stream. Canadians have been paying more than they should for years, and most don't even realize how much of their purchase is going toward fees rather than the actual ticket.
+              We're not trying to reinvent the wheel, just trying to fix what's broken. The ticketing industry has long been dominated by a handful of massive platforms that have normalized hidden fees as a revenue stream.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Our membership model is what makes this possible. For just $49.95 a year, members pay zero service fees on every single purchase. No catches, no fine print. The average Canadian sports fan attends multiple events a year — which means most members save back the cost of their membership on their very first purchase, and everything after that is pure savings.
+              Our membership model is what makes this possible. For just $49.95 a year, members pay zero service fees nor HST on every single purchase. No catches, no fine print.
             </p>
           </div>
         </div>
@@ -81,13 +81,13 @@ const About = () => {
               <h2 className="font-display text-2xl md:text-3xl font-bold">Built for Canadians, by Canadians</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              seats.ca isn't a Silicon Valley startup trying to break into the Canadian market. We're a Canadian company, built from the ground up with Canadian fans in mind. We understand the landscape — from the passion of Leafs Nation to the energy of a packed Rogers Centre on a summer night, from sold-out Drake concerts to playoff hockey that brings entire cities together.
+              seats.ca isn't a Silicon Valley startup trying to break into the Canadian market. We're a Canadian company, built from the ground up with Canadian fans in mind. We understand the landscape — from the passion of being in arena for Hockey Night in Canada, singing along with your favorite artist, to the energy of a packed Rogers Centre on a summer night.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              We price everything in Canadian dollars. We understand Canadian tax law. We know what it's like to budget for a night out in Toronto, Vancouver, Montreal, or Calgary — and we've designed our platform to make that experience better, not more expensive.
+              Whether you're a die-hard fan, or just looking for a fun Canadian event — seats.ca is built to serve you with fairness and transparency at its core.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Whether you're a die-hard season ticket holder, a casual fan looking for a fun weekend outing, or a traveller visiting Canada and wanting to catch a game, seats.ca is built to serve you with fairness and transparency at its core.
+              To show that we are Canadians for Canadian events, we price everything in Canadian dollars. Overall, our platform is designed to make your experience better, not more expensive.
             </p>
           </div>
         </div>
@@ -129,8 +129,8 @@ const About = () => {
             <ul className="space-y-4">
               {[
                 { title: "Transparent Pricing", desc: "The price on the listing is the price you pay. No surprises, no hidden line items at checkout. Ever." },
-                { title: "Guaranteed Authentic Tickets", desc: "Every ticket on our platform is verified. If something goes wrong, you're covered by our buyer protection — full refund, no questions asked." },
-                { title: "Canadian-First Approach", desc: "We're building this for you — Canadian fans who deserve a fairer deal. Our decisions are guided by what's best for the Canadian live event community." },
+                { title: "Guaranteed Authentic Tickets", desc: "Every ticket on our platform is verified. If something goes wrong, you're covered by our buyer protection." },
+                { title: "Canadian-First Approach", desc: "We're building this for you — Canadian fans. Our decisions are guided by what's best for the Canadian live event community." },
                 { title: "Continuous Improvement", desc: "We're in beta because we believe in building alongside our users. Your feedback shapes what we build next. We're listening, and we're moving fast." },
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3">

@@ -36,26 +36,28 @@ const savingsExamples = [
   { event: "Leafs Playoffs (2 tickets)", sport: "🏒", sportLabel: "NHL", faceValue: 500, competitorFees: 135, saved: 135 },
 ];
 
-const faqs = [
-  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees on every ticket you buy through seats.ca. HST is included in all tickets. You also get access to bundle savings on travel and ride packages." },
+const buyerFaqs = [
+  { q: "Do I need an account to buy tickets?", a: "Yes, you'll need to create a free account to complete a purchase. This allows us to deliver your tickets and provide buyer protection." },
+  { q: "Do I need a membership to buy tickets?", a: "No. Anyone can browse and purchase tickets. However, non-members will pay standard service fees and HST at checkout." },
+  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees and HST is included on every ticket you purchase. You also get access to bundle savings on travel and ride packages." },
   { q: "How much will I actually save?", a: "The average Canadian fan pays $300+ per year in hidden ticketing fees. Most members save 10–20x their membership cost in the first year alone." },
   { q: "Are there any hidden fees at checkout?", a: "Absolutely not. With a seats.ca membership, the price you see is the price you pay. No service fees, no processing fees, no facility charges." },
-  { q: "Don't other sites just build fees into the ticket price?", a: "Yes — many platforms advertise 'no fees' but simply inflate the ticket's listed price. At seats.ca, our prices reflect the actual ticket value." },
+  { q: "Doesn't this site just build fees into the ticket price like everyone else?", a: "Absolutely NOT — many platforms advertise 'no fees' but simply inflate the ticket's listed price. At seats.ca, our prices reflect the actual ticket value." },
   { q: "Can I cancel my membership?", a: "Yes. You can cancel anytime. Your membership benefits remain active until the end of your billing period." },
-  { q: "Do I need a membership to buy tickets?", a: "No. Anyone can browse and purchase tickets. However, non-members will pay standard service fees at checkout." },
-  { q: "Are the tickets guaranteed authentic?", a: "100%. Every ticket sold on seats.ca is backed by our authenticity guarantee. All tickets are sourced from verified resellers and validated before listing. If a ticket is found to be invalid, you receive a full refund — no questions asked." },
+  { q: "Are the tickets guaranteed authentic?", a: "100%. Every ticket sold on seats.ca is backed by our authenticity guarantee. All tickets are sourced from verified resellers and validated before listing." },
   { q: "What types of events can I buy tickets for?", a: "During our beta launch, we are focused exclusively on Toronto Blue Jays (MLB) tickets. More teams across NHL, NBA, NFL, MLS, CFL, and WNBA — plus concerts, comedy shows, and theatre — are coming soon." },
-  // Seller / reseller FAQs
-  { q: "How do I become a seller on seats.ca?", a: "Visit the 'Become a Seller' page and fill out the application form with your details. Our team reviews every application and you'll be notified once approved. Once live, you can start listing tickets right away." },
-  { q: "How do I list my tickets for sale?", a: "Once your seller account is approved, you can upload tickets individually or in bulk via CSV through your seller dashboard. Include section, row, seat numbers, and pricing — your listings go live instantly." },
-  { q: "What does it cost to sell on seats.ca?", a: "There are no upfront listing fees. Seller commission details are provided during the onboarding process. Contact us at michaelkurtz66@hotmail.com for more information." },
-  { q: "How do I get paid after a sale?", a: "Payouts are processed after the event takes place to ensure buyer protection. You'll receive payment directly to your account on file." },
-  // General platform FAQs
-  { q: "How are tickets delivered?", a: "All tickets are delivered electronically. After purchase, you'll receive your tickets via email and they'll also be available in your account." },
-  { q: "Is my payment information secure?", a: "Absolutely. All payments are processed securely through Stripe, a PCI-compliant payment processor. We never store your credit card details." },
-  { q: "Do I need an account to buy tickets?", a: "Yes, you'll need to create a free account to complete a purchase. This allows us to deliver your tickets and provide buyer protection." },
+  { q: "How are tickets delivered?", a: "All tickets are delivered electronically. After purchase, you'll receive your tickets via email and they'll also be available in the event's platform account." },
   { q: "Can I buy tickets on my phone?", a: "Yes! seats.ca is fully mobile-friendly. Browse events, purchase tickets, and access your orders from any device." },
-  { q: "How do I contact support?", a: "You can reach us at michaelkurtz66@hotmail.com, use the live chat widget on any page, or visit our Contact page. We aim to respond within 24 hours." },
+  { q: "Is my payment information secure?", a: "Absolutely. All payments are processed securely through Stripe, a PCI-compliant payment processor. We never store your credit card details." },
+  { q: "How do I contact support?", a: "You can reach us at support@seats.ca, use the live chat widget on any page, or visit our Contact page. We aim to respond within 24 hours." },
+];
+
+const sellerFaqs = [
+  { q: "How do I become a seller on seats.ca?", a: (<span>Visit the <Link to="/reseller" className="text-primary underline hover:text-primary/80">Become a Seller</Link> page and fill out the application form with your details. Our team reviews every application and you'll be notified once approved. Once live, you can start listing tickets right away.</span>) },
+  { q: "How do I list my tickets for sale?", a: "Once your seller account is approved, you can upload tickets individually or in bulk via CSV through your seller dashboard. Include section, row, seat numbers, and pricing — your listings go live instantly." },
+  { q: "What does it cost to sell on seats.ca?", a: "There are no upfront listing fees. Seller commission details are provided during the onboarding process. Contact us at support@seats.ca for more information." },
+  { q: "How do I get paid after a sale?", a: "Payouts are processed after the event takes place to ensure buyer protection. You'll receive payment directly to your account on file." },
+  { q: "How do I contact support?", a: "You can reach us at support@seats.ca, use the live chat widget on any page, or visit our Contact page. We aim to respond within 24 hours." },
 ];
 
 const platformLogos: Record<string, string> = { Ticketmaster: "TM", StubHub: "SH", "Vivid Seats": "VS" };
@@ -145,11 +147,14 @@ const Membership = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
             For just <strong className="text-foreground">$49.95/year</strong>, eliminate every service fee on your ticket purchases.
           </p>
-          <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-            Non-members pay standard HST at checkout. Members pay <strong className="text-gold">$0 in fees</strong> — saving hundreds every year on tickets to games, concerts, and more.
+          <p className="text-muted-foreground max-w-xl mx-auto mb-4">
+            Non-members pay fees and standard HST at checkout.
           </p>
-          <p className="text-xl md:text-2xl font-bold text-emerald-400 mb-8">
-            Members enjoy HST-included pricing.
+          <p className="text-xl md:text-2xl font-bold text-emerald-400 mb-2">
+            Members enjoy $0 in fees & HST-included pricing.
+          </p>
+          <p className="text-sm text-muted-foreground mb-8">
+            — saving hundreds every year on event tickets.
           </p>
           <JoinButton />
         </div>
@@ -173,8 +178,9 @@ const Membership = () => {
                 <JoinButton className="w-full sm:w-auto" />
               </div>
               <div className="flex-shrink-0">
-                <div className="w-44 h-44 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center glow-gold">
-                  <span className="font-display text-4xl font-bold text-gold">$49.95 CAD</span>
+                <div className="w-44 h-44 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center text-center glow-gold">
+                  <span className="font-display text-3xl font-bold text-gold leading-tight">$49.95</span>
+                  <span className="text-xs font-semibold text-gold/70 mt-0.5">CAD</span>
                   <span className="text-sm text-muted-foreground mt-1">per year</span>
                 </div>
               </div>
@@ -193,21 +199,22 @@ const Membership = () => {
             Every major ticketing platform adds layers of hidden fees at checkout.
           </p>
           <div className="max-w-3xl mx-auto bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
-            <div className="grid grid-cols-4 gap-2 p-4 border-b border-border text-sm font-semibold text-muted-foreground">
+            {/* Desktop header */}
+            <div className="hidden sm:grid grid-cols-4 gap-2 p-4 border-b border-border text-sm font-semibold text-muted-foreground">
               <span>Platform</span><span>Fee Type</span><span>Rate</span><span>On a $150 Ticket</span>
             </div>
             {competitorFees.map((fee, i) => (
-              <div key={i} className="grid grid-cols-4 gap-2 p-4 border-b border-border/50 text-sm items-center">
+              <div key={i} className="flex flex-col sm:grid sm:grid-cols-4 gap-1 sm:gap-2 p-4 border-b border-border/50 text-sm">
                 <span className="font-medium text-foreground flex items-center gap-2">
-                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-[10px] font-bold text-white ${platformColors[fee.platform]}`}>{platformLogos[fee.platform]}</span>
-                  {fee.platform}
+                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-[10px] font-bold text-white flex-shrink-0 ${platformColors[fee.platform]}`}>{platformLogos[fee.platform]}</span>
+                  <span className="truncate">{fee.platform}</span>
                 </span>
-                <span className="text-muted-foreground">{fee.fee}</span>
-                <span className="text-destructive font-semibold">{fee.percent}</span>
-                <span className="text-destructive">{fee.example}</span>
+                <span className="text-muted-foreground sm:mt-0 mt-1"><span className="sm:hidden text-xs font-semibold text-muted-foreground/60">Fee: </span>{fee.fee}</span>
+                <span className="text-destructive font-semibold"><span className="sm:hidden text-xs font-normal text-muted-foreground/60">Rate: </span>{fee.percent}</span>
+                <span className="text-destructive"><span className="sm:hidden text-xs font-normal text-muted-foreground/60">Example: </span>{fee.example}</span>
               </div>
             ))}
-            <div className="grid grid-cols-4 gap-2 p-4 bg-primary/5 items-center">
+            <div className="flex flex-col sm:grid sm:grid-cols-4 gap-1 sm:gap-2 p-4 bg-primary/5 items-start sm:items-center">
               <span className="font-bold text-primary">seats.ca Member</span>
               <span className="text-muted-foreground">All Fees</span>
               <span className="font-bold text-primary">0%</span>
@@ -288,7 +295,7 @@ const Membership = () => {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* Buyer FAQ */}
       <section id="faq" className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
@@ -297,11 +304,30 @@ const Membership = () => {
                 <HelpCircle className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold text-primary">FAQ</span>
               </div>
-              <h2 className="font-display text-3xl md:text-4xl font-bold">Frequently Asked Questions</h2>
+              <h2 className="font-display text-3xl md:text-4xl font-bold">Frequently Asked Questions by Buyers</h2>
             </div>
             <Accordion type="single" collapsible className="space-y-3">
-              {faqs.map((faq, i) => (
-                <AccordionItem key={i} value={`faq-${i}`} className="bg-card border border-border rounded-xl px-5 shadow-lg">
+              {buyerFaqs.map((faq, i) => (
+                <AccordionItem key={i} value={`buyer-faq-${i}`} className="bg-card border border-border rounded-xl px-5 shadow-lg">
+                  <AccordionTrigger className="text-sm font-semibold text-foreground hover:text-primary text-left">{faq.q}</AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed">{faq.a}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
+      </section>
+
+      {/* Seller FAQ */}
+      <section className="py-16 pt-0">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="font-display text-3xl md:text-4xl font-bold">Frequently Asked Questions by Sellers</h2>
+            </div>
+            <Accordion type="single" collapsible className="space-y-3">
+              {sellerFaqs.map((faq, i) => (
+                <AccordionItem key={i} value={`seller-faq-${i}`} className="bg-card border border-border rounded-xl px-5 shadow-lg">
                   <AccordionTrigger className="text-sm font-semibold text-foreground hover:text-primary text-left">{faq.q}</AccordionTrigger>
                   <AccordionContent className="text-sm text-muted-foreground leading-relaxed">{faq.a}</AccordionContent>
                 </AccordionItem>

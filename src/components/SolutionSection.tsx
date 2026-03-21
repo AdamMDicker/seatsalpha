@@ -54,7 +54,7 @@ const SolutionSection = () => {
 
         {/* Non-member clarification */}
         <p className="text-center text-xs text-muted-foreground mb-10 sm:mb-12 max-w-md mx-auto">
-          Not a member yet? You can still browse and buy — a small service fee applies at checkout. Membership removes it entirely.
+          Not a member yet? You can still browse and buy — a small service fee & taxes applies at checkout. Membership removes it entirely.
         </p>
 
         {/* Trust guarantees */}
