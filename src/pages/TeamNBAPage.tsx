@@ -101,6 +101,10 @@ const TeamNBAPage = () => {
             setSelectedOpponent={setSelectedOpponent}
             maxBudget={maxBudget}
             setMaxBudget={setMaxBudget}
+            minTickets={minTickets}
+            setMinTickets={setMinTickets}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
           />
 
           {filteredGames.length > 0 ? (
