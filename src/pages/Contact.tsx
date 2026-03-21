@@ -170,7 +170,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors text-sm">Email Us Directly</h3>
-                  <p className="text-primary text-sm font-medium mt-0.5">michaelkurtz66@hotmail.com</p>
+                  <p className="text-primary text-sm font-medium mt-0.5">support@seats.ca</p>
                 </div>
               </a>
 

@@ -147,12 +147,12 @@ const LiveChat = () => {
       {isOpen && (
         <div className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[400px] h-[100dvh] sm:h-[550px] bg-background border border-border sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground rounded-t-none sm:rounded-t-2xl">
-            <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5" />
-              <span className="font-display font-semibold text-sm">seats.ca Support</span>
+          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-primary text-primary-foreground rounded-t-none sm:rounded-t-2xl">
+            <div className="flex items-center gap-2 min-w-0">
+              <Bot className="h-5 w-5 flex-shrink-0" />
+              <span className="font-display font-semibold text-sm truncate">seats.ca Support</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:opacity-80" aria-label="Close chat">
+            <button onClick={() => setIsOpen(false)} className="hover:opacity-80 flex-shrink-0 p-1" aria-label="Close chat">
               <X className="h-5 w-5" />
             </button>
           </div>
