@@ -279,6 +279,46 @@ serve(async (req) => {
       }
     }
 
+    // --- CREATE ORDER RECORD ---
+    let orderId: string | null = null;
+    if (buyer) {
+      const feesAmount = parseFloat(serviceFeeAmount) || 0;
+      const isFeeWaived = feesAmount === 0;
+      const { data: orderData, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: buyer.id,
+          total_amount: parseFloat(totalAmount),
+          fees_amount: feesAmount,
+          is_fee_waived: isFeeWaived,
+          status: "completed",
+        })
+        .select("id")
+        .single();
+
+      if (orderError) {
+        console.error("Failed to create order:", orderError);
+      } else {
+        orderId = orderData.id;
+        console.log(`Created order ${orderId} for user ${buyer.id}`);
+
+        // Create order item if we have a ticket_id
+        if (meta.ticket_id) {
+          const { error: itemError } = await supabase
+            .from("order_items")
+            .insert({
+              order_id: orderId,
+              ticket_id: meta.ticket_id,
+              quantity: parseInt(quantity) || 1,
+              unit_price: ticketUnitPrice || parseFloat(totalAmount),
+            });
+          if (itemError) {
+            console.error("Failed to create order item:", itemError);
+          }
+        }
+      }
+    }
+
     // --- BUYER NOTIFICATION + EMAIL ---
     if (buyer) {
       const buyerBody = [
@@ -309,6 +349,7 @@ serve(async (req) => {
           venue,
           event_date: eventDate,
           total_amount: totalAmount,
+          order_id: orderId,
         },
       });
 
