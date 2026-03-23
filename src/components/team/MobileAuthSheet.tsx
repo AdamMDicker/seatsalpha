@@ -112,7 +112,8 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
               {forgotSent ? (
                 <div className="text-center py-4">
                   <Mail className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">Check your inbox for a reset link.</p>
+                  <p className="text-sm text-muted-foreground mb-1">Check your inbox for a reset link.</p>
+                  <p className="text-xs font-bold text-primary mb-3">If you don't see the email, please check your spam/junk folder.</p>
                   <Button variant="outline" size="sm" onClick={() => { setForgotSent(false); }} className="gap-1.5">
                     <RefreshCw className="h-3.5 w-3.5" /> Send again
                   </Button>
