@@ -268,6 +268,9 @@ const Navbar = () => {
             )}
             {user ? (
               <div className="flex items-center gap-2 flex-shrink-0">
+                <Link to="/my-orders" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  My Orders
+                </Link>
                 <NotificationBell />
                 <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
                 <Button variant="ghost" size="sm" className="text-xs px-2 py-1 h-8" onClick={signOut}>
