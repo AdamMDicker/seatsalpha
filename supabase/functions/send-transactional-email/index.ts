@@ -240,13 +240,15 @@ Deno.serve(async (req) => {
     }
 
     const messageId = crypto.randomUUID();
+    const isSellerEmail = type === "seller_notification";
+    const displayName = isSellerEmail ? "LMK Sports Consulting" : "seats.ca";
 
     const { error: enqueueError } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
         message_id: messageId,
         to,
-        from: `seats.ca <${FROM_EMAIL}>`,
+        from: `${displayName} <${FROM_EMAIL}>`,
         sender_domain: SENDER_DOMAIN,
         subject,
         html,
@@ -254,6 +256,7 @@ Deno.serve(async (req) => {
         purpose: "transactional",
         label,
         queued_at: new Date().toISOString(),
+        ...(isSellerEmail ? { reply_to: "Lmksportsconsulting@gmail.com" } : {}),
       },
     });
 

@@ -496,7 +496,8 @@ serve(async (req) => {
         ADMIN_EMAIL,
         `Ticket Sold — ${eventTitle}${subjectSuffix}`,
         fallbackHtml,
-        "seller-notification"
+        "seller-notification",
+        { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" }
       );
     }
   }
