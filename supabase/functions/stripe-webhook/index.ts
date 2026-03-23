@@ -114,7 +114,7 @@ function buyerEmailHtml(meta: {
     </td></tr>
   </table>
   <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
-    Your tickets will be delivered to your email 48 hours before the event. If the seller does not upload proof of delivery within that timeline, a penalty may be assessed — even if tickets are eventually delivered. If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
+    Your tickets will be delivered to your email 48 hours before the event. If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
   </p>
 </td></tr>
 <tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
