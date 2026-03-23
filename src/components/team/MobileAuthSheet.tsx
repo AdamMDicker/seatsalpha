@@ -81,7 +81,7 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       setForgotSent(true);
-      toast({ title: "Check your email", description: "We sent you a password reset link." });
+      toast({ title: "Check your email", description: "We sent you a password reset link. Check your spam/junk folder if you don't see it." });
     }
     setForgotLoading(false);
   };
