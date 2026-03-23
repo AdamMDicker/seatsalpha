@@ -47,9 +47,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
               ? "bg-primary/15 border-primary/60 ring-1 ring-primary/30"
               : "bg-primary/5 border-primary/30 hover:border-primary/50"
             : isSelected
-              ? isAway
-                ? "bg-amber-500/10 border-amber-500/50"
-                : "bg-emerald-500/10 border-emerald-500/50"
+              ? "bg-yellow-400/15 border-yellow-400/60 ring-1 ring-yellow-400/30"
               : "bg-card border-border hover:border-primary/30"
         }`}
       >
