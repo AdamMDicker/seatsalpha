@@ -59,7 +59,7 @@ const Auth = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Email sent", description: "A new verification link has been sent to your email. Check your spam/junk folder if you don't see it." });
+      toast({ title: "Email sent", description: "A new verification link has been sent to your email." });
     }
     setResending(false);
   };
