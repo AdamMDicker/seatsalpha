@@ -318,10 +318,15 @@ const Navbar = () => {
             )}
 
             {user && (
-              <div className="flex items-center gap-3 px-4 py-3.5 min-h-[48px]">
-                <NotificationBell />
-                <span className="text-base text-muted-foreground">Notifications</span>
-              </div>
+              <>
+                <Link to="/my-orders" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]">
+                  My Orders
+                </Link>
+                <div className="flex items-center gap-3 px-4 py-3.5 min-h-[48px]">
+                  <NotificationBell />
+                  <span className="text-base text-muted-foreground">Notifications</span>
+                </div>
+              </>
             )}
 
             <div className="px-4 pt-3">
