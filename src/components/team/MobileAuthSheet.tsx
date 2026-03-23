@@ -50,6 +50,7 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
         onSuccess();
       } else {
         toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
+        toast({ title: "📬 Can't find the email?", description: "Please check your spam/junk folder if you don't see it in your inbox." });
         setResendEmail(email);
         setShowResend(true);
       }
