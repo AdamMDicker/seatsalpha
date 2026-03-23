@@ -50,6 +50,7 @@ async function sendViaResend(payload: Record<string, unknown>): Promise<void> {
       subject: payload.subject,
       html: payload.html,
       text: payload.text || payload.subject,
+      ...(payload.reply_to ? { reply_to: [payload.reply_to] } : {}),
     }),
   })
 
