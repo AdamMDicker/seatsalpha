@@ -80,6 +80,7 @@ const Contact = () => {
                     </div>
                     <h3 className="font-display text-2xl font-bold">Message Sent!</h3>
                     <p className="text-muted-foreground">Thanks for reaching out. We'll get back to you within 24 hours.</p>
+                    <p className="text-sm font-bold text-primary">If you don't see our reply, please check your spam/junk folder.</p>
                     <Button variant="outline" onClick={() => setStatus("idle")} className="mt-4">
                       Send Another Message
                     </Button>

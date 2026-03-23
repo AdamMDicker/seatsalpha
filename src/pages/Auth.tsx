@@ -45,6 +45,7 @@ const Auth = () => {
         navigate(redirectTo);
       } else {
         toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
+        toast({ title: "📬 Can't find the email?", description: "Please check your spam/junk folder if you don't see it in your inbox." });
         setResendEmail(email);
         setShowResend(true);
       }
@@ -59,7 +60,7 @@ const Auth = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Email sent", description: "A new verification link has been sent to your email." });
+      toast({ title: "Email sent", description: "A new verification link has been sent to your email. Check your spam/junk folder if you don't see it." });
     }
     setResending(false);
   };
@@ -75,7 +76,7 @@ const Auth = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       setForgotSent(true);
-      toast({ title: "Check your email", description: "We sent you a password reset link." });
+      toast({ title: "Check your email", description: "We sent you a password reset link. Check your spam/junk folder if you don't see it." });
     }
     setForgotLoading(false);
   };
@@ -101,8 +102,11 @@ const Auth = () => {
             {forgotSent ? (
               <div className="text-center py-2">
                 <Mail className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-2">
                   Check your inbox for a password reset link. It may take a minute to arrive.
+                </p>
+                <p className="text-sm font-bold text-primary mb-4">
+                  If you don't see the email, please check your spam/junk folder.
                 </p>
                 <Button
                   variant="outline"
@@ -245,8 +249,11 @@ const Auth = () => {
 
           {showResend && (
             <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="text-sm text-muted-foreground mb-1">
                 Didn't receive the verification email?
+              </p>
+              <p className="text-xs font-bold text-primary mb-2">
+                If you don't see the email, please check your spam/junk folder.
               </p>
               <Button
                 variant="outline"
