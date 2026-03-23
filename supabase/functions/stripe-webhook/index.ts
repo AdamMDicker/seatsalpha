@@ -171,6 +171,7 @@ function sellerEmailHtml(meta: {
   </p>
 </td></tr>
 <tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
+  <p style="margin:0 0 10px;color:#d6193d;font-size:12px;font-weight:700;">If you don't see the email, please check your spam/junk folder.</p>
   <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca — All rights reserved.</p>
 </td></tr>
 </table>
