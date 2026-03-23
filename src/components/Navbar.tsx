@@ -268,6 +268,9 @@ const Navbar = () => {
             )}
             {user ? (
               <div className="flex items-center gap-2 flex-shrink-0">
+                <Link to="/my-orders" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  My Orders
+                </Link>
                 <NotificationBell />
                 <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
                 <Button variant="ghost" size="sm" className="text-xs px-2 py-1 h-8" onClick={signOut}>
@@ -315,10 +318,15 @@ const Navbar = () => {
             )}
 
             {user && (
-              <div className="flex items-center gap-3 px-4 py-3.5 min-h-[48px]">
-                <NotificationBell />
-                <span className="text-base text-muted-foreground">Notifications</span>
-              </div>
+              <>
+                <Link to="/my-orders" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]">
+                  My Orders
+                </Link>
+                <div className="flex items-center gap-3 px-4 py-3.5 min-h-[48px]">
+                  <NotificationBell />
+                  <span className="text-base text-muted-foreground">Notifications</span>
+                </div>
+              </>
             )}
 
             <div className="px-4 pt-3">
