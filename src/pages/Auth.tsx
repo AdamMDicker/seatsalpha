@@ -102,8 +102,11 @@ const Auth = () => {
             {forgotSent ? (
               <div className="text-center py-2">
                 <Mail className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-2">
                   Check your inbox for a password reset link. It may take a minute to arrive.
+                </p>
+                <p className="text-sm font-bold text-primary mb-4">
+                  If you don't see the email, please check your spam/junk folder.
                 </p>
                 <Button
                   variant="outline"
