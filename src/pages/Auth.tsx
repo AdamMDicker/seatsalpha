@@ -249,8 +249,11 @@ const Auth = () => {
 
           {showResend && (
             <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="text-sm text-muted-foreground mb-1">
                 Didn't receive the verification email?
+              </p>
+              <p className="text-xs font-bold text-primary mb-2">
+                If you don't see the email, please check your spam/junk folder.
               </p>
               <Button
                 variant="outline"
