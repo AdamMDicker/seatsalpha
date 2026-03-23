@@ -471,7 +471,8 @@ serve(async (req) => {
                 resellerEmail,
                 `Ticket Sold — ${eventTitle}${subjectSuffix}`,
                 sellerHtml,
-                "seller-notification"
+                "seller-notification",
+                { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" }
               );
             }
           }
