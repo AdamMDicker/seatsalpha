@@ -97,6 +97,9 @@ export const SignupEmail = ({
 
         {/* Footer */}
         <Section style={footerSection}>
+          <Text style={spamNotice}>
+            <strong>If you don't see the email, please check your spam/junk folder.</strong>
+          </Text>
           <Text style={footer}>
             © {new Date().getFullYear()} seats.ca — Canada's No Extra Fees Platform
           </Text>
@@ -135,4 +138,5 @@ const featureDesc = { fontSize: '11px', color: '#8a8a9a', margin: '0', lineHeigh
 const divider = { borderColor: '#eaeaea', margin: '0' }
 const footerSection = { padding: '20px 32px', backgroundColor: '#ffffff' }
 const footer = { fontSize: '12px', color: '#999999', margin: '0 0 4px', textAlign: 'center' as const }
+const spamNotice = { fontSize: '12px', color: '#E31837', margin: '0 0 12px', textAlign: 'center' as const, lineHeight: '1.5' }
 const footerSub = { fontSize: '11px', color: '#cccccc', margin: '0', textAlign: 'center' as const }
