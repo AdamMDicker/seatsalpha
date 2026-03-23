@@ -97,12 +97,10 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
     <button
       onClick={onClick}
       className={`flex-shrink-0 rounded-xl p-4 text-left transition-all w-[220px] min-h-[200px] border relative overflow-hidden flex flex-col ${
-        game.is_giveaway
-          ? isSelected
-            ? "bg-primary/15 border-primary/60 shadow-lg shadow-primary/20 ring-1 ring-primary/30"
-            : "bg-primary/5 border-primary/30 hover:border-primary/50 shadow-md shadow-primary/10"
-            : isSelected
-              ? "bg-yellow-400/15 border-yellow-400/60 shadow-lg shadow-yellow-400/10 ring-1 ring-yellow-400/30"
+        isSelected
+          ? "bg-yellow-400/15 border-yellow-400/60 shadow-lg shadow-yellow-400/10 ring-1 ring-yellow-400/30"
+          : game.is_giveaway
+            ? "bg-primary/5 border-primary/30 hover:border-primary/50 shadow-md shadow-primary/10"
             : "bg-card border-border hover:border-primary/30"
       }`}
     >
