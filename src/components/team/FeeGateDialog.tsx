@@ -414,6 +414,9 @@ const FeeGateDialog = ({
             <p className="text-[9px] text-muted-foreground text-center">
               By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
             </p>
+            <p className="text-[10px] font-bold text-primary text-center">
+              📬 If you don't see the confirmation email, please check your spam/junk folder.
+            </p>
             <Button
               variant={selectedOption === "membership" ? "gold" : "hero"}
               className="w-full h-12 text-base"
