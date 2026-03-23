@@ -164,8 +164,9 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
 
               {showResend && (
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Didn't receive verification email?</p>
-                  <p className="text-[10px] font-bold text-primary mb-2">If you don't see the email, please check your spam/junk folder.</p>
+                  <Mail className="h-6 w-6 text-primary mx-auto mb-1.5" />
+                  <p className="text-xs font-semibold text-foreground mb-1">We've sent a verification email!</p>
+                  <p className="text-[11px] font-bold text-primary mb-2">📬 If you don't see the email, please check your spam/junk folder.</p>
                   <Button variant="outline" size="sm" onClick={handleResend} disabled={resending} className="gap-1.5">
                     <RefreshCw className={`h-3.5 w-3.5 ${resending ? "animate-spin" : ""}`} />
                     {resending ? "Sending..." : "Resend"}
