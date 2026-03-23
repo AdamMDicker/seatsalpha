@@ -68,6 +68,9 @@ export const RecoveryEmail = ({
         <Hr style={divider} />
 
         <Section style={footerSection}>
+          <Text style={spamNotice}>
+            <strong>If you don't see the email, please check your spam/junk folder.</strong>
+          </Text>
           <Text style={footer}>
             © {new Date().getFullYear()} seats.ca — Canada's No Extra Fees Platform
           </Text>
