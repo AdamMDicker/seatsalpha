@@ -42,12 +42,10 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       <button
         onClick={onClick}
         className={`w-full text-left rounded-lg p-3 transition-all border relative ${
-          game.is_giveaway
-            ? isSelected
-              ? "bg-primary/15 border-primary/60 ring-1 ring-primary/30"
-              : "bg-primary/5 border-primary/30 hover:border-primary/50"
-            : isSelected
-              ? "bg-yellow-400/15 border-yellow-400/60 ring-1 ring-yellow-400/30"
+          isSelected
+            ? "bg-yellow-400/15 border-yellow-400/60 ring-1 ring-yellow-400/30"
+            : game.is_giveaway
+              ? "bg-primary/5 border-primary/30 hover:border-primary/50"
               : "bg-card border-border hover:border-primary/30"
         }`}
       >
