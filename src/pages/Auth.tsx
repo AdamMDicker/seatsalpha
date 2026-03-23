@@ -75,7 +75,7 @@ const Auth = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       setForgotSent(true);
-      toast({ title: "Check your email", description: "We sent you a password reset link. Check your spam/junk folder if you don't see it." });
+      toast({ title: "Check your email", description: "We sent you a password reset link." });
     }
     setForgotLoading(false);
   };
