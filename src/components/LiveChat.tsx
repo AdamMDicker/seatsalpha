@@ -152,8 +152,8 @@ const LiveChat = () => {
               <Bot className="h-5 w-5 flex-shrink-0" />
               <span className="font-display font-semibold text-sm truncate">seats.ca Support</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:opacity-80 flex-shrink-0 p-1" aria-label="Close chat">
-              <X className="h-5 w-5" />
+            <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 flex-shrink-0 p-2 rounded-full transition-colors" aria-label="Close chat">
+              <X className="h-6 w-6" />
             </button>
           </div>
 
