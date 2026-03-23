@@ -45,7 +45,6 @@ const Auth = () => {
         navigate(redirectTo);
       } else {
         toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
-        toast({ title: "📬 Can't find the email?", description: "Please check your spam/junk folder if you don't see it in your inbox." });
         setResendEmail(email);
         setShowResend(true);
       }
@@ -60,7 +59,7 @@ const Auth = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Email sent", description: "A new verification link has been sent to your email. Check your spam/junk folder if you don't see it." });
+      toast({ title: "Email sent", description: "A new verification link has been sent to your email." });
     }
     setResending(false);
   };
@@ -76,7 +75,7 @@ const Auth = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       setForgotSent(true);
-      toast({ title: "Check your email", description: "We sent you a password reset link. Check your spam/junk folder if you don't see it." });
+      toast({ title: "Check your email", description: "We sent you a password reset link." });
     }
     setForgotLoading(false);
   };
@@ -248,12 +247,13 @@ const Auth = () => {
           </form>
 
           {showResend && (
-            <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
-              <p className="text-sm text-muted-foreground mb-1">
-                Didn't receive the verification email?
+            <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
+              <Mail className="h-8 w-8 text-primary mx-auto mb-2" />
+              <p className="text-sm font-semibold text-foreground mb-1">
+                We've sent a verification email!
               </p>
-              <p className="text-xs font-bold text-primary mb-2">
-                If you don't see the email, please check your spam/junk folder.
+              <p className="text-sm font-bold text-primary mb-3">
+                📬 If you don't see the email, please check your spam/junk folder.
               </p>
               <Button
                 variant="outline"

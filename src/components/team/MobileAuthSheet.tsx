@@ -50,7 +50,6 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
         onSuccess();
       } else {
         toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
-        toast({ title: "📬 Can't find the email?", description: "Please check your spam/junk folder if you don't see it in your inbox." });
         setResendEmail(email);
         setShowResend(true);
       }
@@ -65,7 +64,7 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Email sent", description: "A new verification link has been sent. Check your spam/junk folder if you don't see it." });
+      toast({ title: "Email sent", description: "A new verification link has been sent." });
     }
     setResending(false);
   };
@@ -81,7 +80,7 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       setForgotSent(true);
-      toast({ title: "Check your email", description: "We sent you a password reset link. Check your spam/junk folder if you don't see it." });
+      toast({ title: "Check your email", description: "We sent you a password reset link." });
     }
     setForgotLoading(false);
   };
@@ -165,8 +164,9 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
 
               {showResend && (
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Didn't receive verification email?</p>
-                  <p className="text-[10px] font-bold text-primary mb-2">If you don't see the email, please check your spam/junk folder.</p>
+                  <Mail className="h-6 w-6 text-primary mx-auto mb-1.5" />
+                  <p className="text-xs font-semibold text-foreground mb-1">We've sent a verification email!</p>
+                  <p className="text-[11px] font-bold text-primary mb-2">📬 If you don't see the email, please check your spam/junk folder.</p>
                   <Button variant="outline" size="sm" onClick={handleResend} disabled={resending} className="gap-1.5">
                     <RefreshCw className={`h-3.5 w-3.5 ${resending ? "animate-spin" : ""}`} />
                     {resending ? "Sending..." : "Resend"}
