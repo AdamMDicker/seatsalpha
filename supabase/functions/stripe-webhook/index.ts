@@ -435,7 +435,8 @@ serve(async (req) => {
           ADMIN_EMAIL,
           `Ticket Sold — ${eventTitle}${subjectSuffix}`,
           sellerHtml,
-          "seller-notification"
+          "seller-notification",
+          { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" }
         );
         sellerNotificationSent = true;
 
