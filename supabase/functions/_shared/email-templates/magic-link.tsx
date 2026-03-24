@@ -8,7 +8,6 @@ import {
   Container,
   Head,
   Heading,
-  Hr,
   Html,
   Img,
   Preview,
@@ -28,55 +27,30 @@ export const MagicLinkEmail = ({
   confirmationUrl,
 }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
-    <Head />
-    <Preview>Your seats.ca login link ✨</Preview>
+    <Head>
+      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    </Head>
+    <Preview>Your login link for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={accentBar} />
-
-        <Section style={header}>
-          <Img src={LOGO_URL} width="160" height="auto" alt="seats.ca" style={logoImg} />
-        </Section>
-
         <Section style={content}>
-          <Section style={iconCircle}>
-            <Text style={iconEmoji}>✨</Text>
-          </Section>
-          <Heading style={h1}>Your login link</Heading>
+          <Img src={LOGO_URL} width="120" height="40" alt="seats.ca" style={logo} />
+          <Heading style={h1}>Your Login Link</Heading>
           <Text style={text}>
-            Click the button below to sign in to your seats.ca account instantly — no password required.
+            Click the button below to log in to {siteName}. This link will expire shortly.
           </Text>
-
-          <Section style={buttonContainer}>
-            <Button style={button} href={confirmationUrl}>
-              Sign In to seats.ca
-            </Button>
-          </Section>
-
-          <Section style={warningBox}>
-            <Text style={warningText}>
-              ⏰ This link will expire shortly for your security.
-            </Text>
-          </Section>
-
-          <Text style={subtext}>
-            If the button doesn't work, copy and paste this URL into your browser:
-          </Text>
-          <Text style={urlText}>{confirmationUrl}</Text>
-        </Section>
-
-        <Hr style={divider} />
-
-        <Section style={footerSection}>
-          <Text style={spamNotice}>
-            <strong>If you don't see the email, please check your spam/junk folder.</strong>
-          </Text>
+          <Button style={button} href={confirmationUrl}>
+            Log In
+          </Button>
           <Text style={footer}>
-            © {new Date().getFullYear()} seats.ca — Canada's No Extra Fees Platform
-          </Text>
-          <Text style={footerSub}>
             If you didn't request this link, you can safely ignore this email.
           </Text>
+          <Section style={spamWarning}>
+            <Text style={spamText}>
+              ⚠️ <strong>Important:</strong> If you don't see future emails from us, please check your spam/junk folder and mark us as a safe sender.
+            </Text>
+          </Section>
         </Section>
       </Container>
     </Body>
@@ -85,24 +59,14 @@ export const MagicLinkEmail = ({
 
 export default MagicLinkEmail
 
-const main = { backgroundColor: '#f0f0f5', fontFamily: "'Space Grotesk', 'Inter', Arial, sans-serif", padding: '20px 0' }
-const container = { maxWidth: '580px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '16px', overflow: 'hidden' as const, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }
-const accentBar = { height: '4px', background: 'linear-gradient(90deg, #E31837, #ff4d6a, #E31837)', margin: '0' }
-const header = { padding: '32px 32px 16px', textAlign: 'center' as const, backgroundColor: '#ffffff' }
-const logoImg = { margin: '0 auto', display: 'block' }
-const content = { padding: '8px 40px 32px', backgroundColor: '#ffffff' }
-const iconCircle = { textAlign: 'center' as const, margin: '0 0 8px' }
-const iconEmoji = { fontSize: '40px', margin: '0', lineHeight: '1' }
-const h1 = { fontSize: '28px', fontWeight: '700' as const, color: '#1a1a2e', margin: '0 0 16px', lineHeight: '1.2', textAlign: 'center' as const }
-const text = { fontSize: '15px', color: '#4a4a5a', lineHeight: '1.7', margin: '0 0 14px', textAlign: 'center' as const }
-const buttonContainer = { textAlign: 'center' as const, margin: '28px 0' }
-const button = { backgroundColor: '#E31837', color: '#ffffff', fontSize: '16px', fontWeight: '700' as const, borderRadius: '10px', padding: '16px 40px', textDecoration: 'none', display: 'inline-block', boxShadow: '0 4px 14px rgba(227,24,55,0.35)' }
-const warningBox = { backgroundColor: '#FFF8E1', borderRadius: '8px', padding: '12px 16px', margin: '0 0 16px', border: '1px solid #FFE082' }
-const warningText = { fontSize: '13px', color: '#6D4C00', margin: '0', textAlign: 'center' as const }
-const subtext = { fontSize: '12px', color: '#9a9aaa', lineHeight: '1.5', margin: '16px 0 6px', textAlign: 'center' as const }
-const urlText = { fontSize: '11px', color: '#E31837', wordBreak: 'break-all' as const, margin: '0 0 16px', textAlign: 'center' as const }
-const divider = { borderColor: '#eaeaea', margin: '0' }
-const footerSection = { padding: '20px 32px', backgroundColor: '#ffffff' }
-const footer = { fontSize: '12px', color: '#999999', margin: '0 0 4px', textAlign: 'center' as const }
-const spamNotice = { fontSize: '12px', color: '#E31837', margin: '0 0 12px', textAlign: 'center' as const, lineHeight: '1.5' }
-const footerSub = { fontSize: '11px', color: '#cccccc', margin: '0', textAlign: 'center' as const }
+const main = { backgroundColor: '#f4f4f5', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const container = { maxWidth: '560px', margin: '40px auto', borderRadius: '12px', overflow: 'hidden' as const, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }
+const accentBar = { background: 'linear-gradient(135deg, #E11D48, #BE123C)', height: '6px', width: '100%' }
+const content = { backgroundColor: '#ffffff', padding: '32px 40px 40px' }
+const logo = { margin: '0 0 24px' }
+const h1 = { fontSize: '24px', fontWeight: '700' as const, color: '#111827', margin: '0 0 20px', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const text = { fontSize: '15px', color: '#4b5563', lineHeight: '1.6', margin: '0 0 20px', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const button = { backgroundColor: '#E11D48', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '8px', padding: '14px 28px', textDecoration: 'none', fontFamily: "'Space Grotesk', Arial, sans-serif", display: 'inline-block' as const }
+const footer = { fontSize: '13px', color: '#9ca3af', margin: '28px 0 0', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const spamWarning = { marginTop: '24px', padding: '14px 16px', backgroundColor: '#FEF2F2', borderRadius: '8px', borderLeft: '4px solid #E11D48' }
+const spamText = { fontSize: '13px', color: '#991B1B', margin: '0', lineHeight: '1.5', fontFamily: "'Space Grotesk', Arial, sans-serif" }
