@@ -40,7 +40,7 @@ export const SignupEmail = ({
       <Container style={container}>
         <Section style={accentBar} />
         <Section style={content}>
-          <Img src={LOGO_URL} width="44" height="44" alt="seats.ca" style={logo} />
+          <Img src={LOGO_URL} width="300" height="300" alt="seats.ca" style={logo} />
           <Heading style={h1}>Confirm Your Email</Heading>
           <Text style={text}>
             Thanks for signing up for{' '}

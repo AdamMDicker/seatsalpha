@@ -38,7 +38,7 @@ export const InviteEmail = ({
       <Container style={container}>
         <Section style={accentBar} />
         <Section style={content}>
-          <Img src={LOGO_URL} width="44" height="44" alt="seats.ca" style={logo} />
+          <Img src={LOGO_URL} width="300" height="300" alt="seats.ca" style={logo} />
           <Heading style={h1}>You've Been Invited</Heading>
           <Text style={text}>
             You've been invited to join{' '}
