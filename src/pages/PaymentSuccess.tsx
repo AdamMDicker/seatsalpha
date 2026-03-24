@@ -144,6 +144,12 @@ const PaymentSuccess = () => {
           <p className="text-muted-foreground">
             Your tickets have been confirmed. Check your email for details.
           </p>
+
+          <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3 mt-2">
+            <p className="text-primary text-sm font-semibold">
+              📧 If you don't see the confirmation email, please check your spam/junk folder.
+            </p>
+          </div>
         </div>
 
         {/* Upsell section */}
