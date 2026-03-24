@@ -109,7 +109,7 @@ export function useTeamGames(searchTerm: string | undefined) {
 
   const resetFilters = () => {
     setFilter("home");
-    setSelectedMonth(currentMonthKey);
+    setSelectedMonth("all");
     setSelectedOpponent("all");
     setMaxBudget(null);
     setMinTickets(null);
