@@ -451,6 +451,7 @@ serve(async (req) => {
           section: sectionInfo,
           rowName: rowInfo,
           salePrice,
+          quantity,
           buyerEmail: customerEmail,
         });
 
