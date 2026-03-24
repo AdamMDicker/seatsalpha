@@ -40,7 +40,7 @@ export const EmailChangeEmail = ({
       <Container style={container}>
         <Section style={accentBar} />
         <Section style={content}>
-          <Img src={LOGO_URL} width="120" height="40" alt="seats.ca" style={logo} />
+          <Img src={LOGO_URL} width="44" height="44" alt="seats.ca" style={logo} />
           <Heading style={h1}>Confirm Your Email Change</Heading>
           <Text style={text}>
             You requested to change your email address for {siteName} from{' '}

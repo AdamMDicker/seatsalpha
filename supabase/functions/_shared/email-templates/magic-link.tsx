@@ -35,7 +35,7 @@ export const MagicLinkEmail = ({
       <Container style={container}>
         <Section style={accentBar} />
         <Section style={content}>
-          <Img src={LOGO_URL} width="120" height="40" alt="seats.ca" style={logo} />
+          <Img src={LOGO_URL} width="44" height="44" alt="seats.ca" style={logo} />
           <Heading style={h1}>Your Login Link</Heading>
           <Text style={text}>
             Click the button below to log in to {siteName}. This link will expire shortly.
