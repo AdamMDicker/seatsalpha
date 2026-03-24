@@ -380,7 +380,7 @@ serve(async (req) => {
     }
 
     // --- SELLER NOTIFICATION + EMAIL ---
-    const ADMIN_EMAIL = "lmkconsulting@gmail.com";
+    const ADMIN_EMAIL = "lmksportsconsulting@gmail.com";
 
     // Always send seller notification to admin, even without ticket_id
     let sellerNotificationSent = false;
