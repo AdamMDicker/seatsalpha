@@ -20,7 +20,7 @@ const HERO_IMAGES: Record<string, string> = {
 };
 
 const HeroSection = () => {
-  const [heroImage, setHeroImage] = useState(heroCanada);
+  const [heroImage, setHeroImage] = useState(heroBaseball);
 
   useEffect(() => {
     const fetchHero = async () => {
