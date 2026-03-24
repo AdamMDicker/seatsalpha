@@ -529,6 +529,7 @@ serve(async (req) => {
         section: tier.replace("Section ", "").split(",")[0] || "N/A",
         rowName: "",
         salePrice: totalAmount,
+        quantity,
         buyerEmail: customerEmail,
       });
       await enqueueEmail(
