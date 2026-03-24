@@ -35,7 +35,7 @@ export const RecoveryEmail = ({
       <Container style={container}>
         <Section style={accentBar} />
         <Section style={content}>
-          <Img src={LOGO_URL} width="44" height="44" alt="seats.ca" style={logo} />
+          <Img src={LOGO_URL} width="300" height="300" alt="seats.ca" style={logo} />
           <Heading style={h1}>Reset Your Password</Heading>
           <Text style={text}>
             We received a request to reset your password for {siteName}. Click the button below to choose a new password.
