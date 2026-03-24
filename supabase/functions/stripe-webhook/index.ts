@@ -456,17 +456,19 @@ serve(async (req) => {
         });
 
         const sellerBody = [
-          `Great news! One of your tickets has been sold.`,
+          `Great news! Your tickets have been sold.`,
           ``,
           `Event: ${eventTitle}`,
           venue ? `Venue: ${venue}` : null,
           formattedDate ? `Date: ${formattedDate}` : null,
           `Section: ${sectionInfo}`,
           rowInfo ? `Row: ${rowInfo}` : null,
-          `Sale Price: $${salePrice} CAD`,
+          `Quantity: ${quantity}`,
+          `Price Per Ticket: $${salePrice} CAD`,
+          `Total Sale: $${(parseInt(quantity) || 1) * parseFloat(salePrice)} CAD`,
           `Buyer: ${customerEmail}`,
           ``,
-          `Please ensure the tickets are delivered promptly. Thank you for selling on seats.ca!`,
+          `Tickets must be delivered within, at least, 48 hours before the event.`,
         ].filter(Boolean).join("\n");
 
         // Always notify admin
