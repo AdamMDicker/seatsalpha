@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Mail, Lock, User, Eye, EyeOff, RefreshCw, ArrowLeft, Ticket } from "lucide-react";
 
 interface MobileAuthSheetProps {
