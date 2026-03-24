@@ -137,8 +137,13 @@ function sellerEmailHtml(meta: {
   section: string;
   rowName: string;
   salePrice: string;
+  quantity: string;
   buyerEmail: string;
 }): string {
+  const qty = parseInt(meta.quantity) || 1;
+  const pricePerTicket = parseFloat(meta.salePrice) || 0;
+  const totalSale = (qty * pricePerTicket).toFixed(2);
+
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -156,22 +161,55 @@ function sellerEmailHtml(meta: {
     ${meta.formattedDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;width:120px;">Date</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.formattedDate}</td></tr>` : ""}
     ${meta.venue ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Venue</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.venue}</td></tr>` : ""}
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Section</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.section}${meta.rowName ? ` · Row ${meta.rowName}` : ""}</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Quantity</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.quantity}</td></tr>
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Buyer</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.buyerEmail}</td></tr>
   </table>
+
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#ecfdf5;border-radius:8px;">
     <tr><td style="padding:16px;">
-      <table width="100%"><tr>
-        <td style="color:#047857;font-size:14px;">Sale Price</td>
-        <td align="right" style="color:#047857;font-size:22px;font-weight:800;">$${meta.salePrice} CAD</td>
-      </tr></table>
+      <table width="100%">
+        <tr>
+          <td style="color:#047857;font-size:13px;padding:4px 0;">Price Per Ticket</td>
+          <td align="right" style="color:#047857;font-size:14px;font-weight:600;padding:4px 0;">$${meta.salePrice} CAD</td>
+        </tr>
+        <tr>
+          <td style="color:#047857;font-size:14px;padding:8px 0 0;border-top:1px solid #a7f3d0;">Total Sale (${meta.quantity} ticket${qty > 1 ? "s" : ""})</td>
+          <td align="right" style="color:#047857;font-size:22px;font-weight:800;padding:8px 0 0;border-top:1px solid #a7f3d0;">$${totalSale} CAD</td>
+        </tr>
+      </table>
     </td></tr>
   </table>
-  <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
-    Please ensure the tickets are delivered promptly. Contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a> with any questions.
+
+  <!-- Transfer upload reminder -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;background:#fef3c7;border-radius:8px;border:1px solid #fbbf24;">
+    <tr><td style="padding:16px;">
+      <p style="margin:0;color:#92400e;font-size:13px;font-weight:700;line-height:1.5;">
+        📤 Please ensure you upload a copy/image of the ticket transfer to your Seats.ca Seller Portal after completion.
+      </p>
+    </td></tr>
+  </table>
+
+  <p style="margin:24px 0 0;color:#18181b;font-size:13px;line-height:1.6;font-weight:600;">
+    Tickets must be delivered within, at least, 48 hours before the event.
+  </p>
+
+  <!-- Penalty & payment terms -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;background:#fef2f2;border-radius:8px;border:1px solid #fca5a5;">
+    <tr><td style="padding:16px;">
+      <p style="margin:0 0 10px;color:#991b1b;font-size:12px;line-height:1.5;">
+        ⚠️ Please ensure that your ticket transfer is for the noted event and seats. Ticket transfer errors are subject to Seats.ca Terms and Conditions.
+      </p>
+      <p style="margin:0;color:#991b1b;font-size:12px;line-height:1.5;">
+        💳 Seller payments are contingent on properly transferred tickets and occur two weeks after the event. In the event of any ticket transfer errors, Seats.ca reserves the right to withhold payment to facilitate any buyer issues/complaints.
+      </p>
+    </td></tr>
+  </table>
+
+  <p style="margin:16px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
+    Questions? Contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
   </p>
 </td></tr>
 <tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
-  <p style="margin:0 0 10px;color:#d6193d;font-size:12px;font-weight:700;">If you don't see the email, please check your spam/junk folder.</p>
   <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca — All rights reserved.</p>
 </td></tr>
 </table>
@@ -413,21 +451,24 @@ serve(async (req) => {
           section: sectionInfo,
           rowName: rowInfo,
           salePrice,
+          quantity,
           buyerEmail: customerEmail,
         });
 
         const sellerBody = [
-          `Great news! One of your tickets has been sold.`,
+          `Great news! Your tickets have been sold.`,
           ``,
           `Event: ${eventTitle}`,
           venue ? `Venue: ${venue}` : null,
           formattedDate ? `Date: ${formattedDate}` : null,
           `Section: ${sectionInfo}`,
           rowInfo ? `Row: ${rowInfo}` : null,
-          `Sale Price: $${salePrice} CAD`,
+          `Quantity: ${quantity}`,
+          `Price Per Ticket: $${salePrice} CAD`,
+          `Total Sale: $${(parseInt(quantity) || 1) * parseFloat(salePrice)} CAD`,
           `Buyer: ${customerEmail}`,
           ``,
-          `Please ensure the tickets are delivered promptly. Thank you for selling on seats.ca!`,
+          `Tickets must be delivered within, at least, 48 hours before the event.`,
         ].filter(Boolean).join("\n");
 
         // Always notify admin
@@ -490,6 +531,7 @@ serve(async (req) => {
         section: tier.replace("Section ", "").split(",")[0] || "N/A",
         rowName: "",
         salePrice: totalAmount,
+        quantity,
         buyerEmail: customerEmail,
       });
       await enqueueEmail(
