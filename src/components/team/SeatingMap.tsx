@@ -183,9 +183,16 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
 
         {isRogersCentre && (
           <div className="flex flex-wrap gap-3 mt-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(353, 82%, 49%)" }} /> 100 Level</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(42, 90%, 55%)" }} /> 200 Level</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(142, 72%, 42%)" }} /> 500 Level</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(330, 80%, 55%)" }} /> 500 Level</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(65, 100%, 50%)" }} /> 200 Level</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(220, 80%, 30%)" }} /> TD Terrace</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(55, 50%, 40%)" }} /> 100 Level</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(120, 50%, 40%)" }} /> 100 Outfield</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(195, 80%, 60%)" }} /> Ticketmaster Lounge</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(0, 75%, 50%)" }} /> KPMG Lounge</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(210, 70%, 50%)" }} /> TD Lounge</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(42, 90%, 45%)" }} /> Banner Lounge</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: "hsl(25, 95%, 55%)" }} /> Scorebet Seats</span>
             <span className="text-muted-foreground/60 italic">Click image to enlarge</span>
           </div>
         )}
