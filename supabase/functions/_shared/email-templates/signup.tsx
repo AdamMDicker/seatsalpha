@@ -85,5 +85,5 @@ const text = { fontSize: '15px', color: '#4b5563', lineHeight: '1.6', margin: '0
 const link = { color: '#E11D48', textDecoration: 'underline' }
 const button = { backgroundColor: '#E11D48', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '8px', padding: '14px 28px', textDecoration: 'none', fontFamily: "'Space Grotesk', Arial, sans-serif", display: 'inline-block' as const }
 const footer = { fontSize: '13px', color: '#9ca3af', margin: '28px 0 0', fontFamily: "'Space Grotesk', Arial, sans-serif" }
-const spamWarning = { marginTop: '24px', padding: '14px 16px', backgroundColor: '#FEF2F2', borderRadius: '8px', borderLeft: '4px solid #E11D48' }
-const spamText = { fontSize: '13px', color: '#991B1B', margin: '0', lineHeight: '1.5', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const spamWarning = { marginTop: '24px', padding: '14px 16px', backgroundColor: '#FEF9E7', borderRadius: '8px', borderLeft: '4px solid #D4AC0D' }
+const spamText = { fontSize: '13px', color: '#7D6608', margin: '0', lineHeight: '1.5', fontFamily: "'Space Grotesk', Arial, sans-serif" }

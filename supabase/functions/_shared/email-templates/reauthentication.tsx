@@ -59,5 +59,5 @@ const h1 = { fontSize: '24px', fontWeight: '700' as const, color: '#111827', mar
 const text = { fontSize: '15px', color: '#4b5563', lineHeight: '1.6', margin: '0 0 20px', fontFamily: "'Space Grotesk', Arial, sans-serif" }
 const codeStyle = { fontFamily: "'Space Grotesk', Courier, monospace", fontSize: '28px', fontWeight: '700' as const, color: '#E11D48', margin: '0 0 30px', letterSpacing: '4px' }
 const footer = { fontSize: '13px', color: '#9ca3af', margin: '28px 0 0', fontFamily: "'Space Grotesk', Arial, sans-serif" }
-const spamWarning = { marginTop: '24px', padding: '14px 16px', backgroundColor: '#FEF2F2', borderRadius: '8px', borderLeft: '4px solid #E11D48' }
-const spamText = { fontSize: '13px', color: '#991B1B', margin: '0', lineHeight: '1.5', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const spamWarning = { marginTop: '24px', padding: '14px 16px', backgroundColor: '#FEF9E7', borderRadius: '8px', borderLeft: '4px solid #D4AC0D' }
+const spamText = { fontSize: '13px', color: '#7D6608', margin: '0', lineHeight: '1.5', fontFamily: "'Space Grotesk', Arial, sans-serif" }
