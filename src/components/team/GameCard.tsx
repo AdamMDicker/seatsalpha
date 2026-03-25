@@ -52,7 +52,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
               : "bg-card border-border hover:border-primary/30"
         }`}
       >
-        <div className={`absolute top-0 left-0 right-0 h-0.5 ${game.is_giveaway ? "bg-primary" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
+        <div className={`absolute top-0 left-0 right-0 h-0.5 ${game.is_giveaway ? "bg-primary" : isJrJaysSunday ? "bg-sky-500" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
         <div className="flex items-center gap-3">
           {teamLogo && <img src={teamLogo} alt="" className="w-8 h-8 object-contain flex-shrink-0" />}
           <div className="flex-1 min-w-0">
