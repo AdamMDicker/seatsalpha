@@ -291,7 +291,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               variant="hero"
               size="sm"
               className="animate-pulse-glow"
-              onClick={() => handleBuy(ticket)}
+              onClick={(e) => { e.stopPropagation(); handleBuy(ticket); }}
               disabled={buyingTicketId === ticket.id}
             >
               {buyingTicketId === ticket.id ? "..." : "Buy Tickets"}
