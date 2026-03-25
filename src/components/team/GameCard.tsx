@@ -148,6 +148,14 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
           </span>
         </div>
       )}
+      {isJrJaysSunday && !game.is_giveaway && (
+        <div className="flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-lg bg-sky-500/20 border border-sky-500/40 w-fit">
+          <Baby className="h-3.5 w-3.5 text-sky-400" />
+          <span className="text-[11px] font-bold text-sky-400 uppercase tracking-wide">
+            Jr. Jays Sunday
+          </span>
+        </div>
+      )}
 
       <div className="mt-auto pt-2">
         {cheapest !== null ? (
