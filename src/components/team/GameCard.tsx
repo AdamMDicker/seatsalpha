@@ -1,4 +1,4 @@
-import { Gift, Home, Plane } from "lucide-react";
+import { Gift, Home, Plane, Baby } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -35,6 +35,9 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   };
   const opponent = getOpponent();
   const cheapest = game.tickets.length > 0 ? Math.min(...game.tickets.map((t) => t.price)) : null;
+  const isSunday = new Date(game.event_date).getDay() === 0;
+  const isBlueJaysHome = isHome && game.title.toLowerCase().includes("blue jays");
+  const isJrJaysSunday = isSunday && isBlueJaysHome;
 
   // --- MOBILE: compact single-row card ---
   if (isMobile) {
@@ -49,7 +52,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
               : "bg-card border-border hover:border-primary/30"
         }`}
       >
-        <div className={`absolute top-0 left-0 right-0 h-0.5 ${game.is_giveaway ? "bg-primary" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
+        <div className={`absolute top-0 left-0 right-0 h-0.5 ${game.is_giveaway ? "bg-primary" : isJrJaysSunday ? "bg-sky-500" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
         <div className="flex items-center gap-3">
           {teamLogo && <img src={teamLogo} alt="" className="w-8 h-8 object-contain flex-shrink-0" />}
           <div className="flex-1 min-w-0">
@@ -74,6 +77,14 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
                 <Gift className="h-3 w-3 text-primary animate-bounce" />
                 <span className="text-[10px] font-bold text-primary uppercase tracking-wide">
                   {game.giveaway_item || "Giveaway"}
+                </span>
+              </div>
+            )}
+            {isJrJaysSunday && !game.is_giveaway && (
+              <div className="flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-sky-500/20 border border-sky-500/30 w-fit">
+                <Baby className="h-3 w-3 text-sky-400" />
+                <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wide">
+                  Jr. Jays Sunday
                 </span>
               </div>
             )}
@@ -104,7 +115,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
             : "bg-card border-border hover:border-primary/30"
       }`}
     >
-      <div className={`absolute top-0 left-0 right-0 h-1 ${game.is_giveaway ? "bg-gradient-to-r from-primary via-primary to-primary/60" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
+      <div className={`absolute top-0 left-0 right-0 h-1 ${game.is_giveaway ? "bg-gradient-to-r from-primary via-primary to-primary/60" : isJrJaysSunday ? "bg-sky-500" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
 
       <div className="flex items-center gap-2 mb-1.5 mt-1">
         {teamLogo && <img src={teamLogo} alt="" className="w-6 h-6 object-contain" />}
@@ -134,6 +145,14 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
           <Gift className="h-3.5 w-3.5 text-primary animate-bounce" />
           <span className="text-[11px] font-bold text-primary uppercase tracking-wide">
             {game.giveaway_item || "Giveaway"}
+          </span>
+        </div>
+      )}
+      {isJrJaysSunday && !game.is_giveaway && (
+        <div className="flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-lg bg-sky-500/20 border border-sky-500/40 w-fit">
+          <Baby className="h-3.5 w-3.5 text-sky-400" />
+          <span className="text-[11px] font-bold text-sky-400 uppercase tracking-wide">
+            Jr. Jays Sunday
           </span>
         </div>
       )}
