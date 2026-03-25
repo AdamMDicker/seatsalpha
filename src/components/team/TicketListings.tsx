@@ -308,7 +308,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               {images.map((img, idx) => (
                 <button
                   key={img.id}
-                  onClick={() => openLightbox(images, idx)}
+                  onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
                   className="relative group flex-shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all"
                 >
                   <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" />
