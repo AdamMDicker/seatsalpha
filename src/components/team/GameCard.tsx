@@ -1,4 +1,4 @@
-import { Gift, Home, Plane } from "lucide-react";
+import { Gift, Home, Plane, Baby } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
