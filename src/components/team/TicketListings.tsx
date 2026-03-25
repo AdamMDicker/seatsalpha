@@ -241,7 +241,10 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     const perks = ticket.perks || [];
 
     return (
-      <div className="glass rounded-xl p-4 hover:border-primary/40 transition-all border-primary/20">
+      <div
+        className="glass rounded-xl p-4 hover:border-primary/40 transition-all border-primary/20 cursor-pointer"
+        onClick={() => handleBuy(ticket)}
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
