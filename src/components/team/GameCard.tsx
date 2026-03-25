@@ -35,6 +35,9 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   };
   const opponent = getOpponent();
   const cheapest = game.tickets.length > 0 ? Math.min(...game.tickets.map((t) => t.price)) : null;
+  const isSunday = new Date(game.event_date).getDay() === 0;
+  const isBlueJaysHome = isHome && game.title.toLowerCase().includes("blue jays");
+  const isJrJaysSunday = isSunday && isBlueJaysHome;
 
   // --- MOBILE: compact single-row card ---
   if (isMobile) {
