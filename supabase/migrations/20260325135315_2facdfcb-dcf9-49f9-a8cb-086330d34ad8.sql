@@ -1,0 +1,2 @@
+DELETE FROM tickets WHERE event_id = '1e087460-156b-439c-90ef-f48efb412541';
+DELETE FROM events WHERE id = '1e087460-156b-439c-90ef-f48efb412541';
