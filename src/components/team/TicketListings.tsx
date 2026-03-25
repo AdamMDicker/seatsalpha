@@ -241,7 +241,10 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     const perks = ticket.perks || [];
 
     return (
-      <div className="glass rounded-xl p-4 hover:border-primary/40 transition-all border-primary/20">
+      <div
+        className="glass rounded-xl p-4 hover:border-primary/40 transition-all border-primary/20 cursor-pointer"
+        onClick={() => handleBuy(ticket)}
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
@@ -288,7 +291,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               variant="hero"
               size="sm"
               className="animate-pulse-glow"
-              onClick={() => handleBuy(ticket)}
+              onClick={(e) => { e.stopPropagation(); handleBuy(ticket); }}
               disabled={buyingTicketId === ticket.id}
             >
               {buyingTicketId === ticket.id ? "..." : "Buy Tickets"}
@@ -305,7 +308,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               {images.map((img, idx) => (
                 <button
                   key={img.id}
-                  onClick={() => openLightbox(images, idx)}
+                  onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
                   className="relative group flex-shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all"
                 >
                   <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" />
