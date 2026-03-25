@@ -26,14 +26,39 @@ import targetCenterMap from "@/assets/venues/target-center-seating.jpg";
 import collegeParkCenterMap from "@/assets/venues/college-park-center-seating.jpg";
 import chaseCenterMap from "@/assets/venues/chase-center-seating.jpg";
 
-// Rogers Centre section overlays — no 300 level (suites only, not bookable)
+// Rogers Centre section overlays
 const ROGERS_CENTRE_SECTIONS = [
-  { id: "100L", label: "100 Level Left (Sections 107-113)", color: "hsl(353, 82%, 49%)", left: 5, top: 45, width: 18, height: 22 },
-  { id: "100R", label: "100 Level Right (Sections 115-121)", color: "hsl(353, 82%, 49%)", left: 77, top: 45, width: 18, height: 22 },
-  { id: "200L", label: "200 Level Left (Sections 211-221)", color: "hsl(42, 90%, 55%)", left: 8, top: 28, width: 16, height: 16 },
-  { id: "200R", label: "200 Level Right (Sections 227-237)", color: "hsl(42, 90%, 55%)", left: 76, top: 28, width: 16, height: 16 },
-  { id: "500L", label: "500 Level Left (Sections 511-521)", color: "hsl(142, 72%, 42%)", left: 4, top: 8, width: 18, height: 16 },
-  { id: "500R", label: "500 Level Right (Sections 527-537)", color: "hsl(142, 72%, 42%)", left: 78, top: 8, width: 18, height: 16 },
+  // 500 Level (Pink)
+  { id: "500L", label: "500 Level Left", color: "hsl(330, 80%, 55%)", left: 2, top: 2, width: 22, height: 20 },
+  { id: "500C", label: "500 Level Centre", color: "hsl(330, 80%, 55%)", left: 26, top: 0, width: 48, height: 10 },
+  { id: "500R", label: "500 Level Right", color: "hsl(330, 80%, 55%)", left: 76, top: 2, width: 22, height: 20 },
+  { id: "500B", label: "500 Level Behind Home", color: "hsl(330, 80%, 55%)", left: 15, top: 78, width: 70, height: 12 },
+  // 200 Level (Neon Yellow)
+  { id: "200L", label: "200 Level Left", color: "hsl(65, 100%, 50%)", left: 8, top: 18, width: 18, height: 16 },
+  { id: "200C", label: "200 Level Centre", color: "hsl(65, 100%, 50%)", left: 28, top: 10, width: 44, height: 10 },
+  { id: "200R", label: "200 Level Right", color: "hsl(65, 100%, 50%)", left: 74, top: 18, width: 18, height: 16 },
+  // TD Terrace (Dark Blue)
+  { id: "TDT", label: "TD Terrace", color: "hsl(220, 80%, 30%)", left: 30, top: 20, width: 40, height: 10 },
+  // Premium Ticketmaster Lounge (Light Blue)
+  { id: "PTML", label: "Premium Ticketmaster Lounge (Left)", color: "hsl(195, 80%, 60%)", left: 60, top: 42, width: 8, height: 14 },
+  { id: "PTMR", label: "Premium Ticketmaster Lounge (Right)", color: "hsl(195, 80%, 60%)", left: 32, top: 42, width: 8, height: 14 },
+  // 100 Level Infield (Puke Green)
+  { id: "100L", label: "100 Level Infield Left", color: "hsl(55, 50%, 40%)", left: 10, top: 62, width: 28, height: 18 },
+  { id: "100R", label: "100 Level Infield Right", color: "hsl(55, 50%, 40%)", left: 62, top: 62, width: 28, height: 18 },
+  { id: "100B", label: "100 Level Behind Home", color: "hsl(55, 50%, 40%)", left: 28, top: 68, width: 44, height: 14 },
+  // Rogers Premium Banner Lounge (Dark Yellow)
+  { id: "RPBL", label: "Rogers Premium Banner Lounge (Left)", color: "hsl(42, 90%, 45%)", left: 22, top: 34, width: 8, height: 10 },
+  { id: "RPBR", label: "Rogers Premium Banner Lounge (Right)", color: "hsl(42, 90%, 45%)", left: 70, top: 34, width: 8, height: 10 },
+  // KPMG Premium Blueprint Lounge (Red)
+  { id: "KPMG", label: "KPMG Premium Blueprint Lounge", color: "hsl(0, 75%, 50%)", left: 8, top: 38, width: 14, height: 16 },
+  // Premium TD Lounge (Blue)
+  { id: "PTD", label: "Premium TD Lounge", color: "hsl(210, 70%, 50%)", left: 78, top: 38, width: 14, height: 16 },
+  // Scorebet Seats (Orange)
+  { id: "SBL", label: "Scorebet Seats (Left)", color: "hsl(25, 95%, 55%)", left: 6, top: 34, width: 5, height: 12 },
+  { id: "SBR", label: "Scorebet Seats (Right)", color: "hsl(25, 95%, 55%)", left: 89, top: 34, width: 5, height: 12 },
+  // 100 Level Outfield (Regular Green)
+  { id: "100OL", label: "100 Level Outfield Left", color: "hsl(120, 50%, 40%)", left: 4, top: 28, width: 10, height: 20 },
+  { id: "100OR", label: "100 Level Outfield Right", color: "hsl(120, 50%, 40%)", left: 86, top: 28, width: 10, height: 20 },
 ];
 
 // Venue-specific seating map images
