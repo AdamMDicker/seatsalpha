@@ -34,7 +34,9 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
     return null;
   };
   const opponent = getOpponent();
-  const cheapest = game.tickets.length > 0 ? Math.min(...game.tickets.map((t) => t.price)) : null;
+  const paidPrices = game.tickets.map((t) => t.price).filter((p) => Number.isFinite(p) && p > 0);
+  const cheapestPaid = paidPrices.length > 0 ? Math.min(...paidPrices) : null;
+  const cheapestAny = game.tickets.length > 0 ? Math.min(...game.tickets.map((t) => t.price)) : null;
   const isSunday = new Date(game.event_date).getDay() === 0;
   const isBlueJaysHome = isHome && game.title.toLowerCase().includes("blue jays");
   const isJrJaysSunday = isSunday && isBlueJaysHome;
@@ -90,10 +92,10 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
             )}
           </div>
           <div className="flex flex-col items-end flex-shrink-0">
-            {cheapest !== null ? (
-              <>
-                <span className="text-sm text-emerald-400 font-semibold">${cheapest} CAD</span>
-              </>
+            {cheapestPaid !== null ? (
+              <span className="text-sm text-emerald-400 font-semibold">From ${cheapestPaid} CAD</span>
+            ) : cheapestAny !== null ? (
+              <span className="text-sm text-emerald-400 font-semibold">From ${cheapestAny} CAD</span>
             ) : (
               <span className="text-xs text-muted-foreground">—</span>
             )}
@@ -158,9 +160,14 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       )}
 
       <div className="mt-auto pt-2">
-        {cheapest !== null ? (
+        {cheapestPaid !== null ? (
           <>
-            <p className="text-sm text-emerald-400 font-semibold">From ${cheapest} CAD</p>
+            <p className="text-sm text-emerald-400 font-semibold">From ${cheapestPaid} CAD</p>
+            <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
+          </>
+        ) : cheapestAny !== null ? (
+          <>
+            <p className="text-sm text-emerald-400 font-semibold">From ${cheapestAny} CAD</p>
             <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
           </>
         ) : (
