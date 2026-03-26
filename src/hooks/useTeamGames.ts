@@ -90,7 +90,7 @@ export function useTeamGames(searchTerm: string | undefined) {
         }
 
         const ticketsByEvent: Record<string, TicketInfo[]> = {};
-        allTickets.forEach((t) => {
+        allTickets.filter((t) => t.price > 0).forEach((t) => {
           if (!ticketsByEvent[t.event_id]) ticketsByEvent[t.event_id] = [];
           ticketsByEvent[t.event_id].push(t);
         });
