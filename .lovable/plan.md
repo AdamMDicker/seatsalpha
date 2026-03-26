@@ -1,41 +1,32 @@
 
 
-## Plan: Audit and Fix Blue Jays Ticket Data vs Spreadsheet
+## Plan: Clarify Membership Option Pricing Breakdown
 
-### Summary
-Compare every ticket listing in the database against the master Google Sheet to find and fix discrepancies in prices, quantities, sections, and missing/extra tickets.
+### Problem
+The "Add Annual Membership" option shows a single total (e.g., "$499.95 CAD") which users misread as the membership cost alone, when it's actually tickets ($450) + membership ($49.95).
 
-### Approach
-Write a Python audit script that:
-1. Fetches the live spreadsheet CSV
-2. Queries all Blue Jays tickets from the database
-3. Compares row-by-row and produces a discrepancy report
-4. Generates SQL fix statements for each issue found
+### Solution
+Add a visible price breakdown line under the membership option, similar to how the HST option shows "2× $225.00 + HST $58.50". The membership option will show:
+- **Line 1**: `2× $225.00 + Membership $49.95`
+- **Line 2**: A small note like `(Tickets $450.00 + $49.95/yr membership)` to make it unmistakable
 
-### Rules for Spreadsheet Interpretation
-- **SWAP rows**: Exclude from site (these are being traded elsewhere)
-- **$0 price rows**: Exclude (comp tickets like section 118 row 9, section 521 row 5)
-- **#VALUE! sections**: Skip (invalid data)
-- **"3pack"/"Banner 3-pack" promos**: Not giveaways, just bundle notes
-- **Non-SWAP, non-$0 rows with valid sections**: These are the tickets that should be on the site
+### File Changes
 
-### Steps
+**`src/components/team/FeeGateDialog.tsx`** (lines 356-358)
 
-1. **Run audit script** -- Parse the spreadsheet, query the DB, and compare:
-   - Missing tickets (in spreadsheet but not in DB)
-   - Extra tickets (in DB but not in spreadsheet)
-   - Price mismatches
-   - Quantity mismatches
-   - Wrong giveaway flags
+Replace the current description text:
+```
+Annual Membership: HST inclusive ticket pricing for 12 months
+```
 
-2. **Review discrepancy report** -- Present findings before making changes
+With a two-line breakdown:
+```
+{quantity}× ${ticketPrice.toFixed(2)} + Membership $49.95/yr
+```
+And add a second line in a distinct color:
+```
+(Tickets: ${subtotal.toFixed(2)} + $49.95 annual membership = ${totalWithMembership.toFixed(2)})
+```
 
-3. **Apply fixes via SQL** -- Insert missing tickets, update wrong prices/quantities, delete extras (if any), fix giveaway metadata
-
-### Technical Details
-- The script will match tickets by: event date + opponent + section + row_name
-- Prices compared using the "Per Seat" column from the spreadsheet
-- Events matched by `title LIKE '%Blue Jays%'` and UTC-converted event_date
-- All fixes applied as featured tickets (`is_reseller_ticket = false`)
-- Excluded dates (Apr 17, May 1, May 15, May 29, Jul 10) confirmed already removed
+This mirrors the HST option's breakdown style so users can clearly see the ticket cost and membership fee as separate components.
 
