@@ -341,27 +341,38 @@ const FeeGateDialog = ({
                   : "border-border bg-card hover:border-muted-foreground/30"
               }`}
             >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-1">
-                  <div className={`h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    selectedOption === "membership" ? "border-gold bg-gold" : "border-muted-foreground/40"
-                  }`}>
-                    {selectedOption === "membership" && <Check className="h-2 w-2 text-gold-foreground" />}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <p className="font-semibold text-foreground text-xs">Add Annual Membership</p>
-                      <span className="text-[8px] font-bold bg-gold/20 text-gold px-1 py-0.5 rounded uppercase tracking-wide">Recommended</span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">
-                      {quantity}× ${ticketPrice.toFixed(2)} + Membership $49.95/yr
-                    </p>
-                    <p className="text-[10px] text-gold font-medium">
-                      (Tickets: ${subtotal.toFixed(2)} + $49.95 annual membership = ${totalWithMembership.toFixed(2)})
-                    </p>
-                  </div>
+              <div className="flex items-start gap-2">
+                <div className={`h-3.5 w-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                  selectedOption === "membership" ? "border-gold bg-gold" : "border-muted-foreground/40"
+                }`}>
+                  {selectedOption === "membership" && <Check className="h-2 w-2 text-gold-foreground" />}
                 </div>
-                <span className="text-foreground font-bold text-sm whitespace-nowrap">${totalWithMembership.toFixed(2)} CAD</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <p className="font-semibold text-foreground text-xs">Become a Member & Save</p>
+                    <span className="text-[8px] font-bold bg-gold/20 text-gold px-1 py-0.5 rounded uppercase tracking-wide">Best Value</span>
+                  </div>
+                  {/* Receipt-style breakdown */}
+                  <div className="space-y-0.5 text-[10px]">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Tickets ({quantity}× ${ticketPrice.toFixed(2)}, no fees, no HST)</span>
+                      <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">+ Annual membership</span>
+                      <span className="text-foreground font-medium">$49.95/yr</span>
+                    </div>
+                    <div className="border-t border-dashed border-muted-foreground/30 my-0.5" />
+                    <div className="flex justify-between font-bold text-foreground text-xs">
+                      <span>Total</span>
+                      <span>${totalWithMembership.toFixed(2)} CAD</span>
+                    </div>
+                  </div>
+                  {/* Savings callout */}
+                  <p className="text-[9px] text-gold font-medium mt-1">
+                    💡 Save ${(totalWithHST - totalWithMembership).toFixed(2)} vs non-member + no fees on ALL purchases for 12 months
+                  </p>
+                </div>
               </div>
             </button>
 
