@@ -354,7 +354,10 @@ const FeeGateDialog = ({
                       <span className="text-[8px] font-bold bg-gold/20 text-gold px-1 py-0.5 rounded uppercase tracking-wide">Recommended</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">
-                      Annual Membership: HST inclusive ticket pricing for 12 months
+                      {quantity}× ${ticketPrice.toFixed(2)} + Membership $49.95/yr
+                    </p>
+                    <p className="text-[10px] text-gold font-medium">
+                      (Tickets: ${subtotal.toFixed(2)} + $49.95 annual membership = ${totalWithMembership.toFixed(2)})
                     </p>
                   </div>
                 </div>
