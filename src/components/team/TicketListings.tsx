@@ -233,7 +233,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     .filter((ticket) => !filterAisle || ticket.perks?.includes("aisle"))
     .filter((ticket) => !filterRow1 || ticket.perks?.includes("row1") || ticket.row_name === "1")
     .filter((ticket) => !filterAccessible || ticket.perks?.includes("accessible"));
-  const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket).slice(0, 4);
+  const featuredTickets = allTickets.filter((t) => !t.is_reseller_ticket);
   const resellerTickets = allTickets.filter((t) => t.is_reseller_ticket);
 
   const FeaturedTicketCard = ({ ticket }: { ticket: TicketInfo }) => {
