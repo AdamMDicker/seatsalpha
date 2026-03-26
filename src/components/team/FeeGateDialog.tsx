@@ -369,7 +369,7 @@ const FeeGateDialog = ({
                     </div>
                   </div>
                   {/* Savings callout */}
-                  <p className="text-[9px] text-gold font-medium mt-1">
+                  <p className="text-[11px] text-gold font-bold mt-1.5 bg-gold/10 rounded px-1.5 py-1">
                     💡 Save ${(totalWithHST - totalWithMembership).toFixed(2)} vs non-member + no fees on ALL purchases for 12 months
                   </p>
                 </div>
