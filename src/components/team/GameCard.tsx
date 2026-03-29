@@ -116,13 +116,15 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   // --- DESKTOP: original card ---
   return (
     <button
-      onClick={onClick}
+      onClick={isSoldOut ? undefined : onClick}
       className={`flex-shrink-0 rounded-xl p-4 text-left transition-all w-[220px] min-h-[200px] border relative overflow-hidden flex flex-col ${
-        isSelected
-          ? "bg-yellow-400/15 border-yellow-400/60 shadow-lg shadow-yellow-400/10 ring-1 ring-yellow-400/30"
-          : game.is_giveaway
-            ? "bg-primary/5 border-primary/30 hover:border-primary/50 shadow-md shadow-primary/10"
-            : "bg-card border-border hover:border-primary/30"
+        isSoldOut
+          ? "bg-card/60 border-border opacity-70 cursor-default"
+          : isSelected
+            ? "bg-yellow-400/15 border-yellow-400/60 shadow-lg shadow-yellow-400/10 ring-1 ring-yellow-400/30"
+            : game.is_giveaway
+              ? "bg-primary/5 border-primary/30 hover:border-primary/50 shadow-md shadow-primary/10"
+              : "bg-card border-border hover:border-primary/30"
       }`}
     >
       <div className={`absolute top-0 left-0 right-0 h-1 ${game.is_giveaway ? "bg-gradient-to-r from-primary via-primary to-primary/60" : isJrJaysSunday ? "bg-sky-500" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
