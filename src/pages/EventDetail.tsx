@@ -21,6 +21,7 @@ interface TicketInfo {
   perks: string[] | null;
   seat_notes: string | null;
   hide_seat_numbers?: boolean;
+  face_value?: number | null;
 }
 
 interface EventData {
