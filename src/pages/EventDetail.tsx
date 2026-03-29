@@ -59,7 +59,7 @@ const EventDetail = () => {
         setEvent(ev);
         const { data: tix } = await (supabase
           .from("public_tickets" as any)
-          .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers")
+          .select("id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers, face_value")
           .eq("event_id", ev.id)
           .order("price", { ascending: true }) as any);
         setTickets(tix || []);
