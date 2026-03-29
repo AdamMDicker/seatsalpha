@@ -32,6 +32,7 @@ interface TicketInfo {
   seat_notes?: string | null;
   hide_seat_numbers?: boolean;
   split_type?: string | null;
+  face_value?: number | null;
 }
 
 interface SeatImage {
