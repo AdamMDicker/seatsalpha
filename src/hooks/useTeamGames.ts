@@ -58,10 +58,12 @@ export function useTeamGames(searchTerm: string | undefined) {
 
     const fetchGames = async () => {
       try {
+        const now = new Date().toISOString();
         const { data: events } = await supabase
           .from("events")
           .select("id, title, venue, city, province, event_date, description, is_giveaway, giveaway_item")
           .like("title", `%${searchTerm}%`)
+          .gte("event_date", now)
           .order("event_date", { ascending: true });
 
         if (!events || events.length === 0) {
