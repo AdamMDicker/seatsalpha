@@ -427,6 +427,9 @@ const FeeGateDialog = ({
               <span className="text-foreground font-bold text-sm">Total</span>
               <span className="text-foreground font-display font-bold text-lg">${currentTotal.toFixed(2)} CAD</span>
             </div>
+            {faceValue && faceValue > 0 && (
+              <p className="text-[9px] text-muted-foreground text-center">Original face value: ${faceValue.toFixed(2)} per ticket</p>
+            )}
             <p className="text-[9px] text-muted-foreground text-center">
               By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
             </p>
