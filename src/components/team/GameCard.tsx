@@ -40,18 +40,21 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   const isSunday = new Date(game.event_date).getDay() === 0;
   const isBlueJaysHome = isHome && game.title.toLowerCase().includes("blue jays");
   const isJrJaysSunday = isSunday && isBlueJaysHome;
+  const isSoldOut = game.tickets.length === 0;
 
   // --- MOBILE: compact single-row card ---
   if (isMobile) {
     return (
       <button
-        onClick={onClick}
+        onClick={isSoldOut ? undefined : onClick}
         className={`w-full text-left rounded-lg p-3 transition-all border relative ${
-          isSelected
-            ? "bg-yellow-400/15 border-yellow-400/60 ring-1 ring-yellow-400/30"
-            : game.is_giveaway
-              ? "bg-primary/5 border-primary/30 hover:border-primary/50"
-              : "bg-card border-border hover:border-primary/30"
+          isSoldOut
+            ? "bg-card/60 border-border opacity-70 cursor-default"
+            : isSelected
+              ? "bg-yellow-400/15 border-yellow-400/60 ring-1 ring-yellow-400/30"
+              : game.is_giveaway
+                ? "bg-primary/5 border-primary/30 hover:border-primary/50"
+                : "bg-card border-border hover:border-primary/30"
         }`}
       >
         <div className={`absolute top-0 left-0 right-0 h-0.5 ${game.is_giveaway ? "bg-primary" : isJrJaysSunday ? "bg-sky-500" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
@@ -92,7 +95,12 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
             )}
           </div>
           <div className="flex flex-col items-end flex-shrink-0">
-            {cheapestPaid !== null ? (
+            {isSoldOut ? (
+              <div className="text-right">
+                <span className="text-xs font-bold text-destructive uppercase">Sold Out</span>
+                <p className="text-[9px] text-muted-foreground">Check back soon</p>
+              </div>
+            ) : cheapestPaid !== null ? (
               <span className="text-sm text-emerald-400 font-semibold">From ${cheapestPaid} CAD</span>
             ) : cheapestAny !== null ? (
               <span className="text-sm text-emerald-400 font-semibold">From ${cheapestAny} CAD</span>
@@ -108,13 +116,15 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   // --- DESKTOP: original card ---
   return (
     <button
-      onClick={onClick}
+      onClick={isSoldOut ? undefined : onClick}
       className={`flex-shrink-0 rounded-xl p-4 text-left transition-all w-[220px] min-h-[200px] border relative overflow-hidden flex flex-col ${
-        isSelected
-          ? "bg-yellow-400/15 border-yellow-400/60 shadow-lg shadow-yellow-400/10 ring-1 ring-yellow-400/30"
-          : game.is_giveaway
-            ? "bg-primary/5 border-primary/30 hover:border-primary/50 shadow-md shadow-primary/10"
-            : "bg-card border-border hover:border-primary/30"
+        isSoldOut
+          ? "bg-card/60 border-border opacity-70 cursor-default"
+          : isSelected
+            ? "bg-yellow-400/15 border-yellow-400/60 shadow-lg shadow-yellow-400/10 ring-1 ring-yellow-400/30"
+            : game.is_giveaway
+              ? "bg-primary/5 border-primary/30 hover:border-primary/50 shadow-md shadow-primary/10"
+              : "bg-card border-border hover:border-primary/30"
       }`}
     >
       <div className={`absolute top-0 left-0 right-0 h-1 ${game.is_giveaway ? "bg-gradient-to-r from-primary via-primary to-primary/60" : isJrJaysSunday ? "bg-sky-500" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
@@ -160,7 +170,12 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
       )}
 
       <div className="mt-auto pt-2">
-        {cheapestPaid !== null ? (
+        {isSoldOut ? (
+          <div>
+            <p className="text-sm font-bold text-destructive uppercase">Sold Out</p>
+            <p className="text-[9px] text-muted-foreground">Check back soon</p>
+          </div>
+        ) : cheapestPaid !== null ? (
           <>
             <p className="text-sm text-emerald-400 font-semibold">From ${cheapestPaid} CAD</p>
             <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
