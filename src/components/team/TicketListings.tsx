@@ -437,6 +437,9 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               <span className="font-display text-sm font-bold text-foreground">${ticket.price} <span className="text-[9px] text-muted-foreground font-normal">CAD</span></span>
             )}
             <p className="text-[9px] text-emerald-400">No fees for members</p>
+              {ticket.face_value && ticket.face_value > 0 && (
+                <p className="text-[8px] text-muted-foreground">Face value: ${ticket.face_value.toFixed(2)}</p>
+              )}
           </div>
           <Button
             variant="hero"
