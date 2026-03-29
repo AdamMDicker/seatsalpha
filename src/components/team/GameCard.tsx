@@ -95,7 +95,12 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
             )}
           </div>
           <div className="flex flex-col items-end flex-shrink-0">
-            {cheapestPaid !== null ? (
+            {isSoldOut ? (
+              <div className="text-right">
+                <span className="text-xs font-bold text-destructive uppercase">Sold Out</span>
+                <p className="text-[9px] text-muted-foreground">Check back soon</p>
+              </div>
+            ) : cheapestPaid !== null ? (
               <span className="text-sm text-emerald-400 font-semibold">From ${cheapestPaid} CAD</span>
             ) : cheapestAny !== null ? (
               <span className="text-sm text-emerald-400 font-semibold">From ${cheapestAny} CAD</span>
