@@ -80,7 +80,7 @@ export function useTeamGames(searchTerm: string | undefined) {
         while (true) {
           const { data: pageTickets } = await (supabase
             .from("public_tickets" as any)
-            .select("id, event_id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers, split_type")
+            .select("id, event_id, section, row_name, seat_number, price, quantity, quantity_sold, is_reseller_ticket, perks, seat_notes, hide_seat_numbers, split_type, face_value")
             .in("event_id", eventIds)
             .order("event_id", { ascending: true })
             .order("id", { ascending: true })
