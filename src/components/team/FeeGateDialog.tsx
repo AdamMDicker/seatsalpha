@@ -37,6 +37,7 @@ interface FeeGateDialogProps {
   availableQuantity: number;
   splitType?: string | null;
   preferredQuantity?: number;
+  faceValue?: number | null;
 }
 
 type CheckoutOption = "hst" | "membership";
@@ -66,6 +67,7 @@ const FeeGateDialog = ({
   splitType,
   preferredQuantity,
   ticketId,
+  faceValue,
 }: FeeGateDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<CheckoutOption>(isMember ? "hst" : "membership");
   const [membershipLoading, setMembershipLoading] = useState(false);
@@ -218,6 +220,9 @@ const FeeGateDialog = ({
             </p>
 
             <span className="text-[9px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded block text-center">No fees — Member pricing applied</span>
+            {faceValue && faceValue > 0 && (
+              <p className="text-[9px] text-muted-foreground text-center mt-1">Original face value: ${faceValue.toFixed(2)} per ticket</p>
+            )}
 
             {/* Single checkbox */}
             <div className="flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 p-2">
@@ -425,6 +430,9 @@ const FeeGateDialog = ({
               <span className="text-foreground font-bold text-sm">Total</span>
               <span className="text-foreground font-display font-bold text-lg">${currentTotal.toFixed(2)} CAD</span>
             </div>
+            {faceValue && faceValue > 0 && (
+              <p className="text-[9px] text-muted-foreground text-center">Original face value: ${faceValue.toFixed(2)} per ticket</p>
+            )}
             <p className="text-[9px] text-muted-foreground text-center">
               By purchasing, you agree to contact Seats.ca support before initiating a payment dispute with your bank.
             </p>

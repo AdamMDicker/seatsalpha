@@ -636,6 +636,7 @@ export type Database = {
         Row: {
           created_at: string
           event_id: string
+          face_value: number | null
           hide_seat_numbers: boolean
           id: string
           is_active: boolean
@@ -659,6 +660,7 @@ export type Database = {
         Insert: {
           created_at?: string
           event_id: string
+          face_value?: number | null
           hide_seat_numbers?: boolean
           id?: string
           is_active?: boolean
@@ -682,6 +684,7 @@ export type Database = {
         Update: {
           created_at?: string
           event_id?: string
+          face_value?: number | null
           hide_seat_numbers?: boolean
           id?: string
           is_active?: boolean
@@ -736,6 +739,7 @@ export type Database = {
         Row: {
           created_at: string | null
           event_id: string | null
+          face_value: number | null
           hide_seat_numbers: boolean | null
           id: string | null
           is_active: boolean | null
@@ -757,6 +761,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           event_id?: string | null
+          face_value?: number | null
           hide_seat_numbers?: boolean | null
           id?: string | null
           is_active?: boolean | null
@@ -778,6 +783,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           event_id?: string | null
+          face_value?: number | null
           hide_seat_numbers?: boolean | null
           id?: string | null
           is_active?: boolean | null

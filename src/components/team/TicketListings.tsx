@@ -32,6 +32,7 @@ interface TicketInfo {
   seat_notes?: string | null;
   hide_seat_numbers?: boolean;
   split_type?: string | null;
+  face_value?: number | null;
 }
 
 interface SeatImage {
@@ -286,6 +287,9 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
                 </>
               )}
               <p className="text-[10px] text-emerald-400 mt-0.5">Members enjoy HST-included pricing</p>
+              {ticket.face_value && ticket.face_value > 0 && (
+                <p className="text-[9px] text-muted-foreground mt-0.5">Face value: ${ticket.face_value.toFixed(2)}</p>
+              )}
             </div>
             <Button
               variant="hero"
@@ -364,6 +368,9 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
                 <span className="font-display text-sm font-bold text-foreground">${ticket.price} <span className="text-[9px] text-muted-foreground font-normal">CAD</span></span>
               )}
               <p className="text-[9px] text-emerald-400">Members enjoy HST-included pricing</p>
+              {ticket.face_value && ticket.face_value > 0 && (
+                <p className="text-[8px] text-muted-foreground">Face value: ${ticket.face_value.toFixed(2)}</p>
+              )}
             </div>
             <Button
               variant="hero"
@@ -430,6 +437,9 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               <span className="font-display text-sm font-bold text-foreground">${ticket.price} <span className="text-[9px] text-muted-foreground font-normal">CAD</span></span>
             )}
             <p className="text-[9px] text-emerald-400">No fees for members</p>
+              {ticket.face_value && ticket.face_value > 0 && (
+                <p className="text-[8px] text-muted-foreground">Face value: ${ticket.face_value.toFixed(2)}</p>
+              )}
           </div>
           <Button
             variant="hero"
@@ -580,6 +590,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           availableQuantity={feeGateTicket.quantity - feeGateTicket.quantity_sold}
           splitType={feeGateTicket.split_type}
           preferredQuantity={desiredSeats !== "any" ? Number(desiredSeats) : undefined}
+          faceValue={feeGateTicket.face_value}
         />
       )}
 
