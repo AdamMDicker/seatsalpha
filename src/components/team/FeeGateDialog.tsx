@@ -220,6 +220,9 @@ const FeeGateDialog = ({
             </p>
 
             <span className="text-[9px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded block text-center">No fees — Member pricing applied</span>
+            {faceValue && faceValue > 0 && (
+              <p className="text-[9px] text-muted-foreground text-center mt-1">Original face value: ${faceValue.toFixed(2)} per ticket</p>
+            )}
 
             {/* Single checkbox */}
             <div className="flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 p-2">

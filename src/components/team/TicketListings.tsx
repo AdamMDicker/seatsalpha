@@ -581,6 +581,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           availableQuantity={feeGateTicket.quantity - feeGateTicket.quantity_sold}
           splitType={feeGateTicket.split_type}
           preferredQuantity={desiredSeats !== "any" ? Number(desiredSeats) : undefined}
+          faceValue={feeGateTicket.face_value}
         />
       )}
 
