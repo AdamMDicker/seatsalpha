@@ -46,13 +46,15 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   if (isMobile) {
     return (
       <button
-        onClick={onClick}
+        onClick={isSoldOut ? undefined : onClick}
         className={`w-full text-left rounded-lg p-3 transition-all border relative ${
-          isSelected
-            ? "bg-yellow-400/15 border-yellow-400/60 ring-1 ring-yellow-400/30"
-            : game.is_giveaway
-              ? "bg-primary/5 border-primary/30 hover:border-primary/50"
-              : "bg-card border-border hover:border-primary/30"
+          isSoldOut
+            ? "bg-card/60 border-border opacity-70 cursor-default"
+            : isSelected
+              ? "bg-yellow-400/15 border-yellow-400/60 ring-1 ring-yellow-400/30"
+              : game.is_giveaway
+                ? "bg-primary/5 border-primary/30 hover:border-primary/50"
+                : "bg-card border-border hover:border-primary/30"
         }`}
       >
         <div className={`absolute top-0 left-0 right-0 h-0.5 ${game.is_giveaway ? "bg-primary" : isJrJaysSunday ? "bg-sky-500" : isAway ? "bg-amber-500" : "bg-emerald-500"}`} />
