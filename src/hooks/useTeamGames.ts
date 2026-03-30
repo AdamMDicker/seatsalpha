@@ -98,12 +98,15 @@ export function useTeamGames(searchTerm: string | undefined) {
           ticketsByEvent[t.event_id].push(t);
         });
 
-        const gamesWithTickets: GameEvent[] = events.map((game) => {
-          const tickets = (ticketsByEvent[game.id] || []).sort(
-            (a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)
-          );
-          return { ...game, tickets } as GameEvent;
-        });
+        const currentTime = new Date().toISOString();
+        const gamesWithTickets: GameEvent[] = events
+          .filter((game) => game.event_date >= currentTime)
+          .map((game) => {
+            const tickets = (ticketsByEvent[game.id] || []).sort(
+              (a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)
+            );
+            return { ...game, tickets } as GameEvent;
+          });
 
         setGames(gamesWithTickets);
         const gameParam = searchParams.get("game");
