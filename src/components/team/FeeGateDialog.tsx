@@ -334,7 +334,15 @@ const FeeGateDialog = ({
                   <div>
                     <p className="font-semibold text-foreground text-xs">Non-Member Pricing</p>
                     <p className="text-[10px] text-muted-foreground">
-                      {quantity}× ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
+                      {quantity}× ${ticketPrice.toFixed(2)} +{" "}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a href="/terms" target="_blank" className="text-destructive font-medium underline decoration-dotted cursor-help">LCC ${hstAmount.toFixed(2)}</a>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[200px] text-center">
+                          <p className="text-xs">Local Consumption Charge (13%). <span className="underline">See Terms of Service</span></p>
+                        </TooltipContent>
+                      </Tooltip>
                     </p>
                   </div>
                 </div>
