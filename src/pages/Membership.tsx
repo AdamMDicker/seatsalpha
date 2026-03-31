@@ -148,10 +148,10 @@ const Membership = () => {
             For just <strong className="text-foreground">$49.95/year</strong>, eliminate every service fee on your ticket purchases.
           </p>
           <p className="text-muted-foreground max-w-xl mx-auto mb-4">
-            Non-members pay fees and standard HST at checkout.
+            Non-members pay fees and standard LCC at checkout.
           </p>
           <p className="text-xl md:text-2xl font-bold text-emerald-400 mb-2">
-            Members enjoy $0 in fees & HST-included pricing.
+            Members enjoy $0 in fees & LCC-included pricing.
           </p>
           <p className="text-sm text-muted-foreground mb-8">
             — saving hundreds every year on event tickets.
