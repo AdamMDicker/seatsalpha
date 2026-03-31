@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getTodayStartISO } from "@/utils/dateFilters";
 
 interface TicketInfo {
   id: string;
@@ -59,12 +60,12 @@ export function useTeamGames(searchTerm: string | undefined) {
 
     const fetchGames = async () => {
       try {
-        const now = new Date().toISOString();
+        const todayStart = getTodayStartISO();
         const { data: events } = await supabase
           .from("events")
           .select("id, title, venue, city, province, event_date, description, is_giveaway, giveaway_item")
           .like("title", `%${searchTerm}%`)
-          .gte("event_date", now)
+          .gte("event_date", todayStart)
           .order("event_date", { ascending: true });
 
         if (!events || events.length === 0) {
@@ -98,9 +99,7 @@ export function useTeamGames(searchTerm: string | undefined) {
           ticketsByEvent[t.event_id].push(t);
         });
 
-        const currentTime = new Date().toISOString();
         const gamesWithTickets: GameEvent[] = events
-          .filter((game) => game.event_date >= currentTime)
           .map((game) => {
             const tickets = (ticketsByEvent[game.id] || []).sort(
               (a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)

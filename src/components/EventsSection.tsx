@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getTodayStartISO } from "@/utils/dateFilters";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +37,7 @@ const EventsSection = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const now = new Date().toISOString();
+      const now = getTodayStartISO();
       const { data: dbEvents } = await supabase
         .from("events")
         .select("id, title, venue, city, province, event_date, category, image_url, description")
