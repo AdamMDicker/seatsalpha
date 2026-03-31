@@ -38,8 +38,8 @@ const savingsExamples = [
 
 const buyerFaqs = [
   { q: "Do I need an account to buy tickets?", a: "Yes, you'll need to create a free account to complete a purchase. This allows us to deliver your tickets and provide buyer protection." },
-  { q: "Do I need a membership to buy tickets?", a: "No. Anyone can browse and purchase tickets. However, non-members will pay standard service fees and HST at checkout." },
-  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees and HST is included on every ticket you purchase. You also get access to bundle savings on travel and ride packages." },
+  { q: "Do I need a membership to buy tickets?", a: "No. Anyone can browse and purchase tickets. However, non-members will pay standard service fees and LCC at checkout." },
+  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees and LCC is included on every ticket you purchase. You also get access to bundle savings on travel and ride packages." },
   { q: "How much will I actually save?", a: "The average Canadian fan pays $300+ per year in hidden ticketing fees. Most members save 10–20x their membership cost in the first year alone." },
   { q: "Are there any hidden fees at checkout?", a: "Absolutely not. With a seats.ca membership, the price you see is the price you pay. No service fees, no processing fees, no facility charges." },
   { q: "Doesn't this site just build fees into the ticket price like everyone else?", a: "Absolutely NOT — many platforms advertise 'no fees' but simply inflate the ticket's listed price. At seats.ca, our prices reflect the actual ticket value." },
