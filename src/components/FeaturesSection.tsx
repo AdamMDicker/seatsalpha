@@ -7,7 +7,7 @@ const features = [
   {
     icon: Banknote,
     title: "Keep more money for the things you love",
-    description: "Members pay exactly what's listed — no service fees, no HST added at checkout. Most fans save $30+ per ticket.",
+    description: "Members pay exactly what's listed — no service fees, no LCC added at checkout. Most fans save $30+ per ticket.",
   },
   {
     icon: ShieldCheck,
