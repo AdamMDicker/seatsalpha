@@ -11,6 +11,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Crown, Zap, Check, ShieldCheck, CalendarDays, AlertTriangle, Minus, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
