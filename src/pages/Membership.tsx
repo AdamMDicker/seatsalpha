@@ -24,7 +24,7 @@ const competitorFees = [
 ];
 
 const memberBenefits = [
-  "HST inclusive ticket pricing for 12 months",
+  "LCC inclusive ticket pricing for 12 months",
   "Save hundreds compared to competitors like StubHub & Ticketmaster",
   "Bundle savings on travel and ride packages",
 ];
