@@ -286,7 +286,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
                   <p className="text-xs text-muted-foreground">per ticket</p>
                 </>
               )}
-              <p className="text-[10px] text-emerald-400 mt-0.5">Members enjoy HST-included pricing</p>
+              <p className="text-[10px] text-emerald-400 mt-0.5">Members enjoy LCC-included pricing</p>
               {ticket.face_value && ticket.face_value > 0 && (
                 <p className="text-[9px] text-muted-foreground mt-0.5">Face value: ${ticket.face_value.toFixed(2)}</p>
               )}
