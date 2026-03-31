@@ -64,7 +64,7 @@ const About = () => {
               We're not trying to reinvent the wheel, just trying to fix what's broken. The ticketing industry has long been dominated by a handful of massive platforms that have normalized hidden fees as a revenue stream.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Our membership model is what makes this possible. For just $49.95 a year, members pay zero service fees nor HST on every single purchase. No catches, no fine print.
+              Our membership model is what makes this possible. For just $49.95 a year, members pay zero service fees nor LCC on every single purchase. No catches, no fine print.
             </p>
           </div>
         </div>

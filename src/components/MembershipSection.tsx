@@ -32,7 +32,7 @@ const MembershipSection = () => {
                 </h2>
 
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Join for just $49.95/year and never pay HST on tickets again. Most members save over $200 in their first year.
+                  Join for just $49.95/year and never pay LCC on tickets again. Most members save over $200 in their first year.
                 </p>
 
                 <ul className="space-y-3">
