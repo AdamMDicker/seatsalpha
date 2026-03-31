@@ -469,7 +469,16 @@ const FeeGateDialog = ({
             </Button>
             {selectedOption === "hst" && (
               <p className="text-center text-[10px] text-muted-foreground">
-                Includes ${hstAmount.toFixed(2)} CAD HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
+                Includes ${hstAmount.toFixed(2)} CAD{" "}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <a href="/terms" target="_blank" className="underline decoration-dotted cursor-help">LCC</a>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[200px] text-center">
+                    <p className="text-xs">Local Consumption Charge (13%). <span className="underline">See Terms of Service</span></p>
+                  </TooltipContent>
+                </Tooltip>
+                . <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
               </p>
             )}
           </div>
