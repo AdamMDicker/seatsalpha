@@ -340,7 +340,7 @@ const FeeGateDialog = ({
                           <a href="/terms" target="_blank" className="text-destructive font-medium underline decoration-dotted cursor-help">LCC ${hstAmount.toFixed(2)}</a>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-[200px] text-center">
-                          <p className="text-xs">Local Consumption Charge (13%). <span className="underline">See Terms of Service</span></p>
+                          <p className="text-xs">Local Consumption Charge. <span className="underline">See Terms of Service</span></p>
                         </TooltipContent>
                       </Tooltip>
                     </p>
