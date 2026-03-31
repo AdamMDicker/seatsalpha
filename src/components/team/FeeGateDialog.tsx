@@ -337,7 +337,7 @@ const FeeGateDialog = ({
                       {quantity}× ${ticketPrice.toFixed(2)} +{" "}
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <a href="/terms" target="_blank" className="text-destructive font-medium underline decoration-dotted cursor-help">LCC ${hstAmount.toFixed(2)}</a>
+                          <a href="/terms" target="_blank" className="text-destructive font-medium underline decoration-dotted cursor-help">LCC (13%) ${hstAmount.toFixed(2)}</a>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-[200px] text-center">
                           <p className="text-xs">Local Consumption Charge. <span className="underline">See Terms of Service</span></p>
@@ -472,7 +472,7 @@ const FeeGateDialog = ({
                 Includes ${hstAmount.toFixed(2)} CAD{" "}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <a href="/terms" target="_blank" className="underline decoration-dotted cursor-help">LCC</a>
+                    <a href="/terms" target="_blank" className="underline decoration-dotted cursor-help">LCC (13%)</a>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-[200px] text-center">
                     <p className="text-xs">Local Consumption Charge. <span className="underline">See Terms of Service</span></p>
