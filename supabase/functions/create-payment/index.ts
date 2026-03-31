@@ -92,7 +92,7 @@ serve(async (req) => {
         price_data: {
           currency: "cad",
           product_data: {
-             name: "HST (13%)",
+             name: "LCC (13%)",
            },
           unit_amount: Math.round(serviceFee * 100),
         },
