@@ -65,7 +65,7 @@ export function useTeamGames(searchTerm: string | undefined) {
           .from("events")
           .select("id, title, venue, city, province, event_date, description, is_giveaway, giveaway_item")
           .like("title", `%${searchTerm}%`)
-          .gte("event_date", now)
+          .gte("event_date", todayStart)
           .order("event_date", { ascending: true });
 
         if (!events || events.length === 0) {
