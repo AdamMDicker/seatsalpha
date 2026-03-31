@@ -60,7 +60,7 @@ export function useTeamGames(searchTerm: string | undefined) {
 
     const fetchGames = async () => {
       try {
-        const now = new Date().toISOString();
+        const todayStart = getTodayStartISO();
         const { data: events } = await supabase
           .from("events")
           .select("id, title, venue, city, province, event_date, description, is_giveaway, giveaway_item")
