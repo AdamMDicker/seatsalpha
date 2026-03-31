@@ -30,7 +30,7 @@ const SolutionSection = () => {
             <div className="space-y-1.5 text-sm text-muted-foreground">
               <p>$100 ticket</p>
               <p className="text-destructive/70">+ $19 service fee</p>
-              <p className="text-destructive/70">+ $13 HST</p>
+              <p className="text-destructive/70">+ $13 LCC</p>
             </div>
           </div>
 
