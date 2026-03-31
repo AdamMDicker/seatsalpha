@@ -373,7 +373,7 @@ const FeeGateDialog = ({
                   {/* Receipt-style breakdown */}
                   <div className="space-y-0.5 text-[10px]">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tickets ({quantity}× ${ticketPrice.toFixed(2)}, no fees, no HST)</span>
+                      <span className="text-muted-foreground">Tickets ({quantity}× ${ticketPrice.toFixed(2)}, no fees, no LCC)</span>
                       <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
