@@ -99,7 +99,7 @@ function buyerEmailHtml(meta: {
           <td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.ticketSubtotal} CAD</td>
         </tr>
         ${hasHst ? `<tr>
-          <td style="color:#71717a;font-size:13px;padding:4px 0;">HST (13%)</td>
+          <td style="color:#71717a;font-size:13px;padding:4px 0;">LCC (13%)</td>
           <td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.hstAmount} CAD</td>
         </tr>` : ""}
         ${hasMembership ? `<tr>

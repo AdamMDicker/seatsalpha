@@ -18,7 +18,7 @@ const SolutionSection = () => {
             What you see is what you pay
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-lg mx-auto leading-relaxed">
-            Everyone sees transparent prices. Members get the best deal — no service fees and HST included in every ticket.
+            Everyone sees transparent prices. Members get the best deal — no service fees and LCC included in every ticket.
           </p>
         </div>
 
@@ -30,7 +30,7 @@ const SolutionSection = () => {
             <div className="space-y-1.5 text-sm text-muted-foreground">
               <p>$100 ticket</p>
               <p className="text-destructive/70">+ $19 service fee</p>
-              <p className="text-destructive/70">+ $13 HST</p>
+              <p className="text-destructive/70">+ $13 LCC</p>
             </div>
           </div>
 
@@ -42,7 +42,7 @@ const SolutionSection = () => {
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 sm:mb-6">$49.95/yr membership</p>
             <p className="font-display text-5xl sm:text-6xl font-bold text-foreground mb-3 sm:mb-4">$100</p>
             <div className="space-y-2 text-sm text-muted-foreground">
-              {["No service fees", "HST included", "What you see = what you pay"].map((text) => (
+              {["No service fees", "LCC included", "What you see = what you pay"].map((text) => (
                 <div key={text} className="flex items-center justify-center gap-2">
                   <Check className="h-4 w-4 text-primary shrink-0" />
                   <span>{text}</span>

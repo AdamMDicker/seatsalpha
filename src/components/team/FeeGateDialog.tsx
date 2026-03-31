@@ -11,6 +11,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Crown, Zap, Check, ShieldCheck, CalendarDays, AlertTriangle, Minus, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -43,7 +48,7 @@ interface FeeGateDialogProps {
 type CheckoutOption = "hst" | "membership";
 
 const MEMBERSHIP_BENEFITS = [
-  "HST becomes inclusive on all seats.ca purchases for 12 months",
+  "LCC becomes inclusive on all seats.ca purchases for 12 months",
   "Save hundreds per season on tickets",
   "Cancel anytime — auto-renew can be turned off",
   "Works across all sports & events",
@@ -329,7 +334,15 @@ const FeeGateDialog = ({
                   <div>
                     <p className="font-semibold text-foreground text-xs">Non-Member Pricing</p>
                     <p className="text-[10px] text-muted-foreground">
-                      {quantity}× ${ticketPrice.toFixed(2)} + <span className="text-destructive font-medium">HST ${hstAmount.toFixed(2)}</span>
+                      {quantity}× ${ticketPrice.toFixed(2)} +{" "}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a href="/terms" target="_blank" className="text-destructive font-medium underline decoration-dotted cursor-help">LCC ${hstAmount.toFixed(2)}</a>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[200px] text-center">
+                          <p className="text-xs">Local Consumption Charge (13%). <span className="underline">See Terms of Service</span></p>
+                        </TooltipContent>
+                      </Tooltip>
                     </p>
                   </div>
                 </div>
@@ -360,7 +373,7 @@ const FeeGateDialog = ({
                   {/* Receipt-style breakdown */}
                   <div className="space-y-0.5 text-[10px]">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tickets ({quantity}× ${ticketPrice.toFixed(2)}, no fees, no HST)</span>
+                      <span className="text-muted-foreground">Tickets ({quantity}× ${ticketPrice.toFixed(2)}, no fees, no LCC)</span>
                       <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
@@ -456,7 +469,16 @@ const FeeGateDialog = ({
             </Button>
             {selectedOption === "hst" && (
               <p className="text-center text-[10px] text-muted-foreground">
-                Includes ${hstAmount.toFixed(2)} CAD HST. <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
+                Includes ${hstAmount.toFixed(2)} CAD{" "}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <a href="/terms" target="_blank" className="underline decoration-dotted cursor-help">LCC</a>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[200px] text-center">
+                    <p className="text-xs">Local Consumption Charge (13%). <span className="underline">See Terms of Service</span></p>
+                  </TooltipContent>
+                </Tooltip>
+                . <button onClick={() => setSelectedOption("membership")} className="text-gold hover:underline font-medium">Save with a membership →</button>
               </p>
             )}
           </div>

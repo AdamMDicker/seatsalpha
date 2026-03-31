@@ -109,12 +109,12 @@ const AdminOrders = () => {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   ${Number(order.total_amount).toFixed(2)}
-                  {Number(order.fees_amount) > 0 && ` (HST: $${Number(order.fees_amount).toFixed(2)})`}
+                  {Number(order.fees_amount) > 0 && ` (LCC: $${Number(order.fees_amount).toFixed(2)})`}
                 </p>
                 {order.is_fee_waived ? (
                   <Badge variant="default" className="text-[10px] px-1.5 py-0 bg-primary/20 text-primary border-primary/30">✓ Member — No Fees</Badge>
                 ) : (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">No Membership — 13% HST</Badge>
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">No Membership — 13% LCC</Badge>
                 )}
               </div>
               <div className="flex items-center gap-3">

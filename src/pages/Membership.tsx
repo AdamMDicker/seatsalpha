@@ -24,7 +24,7 @@ const competitorFees = [
 ];
 
 const memberBenefits = [
-  "HST inclusive ticket pricing for 12 months",
+  "LCC inclusive ticket pricing for 12 months",
   "Save hundreds compared to competitors like StubHub & Ticketmaster",
   "Bundle savings on travel and ride packages",
 ];
@@ -38,8 +38,8 @@ const savingsExamples = [
 
 const buyerFaqs = [
   { q: "Do I need an account to buy tickets?", a: "Yes, you'll need to create a free account to complete a purchase. This allows us to deliver your tickets and provide buyer protection." },
-  { q: "Do I need a membership to buy tickets?", a: "No. Anyone can browse and purchase tickets. However, non-members will pay standard service fees and HST at checkout." },
-  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees and HST is included on every ticket you purchase. You also get access to bundle savings on travel and ride packages." },
+  { q: "Do I need a membership to buy tickets?", a: "No. Anyone can browse and purchase tickets. However, non-members will pay standard service fees and LCC at checkout." },
+  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees and LCC is included on every ticket you purchase. You also get access to bundle savings on travel and ride packages." },
   { q: "How much will I actually save?", a: "The average Canadian fan pays $300+ per year in hidden ticketing fees. Most members save 10–20x their membership cost in the first year alone." },
   { q: "Are there any hidden fees at checkout?", a: "Absolutely not. With a seats.ca membership, the price you see is the price you pay. No service fees, no processing fees, no facility charges." },
   { q: "Doesn't this site just build fees into the ticket price like everyone else?", a: "Absolutely NOT — many platforms advertise 'no fees' but simply inflate the ticket's listed price. At seats.ca, our prices reflect the actual ticket value." },
@@ -148,10 +148,10 @@ const Membership = () => {
             For just <strong className="text-foreground">$49.95/year</strong>, eliminate every service fee on your ticket purchases.
           </p>
           <p className="text-muted-foreground max-w-xl mx-auto mb-4">
-            Non-members pay fees and standard HST at checkout.
+            Non-members pay fees and standard LCC at checkout.
           </p>
           <p className="text-xl md:text-2xl font-bold text-emerald-400 mb-2">
-            Members enjoy $0 in fees & HST-included pricing.
+            Members enjoy $0 in fees & LCC-included pricing.
           </p>
           <p className="text-sm text-muted-foreground mb-8">
             — saving hundreds every year on event tickets.
