@@ -99,9 +99,7 @@ export function useTeamGames(searchTerm: string | undefined) {
           ticketsByEvent[t.event_id].push(t);
         });
 
-        const currentTime = new Date().toISOString();
         const gamesWithTickets: GameEvent[] = events
-          .filter((game) => game.event_date >= currentTime)
           .map((game) => {
             const tickets = (ticketsByEvent[game.id] || []).sort(
               (a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)
