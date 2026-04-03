@@ -363,15 +363,6 @@ Deno.serve(async (req) => {
       updatedTickets: ticketUpdates.length,
       deactivatedTickets: staleTicketIds.length,
     };
-
-    const result = {
-      success: true,
-      games: gameMap.size,
-      newEvents: newEvents.length,
-      updatedEvents: existingEventUpdates.length,
-      newTickets: ticketsInserted,
-      updatedTickets: ticketUpdates.length,
-    };
     console.log("Sync complete:", JSON.stringify(result));
 
     return new Response(JSON.stringify(result),
