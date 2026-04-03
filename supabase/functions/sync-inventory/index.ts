@@ -37,8 +37,9 @@ const GIVEAWAY_KEYWORDS = [
 ];
 
 function parseSeatTrim(s: string): { section: string; row: string | null } {
-  const m = s.match(/^(\d+)\s*,?\s*(?:row\s*(\d+))?/i);
-  return m ? { section: m[1], row: m[2] || null } : { section: s.replace(/,/g, "").trim(), row: null };
+  // Handle alphanumeric sections like "23B", "W11", "221B", plus optional ", row X,"
+  const m = s.match(/^([A-Za-z]?\d+[A-Za-z]?)\s*,?\s*(?:row\s+([A-Za-z0-9]+))?/i);
+  return m ? { section: m[1].toUpperCase(), row: m[2] || null } : { section: s.replace(/,/g, "").trim().toUpperCase(), row: null };
 }
 
 function parseTime(t: string): { hours: number; minutes: number } {
