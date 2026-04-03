@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
 
       gameMap.get(gameKey)!.tickets.push({
         section, row_name: row, price, quantity: qty,
-        quantity_sold: 0, is_active: true, is_reseller_ticket: true,
+        quantity_sold: 0, is_active: true, is_reseller_ticket: false,
         seat_notes: promo || null,
       });
     }
