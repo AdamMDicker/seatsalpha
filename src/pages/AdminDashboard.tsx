@@ -9,17 +9,19 @@ import AdminResellers from "@/components/admin/AdminResellers";
 import AdminCustomers from "@/components/admin/AdminCustomers";
 import AdminOrders from "@/components/admin/AdminOrders";
 import AdminCsvImport from "@/components/admin/AdminCsvImport";
+import AdminResellerImport from "@/components/admin/AdminResellerImport";
 import AdminBannedUsers from "@/components/admin/AdminBannedUsers";
 import AdminLeagueVisibility from "@/components/admin/AdminLeagueVisibility";
 import AdminHeroImage from "@/components/admin/AdminHeroImage";
 import AdminNewsletter from "@/components/admin/AdminNewsletter";
 import AdminEmailMonitor from "@/components/admin/AdminEmailMonitor";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity } from "lucide-react";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp } from "lucide-react";
 
 const tabs = [
   { id: "events", label: "Events", icon: Calendar },
   { id: "tickets", label: "Tickets", icon: Ticket },
   { id: "import", label: "CSV Import", icon: Upload },
+  { id: "reseller-import", label: "Reseller Import", icon: FileUp },
   { id: "resellers", label: "Resellers", icon: Users },
   { id: "customers", label: "Customers", icon: UserCheck },
   { id: "orders", label: "Orders", icon: ShoppingCart },
@@ -85,6 +87,7 @@ const AdminDashboard = () => {
         {activeTab === "events" && <AdminEvents />}
         {activeTab === "tickets" && <AdminTickets />}
         {activeTab === "import" && <AdminCsvImport />}
+        {activeTab === "reseller-import" && <AdminResellerImport />}
         {activeTab === "resellers" && <AdminResellers />}
         {activeTab === "customers" && <AdminCustomers />}
         {activeTab === "orders" && <AdminOrders />}
