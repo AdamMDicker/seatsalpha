@@ -21,6 +21,7 @@ const tabs = [
   { id: "events", label: "Events", icon: Calendar },
   { id: "tickets", label: "Tickets", icon: Ticket },
   { id: "import", label: "CSV Import", icon: Upload },
+  { id: "reseller-import", label: "Reseller Import", icon: FileUp },
   { id: "resellers", label: "Resellers", icon: Users },
   { id: "customers", label: "Customers", icon: UserCheck },
   { id: "orders", label: "Orders", icon: ShoppingCart },
