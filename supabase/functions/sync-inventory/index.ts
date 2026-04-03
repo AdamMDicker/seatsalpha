@@ -262,42 +262,73 @@ Deno.serve(async (req) => {
     console.log(`Events: ${newEvents.length} new, ${existingEventUpdates.length} updated`);
 
     // Step 3: Fetch ALL existing non-reseller tickets for these events
+    // (spreadsheet tickets are marked is_reseller_ticket=true historically)
     const allEventIds = [...new Set([...eventLookup.values()])];
-    const existingTicketsMap = new Map<string, { id: string; quantity: number }>();
+    const existingTicketsMap = new Map<string, { id: string; quantity: number; price: number; is_active: boolean }>();
 
     // Fetch in batches of 50 event IDs
     for (let i = 0; i < allEventIds.length; i += 50) {
       const batch = allEventIds.slice(i, i + 50);
       const { data: tickets } = await supabase
         .from("tickets")
-        .select("id, event_id, section, row_name, price, quantity")
+        .select("id, event_id, section, row_name, price, quantity, is_active")
         .in("event_id", batch)
         .eq("is_reseller_ticket", true);
       (tickets || []).forEach((t) => {
-        const key = `${t.event_id}|${t.section}|${t.row_name || ""}|${t.price}`;
-        existingTicketsMap.set(key, { id: t.id, quantity: t.quantity });
+        // Dedup key is event_id + section + row — NOT price
+        const key = `${t.event_id}|${(t.section || "").toUpperCase()}|${(t.row_name || "").toUpperCase()}`;
+        existingTicketsMap.set(key, { id: t.id, quantity: t.quantity, price: t.price, is_active: t.is_active });
       });
     }
 
-    // Step 4: Diff tickets
+    // Step 4: Diff tickets — track which existing tickets are still in the sheet
     const newTickets: any[] = [];
-    const ticketUpdates: { id: string; quantity: number }[] = [];
+    const ticketUpdates: { id: string; quantity: number; price: number }[] = [];
+    const seenExistingKeys = new Set<string>();
 
     for (const [, { gameData, tickets }] of gameMap) {
       const eventKey = `${gameData.title}|${gameData.event_date}`;
       const eventId = eventLookup.get(eventKey);
       if (!eventId) continue;
 
+      // Merge duplicate rows from the sheet (same section+row) by summing quantities
+      const merged = new Map<string, { section: string; row_name: string | null; price: number; quantity: number; seat_notes: string | null }>();
       for (const t of tickets) {
-        const tKey = `${eventId}|${t.section}|${t.row_name || ""}|${t.price}`;
+        const mKey = `${t.section.toUpperCase()}|${(t.row_name || "").toUpperCase()}`;
+        if (merged.has(mKey)) {
+          const m = merged.get(mKey)!;
+          m.quantity += t.quantity;
+          // Keep the higher price if different rows had different prices
+          if (t.price > m.price) m.price = t.price;
+        } else {
+          merged.set(mKey, { section: t.section, row_name: t.row_name, price: t.price, quantity: t.quantity, seat_notes: t.seat_notes });
+        }
+      }
+
+      for (const [mKey, t] of merged) {
+        const tKey = `${eventId}|${mKey}`;
+        seenExistingKeys.add(tKey);
         const existing = existingTicketsMap.get(tKey);
         if (existing) {
-          if (existing.quantity !== t.quantity) {
-            ticketUpdates.push({ id: existing.id, quantity: t.quantity });
+          // Update if price or quantity changed, or if inactive and needs reactivation
+          if (existing.quantity !== t.quantity || existing.price !== t.price || !existing.is_active) {
+            ticketUpdates.push({ id: existing.id, quantity: t.quantity, price: t.price });
           }
         } else {
-          newTickets.push({ ...t, event_id: eventId });
+          newTickets.push({
+            section: t.section, row_name: t.row_name, price: t.price,
+            quantity: t.quantity, quantity_sold: 0, is_active: true,
+            is_reseller_ticket: true, seat_notes: t.seat_notes, event_id: eventId,
+          });
         }
+      }
+    }
+
+    // Step 5: Deactivate stale tickets (in DB but no longer in spreadsheet)
+    const staleTicketIds: string[] = [];
+    for (const [key, ticket] of existingTicketsMap) {
+      if (!seenExistingKeys.has(key) && ticket.is_active) {
+        staleTicketIds.push(ticket.id);
       }
     }
 
@@ -313,9 +344,25 @@ Deno.serve(async (req) => {
     for (let i = 0; i < ticketUpdates.length; i += 10) {
       const batch = ticketUpdates.slice(i, i + 10);
       await Promise.all(batch.map((u) =>
-        supabase.from("tickets").update({ quantity: u.quantity }).eq("id", u.id)
+        supabase.from("tickets").update({ quantity: u.quantity, price: u.price, is_active: true }).eq("id", u.id)
       ));
     }
+
+    // Batch deactivate stale tickets (groups of 50)
+    for (let i = 0; i < staleTicketIds.length; i += 50) {
+      const batch = staleTicketIds.slice(i, i + 50);
+      await supabase.from("tickets").update({ is_active: false }).in("id", batch);
+    }
+
+    const result = {
+      success: true,
+      games: gameMap.size,
+      newEvents: newEvents.length,
+      updatedEvents: existingEventUpdates.length,
+      newTickets: ticketsInserted,
+      updatedTickets: ticketUpdates.length,
+      deactivatedTickets: staleTicketIds.length,
+    };
 
     const result = {
       success: true,
