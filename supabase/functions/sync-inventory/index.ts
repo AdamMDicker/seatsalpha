@@ -275,7 +275,7 @@ Deno.serve(async (req) => {
         .from("tickets")
         .select("id, event_id, section, row_name, price, quantity, is_active")
         .in("event_id", batch)
-        .eq("is_reseller_ticket", true);
+        .eq("is_reseller_ticket", false);
       (tickets || []).forEach((t) => {
         // Dedup key is event_id + section + row — NOT price
         const key = `${t.event_id}|${(t.section || "").toUpperCase()}|${(t.row_name || "").toUpperCase()}`;
