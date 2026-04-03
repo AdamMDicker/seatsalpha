@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
 
       gameMap.get(gameKey)!.tickets.push({
         section, row_name: row, price, quantity: qty,
-        quantity_sold: 0, is_active: true, is_reseller_ticket: true,
+        quantity_sold: 0, is_active: true, is_reseller_ticket: false,
         seat_notes: promo || null,
       });
     }
@@ -275,7 +275,7 @@ Deno.serve(async (req) => {
         .from("tickets")
         .select("id, event_id, section, row_name, price, quantity, is_active")
         .in("event_id", batch)
-        .eq("is_reseller_ticket", true);
+        .eq("is_reseller_ticket", false);
       (tickets || []).forEach((t) => {
         // Dedup key is event_id + section + row — NOT price
         const key = `${t.event_id}|${(t.section || "").toUpperCase()}|${(t.row_name || "").toUpperCase()}`;
@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
           newTickets.push({
             section: t.section, row_name: t.row_name, price: t.price,
             quantity: t.quantity, quantity_sold: 0, is_active: true,
-            is_reseller_ticket: true, seat_notes: t.seat_notes, event_id: eventId,
+            is_reseller_ticket: false, seat_notes: t.seat_notes, event_id: eventId,
           });
         }
       }
