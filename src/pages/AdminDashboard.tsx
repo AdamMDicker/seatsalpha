@@ -15,7 +15,7 @@ import AdminLeagueVisibility from "@/components/admin/AdminLeagueVisibility";
 import AdminHeroImage from "@/components/admin/AdminHeroImage";
 import AdminNewsletter from "@/components/admin/AdminNewsletter";
 import AdminEmailMonitor from "@/components/admin/AdminEmailMonitor";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity } from "lucide-react";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp } from "lucide-react";
 
 const tabs = [
   { id: "events", label: "Events", icon: Calendar },
