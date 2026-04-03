@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
           newTickets.push({
             section: t.section, row_name: t.row_name, price: t.price,
             quantity: t.quantity, quantity_sold: 0, is_active: true,
-            is_reseller_ticket: true, seat_notes: t.seat_notes, event_id: eventId,
+            is_reseller_ticket: false, seat_notes: t.seat_notes, event_id: eventId,
           });
         }
       }
