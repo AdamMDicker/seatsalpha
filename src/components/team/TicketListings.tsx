@@ -555,7 +555,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         </div>
       </div>
 
-      <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">⭐ Featured Tickets</h2>
+      <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">⭐ Featured Tickets ({featuredTickets.reduce((sum, t) => sum + (t.quantity - t.quantity_sold), 0)})</h2>
       {featuredTickets.length > 0 ? (
         <div className="space-y-3 mb-6">{featuredTickets.map((t) => <FeaturedTicketCard key={t.id} ticket={t} />)}</div>
       ) : (
