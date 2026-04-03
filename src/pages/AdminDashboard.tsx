@@ -87,6 +87,7 @@ const AdminDashboard = () => {
         {activeTab === "events" && <AdminEvents />}
         {activeTab === "tickets" && <AdminTickets />}
         {activeTab === "import" && <AdminCsvImport />}
+        {activeTab === "reseller-import" && <AdminResellerImport />}
         {activeTab === "resellers" && <AdminResellers />}
         {activeTab === "customers" && <AdminCustomers />}
         {activeTab === "orders" && <AdminOrders />}
