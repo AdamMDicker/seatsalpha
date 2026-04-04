@@ -61,6 +61,33 @@ const TeamMLBPage = () => {
     ? [...new Set(selectedGame.tickets.map((t) => t.section))]
     : [];
 
+  // Dynamic page title & meta for SEO per game
+  useEffect(() => {
+    if (selectedGame && team) {
+      const dateStr = new Date(selectedGame.event_date).toLocaleDateString("en-CA", {
+        month: "long", day: "numeric", year: "numeric",
+      });
+      document.title = `${selectedGame.title} Tickets — ${dateStr} | Seats.ca`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content",
+          `Buy ${selectedGame.title} tickets for ${dateStr} at ${selectedGame.venue}. Zero service fees with Seats.ca membership.`
+        );
+      }
+    } else if (team) {
+      document.title = `${team.name} Tickets — ${team.season} Schedule | Seats.ca`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content",
+          `Browse ${team.name} ${team.season} game schedule and buy tickets with zero service fees at Seats.ca.`
+        );
+      }
+    }
+    return () => {
+      document.title = "Seats.ca — Canada's No Extra Fees Ticket Platform";
+    };
+  }, [selectedGame, team]);
+
   if (!team) return <Navigate to="/" replace />;
 
   if (loading) {
