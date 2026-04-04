@@ -467,6 +467,14 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   }, [isMobile]);
 
   const cheapestPrice = allTickets.length > 0 ? Math.min(...allTickets.map(t => t.price)) : null;
+  const featuredTicketCount = featuredTickets.reduce(
+    (sum, ticket) => sum + Math.max(0, ticket.quantity - ticket.quantity_sold),
+    0,
+  );
+  const resellerTicketCount = resellerTickets.reduce(
+    (sum, ticket) => sum + Math.max(0, ticket.quantity - ticket.quantity_sold),
+    0,
+  );
 
   return (
     <div>
@@ -555,14 +563,19 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         </div>
       </div>
 
-      <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">⭐ Featured Tickets ({featuredTickets.reduce((sum, t) => sum + (t.quantity - t.quantity_sold), 0)})</h2>
+      <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+        <span>⭐ Featured Tickets</span>
+        <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-sm font-bold text-primary">
+          ({featuredTicketCount})
+        </span>
+      </h2>
       {featuredTickets.length > 0 ? (
         <div className="space-y-3 mb-6">{featuredTickets.map((t) => <FeaturedTicketCard key={t.id} ticket={t} />)}</div>
       ) : (
         <p className="text-muted-foreground text-sm mb-6">No featured tickets for this selection.</p>
       )}
       <h2 className="font-display text-sm font-semibold text-foreground mb-2 flex items-center justify-between">
-        <span>Tickets ({resellerTickets.length})</span>
+        <span>Tickets ({resellerTicketCount})</span>
       </h2>
       {resellerTickets.length > 0 ? (
         <div className="space-y-1">
