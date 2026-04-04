@@ -1,0 +1,37 @@
+# Seats.ca
+
+> Canada's no extra fees ticket platform
+
+Seats.ca is Canada's first and only ticket marketplace that charges zero service fees, zero processing fees, and zero hidden costs. We connect fans directly with ticket sellers for live sporting events across Canada.
+
+## About
+
+Seats.ca was built to solve the problem of excessive hidden fees in the Canadian ticket industry. Major platforms charge 20-35% in service fees on top of the ticket price. Seats.ca eliminates all of those fees through an optional annual membership model ($49.95/year).
+
+## Supported Leagues
+
+- MLB (Major League Baseball) — Toronto Blue Jays
+- NHL (National Hockey League) — All Canadian teams
+- NBA (National Basketball Association) — Toronto Raptors
+- NFL (National Football League)
+- MLS (Major League Soccer) — All Canadian clubs
+- CFL (Canadian Football League)
+- WNBA (Women's National Basketball Association)
+
+## How It Works
+
+1. Browse games for your favourite team
+2. Compare ticket listings at face value
+3. Purchase with zero hidden fees (members)
+4. Receive your tickets instantly
+
+## Membership
+
+- Annual membership: $49.95/year
+- Members pay zero service fees on all ticket purchases
+- Non-members pay a standard service fee at checkout
+
+## Contact
+
+- Email: info@seats.ca
+- Website: https://seats.ca
