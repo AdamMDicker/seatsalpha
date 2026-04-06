@@ -505,6 +505,7 @@ export type Database = {
       }
       resellers: {
         Row: {
+          agreement_accepted_at: string | null
           business_name: string
           created_at: string
           email: string | null
@@ -519,6 +520,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          agreement_accepted_at?: string | null
           business_name: string
           created_at?: string
           email?: string | null
@@ -533,6 +535,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          agreement_accepted_at?: string | null
           business_name?: string
           created_at?: string
           email?: string | null

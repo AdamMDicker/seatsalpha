@@ -29,6 +29,7 @@ import LiveChat from "./components/LiveChat";
 import ScrollToTop from "./components/ScrollToTop";
 import NotificationDetail from "./pages/NotificationDetail";
 import MyOrders from "./pages/MyOrders";
+import SellerAgreement from "./pages/SellerAgreement";
 
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/reseller" element={<ResellerDashboard />} />
+              <Route path="/seller-agreement" element={<SellerAgreement />} />
               <Route path="/membership" element={<Membership />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/payment-canceled" element={<PaymentCanceled />} />

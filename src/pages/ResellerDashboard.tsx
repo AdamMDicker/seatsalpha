@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Store, DollarSign, Eye, Zap, Shield, Users, CheckCircle } from "lucide-react";
+import { Store, DollarSign, Eye, Zap, Shield, Users, CheckCircle, FileText } from "lucide-react";
 import ResellerCsvUpload from "@/components/reseller/ResellerCsvUpload";
 import ResellerMyTickets from "@/components/reseller/ResellerMyTickets";
 
@@ -21,10 +22,12 @@ const benefits = [
 const ResellerDashboard = () => {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [resellerStatus, setResellerStatus] = useState<string | null>(null);
+  const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -37,9 +40,10 @@ const ResellerDashboard = () => {
   useEffect(() => {
     const checkStatus = async () => {
       if (!user) { setLoading(false); return; }
-      const { data, error } = await supabase.from("resellers").select("status").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
+      const { data, error } = await supabase.from("resellers").select("status, agreement_accepted_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
       if (!error && data && data.length > 0) {
         setResellerStatus(data[0].status);
+        setAgreementAccepted(!!data[0].agreement_accepted_at);
       }
       setLoading(false);
     };
@@ -120,7 +124,22 @@ const ResellerDashboard = () => {
           </div>
 
           {/* Upload section for approved resellers */}
-          {isApproved && (
+          {isApproved && !agreementAccepted && (
+            <div className="mb-16 max-w-xl mx-auto">
+              <div className="glass rounded-xl p-8 text-center space-y-4">
+                <FileText className="h-10 w-10 text-primary mx-auto" />
+                <h2 className="font-display text-xl font-bold">Seller Agreement Required</h2>
+                <p className="text-sm text-muted-foreground">
+                  Before you can list tickets, you must review and accept the Seats.ca Seller Agreement.
+                </p>
+                <Button variant="hero" size="lg" onClick={() => navigate("/seller-agreement")}>
+                  Review & Accept Agreement
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {isApproved && agreementAccepted && (
             <div className="mb-16 max-w-4xl mx-auto space-y-10">
               <ResellerMyTickets />
               <ResellerCsvUpload />

@@ -1,0 +1,1 @@
+ALTER TABLE public.resellers ADD COLUMN agreement_accepted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL;
