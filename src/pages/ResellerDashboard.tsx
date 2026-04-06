@@ -22,10 +22,12 @@ const benefits = [
 const ResellerDashboard = () => {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [resellerStatus, setResellerStatus] = useState<string | null>(null);
+  const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -38,9 +40,10 @@ const ResellerDashboard = () => {
   useEffect(() => {
     const checkStatus = async () => {
       if (!user) { setLoading(false); return; }
-      const { data, error } = await supabase.from("resellers").select("status").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
+      const { data, error } = await supabase.from("resellers").select("status, agreement_accepted_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
       if (!error && data && data.length > 0) {
         setResellerStatus(data[0].status);
+        setAgreementAccepted(!!data[0].agreement_accepted_at);
       }
       setLoading(false);
     };
