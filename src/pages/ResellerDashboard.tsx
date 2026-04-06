@@ -124,7 +124,22 @@ const ResellerDashboard = () => {
           </div>
 
           {/* Upload section for approved resellers */}
-          {isApproved && (
+          {isApproved && !agreementAccepted && (
+            <div className="mb-16 max-w-xl mx-auto">
+              <div className="glass rounded-xl p-8 text-center space-y-4">
+                <FileText className="h-10 w-10 text-primary mx-auto" />
+                <h2 className="font-display text-xl font-bold">Seller Agreement Required</h2>
+                <p className="text-sm text-muted-foreground">
+                  Before you can list tickets, you must review and accept the Seats.ca Seller Agreement.
+                </p>
+                <Button variant="hero" size="lg" onClick={() => navigate("/seller-agreement")}>
+                  Review & Accept Agreement
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {isApproved && agreementAccepted && (
             <div className="mb-16 max-w-4xl mx-auto space-y-10">
               <ResellerMyTickets />
               <ResellerCsvUpload />
