@@ -1,37 +1,54 @@
 
 
-# Remove External Email Alias — Keep Transfers Entirely on Seats.ca
+# Fix the Transfer Email Gap
 
-## What's Changing
+## Problem
+Ticketmaster and similar platforms require a recipient email to transfer tickets. The masked alias system was removed, leaving no email for sellers to use when fulfilling orders externally.
 
-The masked email alias (`order-XXXX@transfers.seats.ca`) was designed for sellers to transfer tickets via Ticketmaster. You don't want that — the entire transfer flow should happen on seats.ca itself.
+## Recommended Solution: Restore Masked Aliases with Simple Forwarding
 
-The current flow already works for this:
-1. Sale happens → seller sees a pending transfer card in their portal
-2. Seller uploads a screenshot/image of the transfer proof on seats.ca
-3. Seats.ca automatically forwards the proof to the buyer via email notification
+Generate a unique per-order alias (e.g., `order-a1b2c3d4@transfers.seats.ca`) that forwards to the buyer's real email. The seller sees only the alias.
 
-The seller never sees the buyer's email, name, or any identifying info. They only see event details, seat info, and an order reference number.
+### How it works
+1. Sale happens → system generates alias `order-XXXX@transfers.seats.ca` and stores it in `order_transfers.transfer_email_alias`
+2. Seller sees the alias in their Transfers tab with a "Copy" button and instructions: "Transfer your tickets to this address on Ticketmaster"
+3. Buyer receives the Ticketmaster transfer notification at their real email (via forwarding)
+4. Seller also uploads proof-of-transfer screenshot on Seats.ca as confirmation
 
-## Changes
+### Infrastructure required (outside Lovable)
+- **Cloudflare Email Routing** (or similar): Set up a catch-all on `transfers.seats.ca` that forwards `*@transfers.seats.ca` → a worker or directly to a lookup endpoint
+- Alternatively, use a simple email forwarding service that accepts a webhook to resolve the alias → real email mapping
 
-### 1. Remove the transfer email alias from the seller UI
-- Remove the "Transfer tickets to this email" block from `SellerTransfers.tsx` (the `transfer_email_alias` section with copy button)
-- Remove the `Mail` and `Copy` icon imports if no longer needed
-- Update the pending transfer card to show clearer instructions: "Upload a screenshot of the completed transfer to confirm fulfillment"
+### Code changes
 
-### 2. Remove alias generation from the webhook
-- Remove the `transfer_email_alias` generation logic from `stripe-webhook/index.ts` (the line that builds `order-XXXX@transfers.seats.ca`)
-- The column can stay in the DB (harmless), but it won't be populated or displayed
+**1. Restore alias generation in stripe-webhook**
+- In `supabase/functions/stripe-webhook/index.ts`, re-add the alias generation when creating `order_transfers`:
+  ```
+  const aliasRef = orderId.replace(/-/g, "").slice(0, 8).toLowerCase();
+  const transferEmailAlias = `order-${aliasRef}@transfers.seats.ca`;
+  ```
+- Store it in `transfer_email_alias` column (already exists in DB)
 
-### 3. No email forwarding infrastructure needed
-- No need to configure `transfers.seats.ca` subdomain or catch-all forwarder
-- The existing `notify-buyer-transfer` edge function already handles forwarding the proof image to the buyer — that's the entire system
+**2. Restore alias display in SellerTransfers.tsx**
+- Show the alias in the pending transfer card with a copy button
+- Instructions: "Transfer your tickets to this email on Ticketmaster (or your ticket platform). Then upload a screenshot of the completed transfer below."
+- Add `Copy` and `Mail` icon imports back
 
-## Files to modify
-- `src/components/reseller/SellerTransfers.tsx` — remove alias display, update instructions
-- `supabase/functions/stripe-webhook/index.ts` — remove alias generation code
+**3. Create a forwarding lookup edge function**
+- `supabase/functions/resolve-transfer-email/index.ts`
+- Accepts `{ alias: "order-a1b2c3d4@transfers.seats.ca" }`
+- Looks up `order_transfers` by alias → finds order → finds buyer profile email
+- Returns the real email (for the email forwarding service to use)
+- Secured with a shared secret header (not public)
 
-## Result
-Sellers upload proof on seats.ca → system emails buyer automatically. No external email infrastructure. Buyer identity fully protected.
+### Files to modify
+- `supabase/functions/stripe-webhook/index.ts` — restore alias generation
+- `src/components/reseller/SellerTransfers.tsx` — restore alias display + copy button
+
+### Files to create
+- `supabase/functions/resolve-transfer-email/index.ts` — alias→email lookup for forwarding
+
+### What you need to set up externally
+- DNS: MX record for `transfers.seats.ca` pointing to your forwarder
+- Cloudflare Email Routing (free) or Mailgun/Resend inbound routing with a webhook that calls the `resolve-transfer-email` function to get the real destination
 
