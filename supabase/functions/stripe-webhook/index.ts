@@ -385,13 +385,17 @@ serve(async (req) => {
             .single();
 
           if (ticketForTransfer?.seller_id && orderId) {
+            const aliasRef = orderId.replace(/-/g, "").slice(0, 8).toLowerCase();
+            const transferEmailAlias = `order-${aliasRef}@transfers.seats.ca`;
+
             await supabase.from("order_transfers").insert({
               order_id: orderId,
               ticket_id: meta.ticket_id,
               seller_id: ticketForTransfer.seller_id,
               status: "pending",
+              transfer_email_alias: transferEmailAlias,
             });
-            console.log(`Created pending order_transfer for order ${orderId}`);
+            console.log(`Created pending order_transfer for order ${orderId}, alias: ${transferEmailAlias}`);
           }
         }
       }
