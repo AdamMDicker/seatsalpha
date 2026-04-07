@@ -1,119 +1,70 @@
 
 
-# Seller Membership & Payment Enforcement System
+# Hide Buyer Identity from Sellers — Transfer Relay System
 
-## Summary
-Build a complete seller subscription system: $9.99/week recurring charge via Stripe, credit card collection before any listing, discount codes for fee waivers, automatic ticket delisting on payment failure, admin complaint enforcement (suspend + pre-auth hold), adjustable fees, and a seller sales portal.
+## Problem
+Currently, when a ticket sells, the seller receives the buyer's email address so they can transfer tickets (e.g., via Ticketmaster). This lets sellers poach customers and cut Seats.ca out of future transactions.
 
----
+## Solution: Seats.ca as the Transfer Middleman
 
-## Current State
-- Sellers apply, get approved, sign agreement, then can upload CSV / view "My Tickets"
-- No payment collection or subscription enforcement exists for sellers
-- Buyer membership ($49.95/year) already uses Stripe via `create-checkout` edge function
+The seller never sees the buyer's email. Instead:
 
----
-
-## Plan
-
-### 1. Database Changes (migration)
-
-**New table: `seller_subscriptions`**
-- `id`, `reseller_id` (references resellers), `stripe_subscription_id`, `stripe_customer_id`, `status` (active/past_due/canceled/suspended), `current_period_end`, `weekly_fee` (default 9.99), `discount_code` (nullable), `created_at`, `updated_at`
-
-**New table: `seller_discount_codes`**
-- `id`, `code` (unique), `is_active`, `description`, `created_at`, `created_by`
-- Seed 10 discount codes (e.g., SELLER001–SELLER010) that waive the weekly fee entirely
-
-**Add columns to `resellers`:**
-- `is_suspended` (boolean, default false) — for complaint-based shutdowns
-- `stripe_customer_id` (text, nullable) — link to Stripe customer
-
-**RLS:** Admin full access on both new tables; resellers can read own subscription record.
-
-### 2. Stripe Setup
-
-- Create a Stripe product "Seller Membership" with a $9.99 CAD weekly recurring price
-- Store the `price_id` in code as a constant
-
-### 3. Edge Function: `create-seller-checkout`
-
-- Authenticated reseller calls this after agreement is signed
-- Accepts optional `discount_code` — if valid, creates a 100%-off coupon/free subscription
-- Creates Stripe Checkout Session (mode: subscription, weekly interval)
-- On success, redirects to `/reseller?subscription=success`
-- Stores `stripe_customer_id` on the reseller record
-
-### 4. Edge Function: `seller-stripe-webhook`
-
-Listens for:
-- `checkout.session.completed` → create `seller_subscriptions` record, mark status active
-- `invoice.payment_succeeded` → update `current_period_end`, ensure tickets stay active
-- `invoice.payment_failed` → set subscription status to `past_due`, **immediately deactivate all seller's tickets** (`UPDATE tickets SET is_active = false WHERE seller_id = X AND is_reseller_ticket = true`)
-- `customer.subscription.deleted` → mark canceled, delist all tickets
-
-### 5. Gating Logic (ResellerDashboard)
-
-Current flow adds two new gates after agreement acceptance:
+1. **Seller notification emails and in-app notifications no longer include buyer email** — replaced with an order reference number (e.g., "Order #ABC123")
+2. **Seller uploads transfer confirmation** (screenshot/image) to their Seller Portal, tagged to the specific order
+3. **Seats.ca forwards the transfer details to the buyer** automatically via email, including the transfer image/screenshot
+4. **Admin can review** all pending transfers and manually intervene if needed
 
 ```text
-Apply → Approved → Sign Agreement → Add Credit Card (Stripe checkout) → Dashboard unlocked
+Current flow:
+  Sale → Seller gets buyer email → Seller transfers directly → Buyer gets tickets
+
+New flow:
+  Sale → Seller gets order ref (no email) → Seller uploads transfer proof →
+  System emails buyer with transfer details → Buyer gets tickets
 ```
 
-- After agreement, show "Set Up Weekly Billing" step with credit card form
-- Optional discount code input field
-- Block CSV upload and single-ticket upload until `seller_subscriptions.status = 'active'`
-- If subscription lapses, show "Payment Required" banner and hide upload tools
+## Implementation
 
-### 6. Admin Complaint Enforcement
+### 1. Database: New `order_transfers` table
+- `id`, `order_id`, `ticket_id`, `seller_id`, `transfer_image_url` (storage path), `status` (pending/uploaded/confirmed/disputed), `uploaded_at`, `confirmed_at`, `created_at`
+- RLS: sellers can insert/update own rows; admins full access; buyers cannot see
 
-Add to `AdminResellers` component:
-- **"Suspend Seller"** button → sets `resellers.is_suspended = true`, deactivates all their tickets
-- **"Pre-Auth Hold"** button → calls new edge function `seller-preauth` that creates a Stripe `PaymentIntent` with `capture_method: manual` (e.g., $500 hold) on the seller's stored card
-- **"Unsuspend"** button to restore access
-- Suspended sellers see "Account Suspended — Contact Support" on their dashboard
+### 2. Remove buyer email from seller-facing data
+- **stripe-webhook**: Remove `buyerEmail` from `sellerEmailHtml()` — replace "Buyer" row with "Order Ref" showing order ID
+- **stripe-webhook**: Remove `buyer_email` from seller notification metadata
+- **send-transactional-email**: Same removal from `sellerNotificationHtml()`
+- **Seller Sales Dashboard**: Never display buyer email anywhere
 
-### 7. Admin Fee Adjustment
+### 3. Seller Portal: Transfer Upload UI
+- Add a "Pending Transfers" section to the seller dashboard showing orders awaiting transfer proof
+- Each order card shows: event, section/row, quantity, order ref — no buyer info
+- Upload button lets seller attach a screenshot from `seat-images` storage bucket
+- On upload, status moves to `uploaded` and triggers an automated email to the buyer
 
-In `AdminResellers`:
-- Global fee override: input field to set default weekly fee for all new subscriptions
-- Per-reseller fee override: editable field on each reseller card that updates `seller_subscriptions.weekly_fee` and modifies the Stripe subscription price via API
+### 4. Edge Function: `notify-buyer-transfer`
+- Triggered when seller uploads transfer proof (or via database trigger/webhook)
+- Looks up buyer email from `orders.user_id → profiles.email`
+- Sends buyer an email: "Your tickets have been transferred! Here's the confirmation:" with the attached image
+- Seller never touches the buyer's email — the system handles delivery
 
-### 8. Seller Portal Enhancements
+### 5. Admin Transfer Monitor
+- New tab or section in admin dashboard showing all transfers
+- Filter by status (pending/uploaded/confirmed)
+- Admin can mark confirmed, flag disputes, or re-send buyer notification
 
-Expand the existing "My Tickets" section into a full seller portal tab on `/reseller`:
-- **Sales Dashboard**: total revenue, tickets sold, active listings count (query from `orders` + `order_items` where ticket seller_id matches)
-- **Listings Tab**: existing "My Tickets" component (already built)
-- **Billing Tab**: current subscription status, next billing date, payment history link (Stripe customer portal)
-- **Account Tab**: business info, subscription plan, discount code status
+## Files to Create
+- `src/components/reseller/SellerTransfers.tsx` — upload UI for pending transfers
+- `supabase/functions/notify-buyer-transfer/index.ts` — sends transfer proof to buyer
 
-### 9. Discount Codes
+## Files to Modify
+- `supabase/functions/stripe-webhook/index.ts` — remove buyer email from seller notifications
+- `supabase/functions/send-transactional-email/index.ts` — remove buyer email from seller template
+- `src/pages/ResellerDashboard.tsx` — add Transfers tab
+- `src/components/reseller/SellerSalesDashboard.tsx` — ensure no buyer emails shown
+- Database migration for `order_transfers` table
 
-- Admin can create/manage codes in a new "Seller Codes" tab in admin dashboard
-- Seller enters code during checkout step — validated against `seller_discount_codes` table
-- Valid code creates a free Stripe subscription (100% coupon) so the seller still has a subscription record but pays $0
-
----
-
-## Technical Details
-
-### Files to Create
-- `supabase/functions/create-seller-checkout/index.ts`
-- `supabase/functions/seller-stripe-webhook/index.ts`
-- `supabase/functions/seller-preauth/index.ts`
-- `src/components/reseller/SellerBillingSetup.tsx`
-- `src/components/reseller/SellerSalesDashboard.tsx`
-- `src/components/reseller/SellerBillingTab.tsx`
-- `src/components/admin/AdminSellerCodes.tsx`
-
-### Files to Modify
-- `src/pages/ResellerDashboard.tsx` — add billing gate + portal tabs
-- `src/components/admin/AdminResellers.tsx` — add suspend/preauth/fee controls
-- `src/pages/AdminDashboard.tsx` — add "Seller Codes" tab
-- `supabase/config.toml` — register new edge functions
-- Database migration for new tables + columns
-
-### Webhook Configuration
-- New Stripe webhook endpoint for seller events at `/functions/v1/seller-stripe-webhook`
-- Requires adding the webhook secret as a new secret: `SELLER_STRIPE_WEBHOOK_SECRET` (or reuse existing webhook endpoint with event routing)
+## Key Decisions
+- Sellers are identified by order reference only — they see event details, seat info, and an order number, but never the buyer's name or email
+- The transfer image goes through Seats.ca storage, then is forwarded to the buyer by the system
+- This preserves the customer relationship with Seats.ca while still enabling ticket fulfillment
 
