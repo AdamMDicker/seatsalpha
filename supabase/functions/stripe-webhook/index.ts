@@ -357,6 +357,23 @@ serve(async (req) => {
           if (itemError) {
             console.error("Failed to create order item:", itemError);
           }
+
+          // Create pending order_transfer for seller to upload proof
+          const { data: ticketForTransfer } = await supabase
+            .from("tickets")
+            .select("seller_id")
+            .eq("id", meta.ticket_id)
+            .single();
+
+          if (ticketForTransfer?.seller_id && orderId) {
+            await supabase.from("order_transfers").insert({
+              order_id: orderId,
+              ticket_id: meta.ticket_id,
+              seller_id: ticketForTransfer.seller_id,
+              status: "pending",
+            });
+            console.log(`Created pending order_transfer for order ${orderId}`);
+          }
         }
       }
     }
