@@ -138,7 +138,7 @@ function sellerEmailHtml(meta: {
   rowName: string;
   salePrice: string;
   quantity: string;
-  buyerEmail: string;
+  orderRef: string;
 }): string {
   const qty = parseInt(meta.quantity) || 1;
   const pricePerTicket = parseFloat(meta.salePrice) || 0;
@@ -162,7 +162,7 @@ function sellerEmailHtml(meta: {
     ${meta.venue ? `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Venue</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.venue}</td></tr>` : ""}
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Section</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.section}${meta.rowName ? ` · Row ${meta.rowName}` : ""}</td></tr>
     <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Quantity</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.quantity}</td></tr>
-    <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Buyer</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.buyerEmail}</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;font-size:13px;">Order Ref</td><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#18181b;font-size:14px;font-weight:600;">${meta.orderRef}</td></tr>
   </table>
 
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#ecfdf5;border-radius:8px;">
@@ -443,6 +443,8 @@ serve(async (req) => {
         const rowInfo = ticket.row_name || "";
         const salePrice = ticket.price.toFixed(2);
 
+        const orderRefShort = orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
+
         const sellerHtml = sellerEmailHtml({
           eventTitle,
           venue,
@@ -452,7 +454,7 @@ serve(async (req) => {
           rowName: rowInfo,
           salePrice,
           quantity,
-          buyerEmail: customerEmail,
+          orderRef: orderRefShort,
         });
 
         const sellerBody = [
@@ -466,7 +468,7 @@ serve(async (req) => {
           `Quantity: ${quantity}`,
           `Price Per Ticket: $${salePrice} CAD`,
           `Total Sale: $${(parseInt(quantity) || 1) * parseFloat(salePrice)} CAD`,
-          `Buyer: ${customerEmail}`,
+          `Order Ref: ${orderRefShort}`,
           ``,
           `Tickets must be delivered within, at least, 48 hours before the event.`,
         ].filter(Boolean).join("\n");
@@ -501,7 +503,8 @@ serve(async (req) => {
                 venue,
                 event_date: eventDate,
                 total_amount: salePrice,
-                buyer_email: customerEmail,
+                order_ref: orderRefShort,
+                order_id: orderId,
               },
             });
 
@@ -523,6 +526,7 @@ serve(async (req) => {
 
     // Fallback: if no ticket_id or ticket not found, still notify admin
     if (!sellerNotificationSent) {
+      const fallbackOrderRef = orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
       const fallbackHtml = sellerEmailHtml({
         eventTitle,
         venue,
@@ -532,7 +536,7 @@ serve(async (req) => {
         rowName: "",
         salePrice: totalAmount,
         quantity,
-        buyerEmail: customerEmail,
+        orderRef: fallbackOrderRef,
       });
       await enqueueEmail(
         ADMIN_EMAIL,
