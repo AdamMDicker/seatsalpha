@@ -55,6 +55,7 @@ const AdminResellers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [preauthAmounts, setPreauthAmounts] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const fetchResellers = async () => {
@@ -218,14 +219,21 @@ const AdminResellers = () => {
       toast({ title: "Error", description: "Seller has no payment method on file.", variant: "destructive" });
       return;
     }
+    const amountStr = preauthAmounts[reseller.id] || "500";
+    const amountDollars = parseFloat(amountStr);
+    if (isNaN(amountDollars) || amountDollars < 1 || amountDollars > 10000) {
+      toast({ title: "Error", description: "Enter a valid amount between $1 and $10,000.", variant: "destructive" });
+      return;
+    }
+    const amountCents = Math.round(amountDollars * 100);
     setActionLoading(`preauth-${reseller.id}`);
     try {
       const { data, error } = await supabase.functions.invoke("seller-preauth", {
-        body: { reseller_id: reseller.id, amount_cents: 50000 },
+        body: { reseller_id: reseller.id, amount_cents: amountCents },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast({ title: "Pre-Auth Hold Placed", description: `$500 hold placed. Intent: ${data.payment_intent_id}` });
+      toast({ title: "Pre-Auth Hold Placed", description: `$${amountDollars.toFixed(0)} hold placed. Intent: ${data.payment_intent_id}` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
