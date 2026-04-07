@@ -189,9 +189,37 @@ const SellerTransfers = () => {
 
               {transfer.status === "pending" && (
                 <div className="pt-2 border-t border-border space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    Upload a screenshot of the completed transfer to confirm fulfillment.
-                  </p>
+                  {transfer.transfer_email_alias && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                        <Mail className="h-4 w-4 text-primary" />
+                        Transfer Email
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 bg-muted px-3 py-2 rounded-lg text-sm font-mono text-foreground truncate">
+                          {transfer.transfer_email_alias}
+                        </code>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            navigator.clipboard.writeText(transfer.transfer_email_alias!);
+                            toast({ title: "Copied!", description: "Transfer email copied to clipboard." });
+                          }}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Transfer your tickets to this email on Ticketmaster (or your ticket platform). Then upload a screenshot of the completed transfer below.
+                      </p>
+                    </div>
+                  )}
+                  {!transfer.transfer_email_alias && (
+                    <p className="text-sm text-muted-foreground">
+                      Upload a screenshot of the completed transfer to confirm fulfillment.
+                    </p>
+                  )}
                   <label className="cursor-pointer">
                     <input
                       type="file"
