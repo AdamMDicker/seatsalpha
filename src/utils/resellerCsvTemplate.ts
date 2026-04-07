@@ -20,7 +20,7 @@ export const RESELLER_CSV_HEADERS = [
   "Sales Tax Paid",
 ] as const;
 
-export const VALID_SPORTS = ["MLB", "NHL", "NBA", "NFL", "MLS", "CFL", "WNBA"] as const;
+export const VALID_SPORTS = ["MLB", "NHL", "NBA", "NFL", "MLS", "CFL", "WNBA", "OTHER"] as const;
 export const VALID_STOCK_TYPES = ["PDF", "Mobile QR", "Mobile Transfer"] as const;
 export const VALID_SPLIT_TYPES = ["Any", "No Singles", "Keep Pairs", "No Splitting"] as const;
 export const VALID_SEAT_TYPES = ["Consecutive", "General Admission", "Accessible", "VIP"] as const;
