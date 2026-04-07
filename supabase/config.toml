@@ -21,3 +21,9 @@ project_id = "fkcszgrewzhswdtsqpad"
     verify_jwt = false
   [functions.stripe-webhook]
     verify_jwt = false
+  [functions.create-seller-checkout]
+    verify_jwt = false
+  [functions.seller-stripe-webhook]
+    verify_jwt = false
+  [functions.seller-preauth]
+    verify_jwt = false

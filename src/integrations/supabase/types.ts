@@ -512,9 +512,11 @@ export type Database = {
           first_name: string | null
           id: string
           is_enabled: boolean
+          is_suspended: boolean
           last_name: string | null
           phone: string | null
           status: string
+          stripe_customer_id: string | null
           ticket_count: number | null
           updated_at: string
           user_id: string
@@ -527,9 +529,11 @@ export type Database = {
           first_name?: string | null
           id?: string
           is_enabled?: boolean
+          is_suspended?: boolean
           last_name?: string | null
           phone?: string | null
           status?: string
+          stripe_customer_id?: string | null
           ticket_count?: number | null
           updated_at?: string
           user_id: string
@@ -542,9 +546,11 @@ export type Database = {
           first_name?: string | null
           id?: string
           is_enabled?: boolean
+          is_suspended?: boolean
           last_name?: string | null
           phone?: string | null
           status?: string
+          stripe_customer_id?: string | null
           ticket_count?: number | null
           updated_at?: string
           user_id?: string
@@ -589,6 +595,80 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_discount_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
+      seller_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          discount_code: string | null
+          id: string
+          reseller_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          weekly_fee: number
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          discount_code?: string | null
+          id?: string
+          reseller_id: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          weekly_fee?: number
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          discount_code?: string | null
+          id?: string
+          reseller_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          weekly_fee?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_subscriptions_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: true
+            referencedRelation: "resellers"
             referencedColumns: ["id"]
           },
         ]

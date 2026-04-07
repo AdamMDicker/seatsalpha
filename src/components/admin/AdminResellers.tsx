@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import { Search, ShieldAlert, ShieldOff, CreditCard, DollarSign, Loader2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 import nhlLogo from "@/assets/leagues/nhl.png";
@@ -13,13 +13,19 @@ import nflLogo from "@/assets/leagues/nfl.png";
 import mlsLogo from "@/assets/leagues/mls.png";
 import cflLogo from "@/assets/leagues/cfl.png";
 
-type Reseller = Tables<"resellers"> & { status: string };
+type Reseller = Tables<"resellers"> & { status: string; is_suspended: boolean; stripe_customer_id: string | null };
 
 interface ResellerStats {
   liveTickets: number;
   soldTickets: number;
   totalRevenue: number;
   totalFees: number;
+}
+
+interface SubInfo {
+  status: string;
+  weekly_fee: number;
+  discount_code: string | null;
 }
 
 const LEAGUES = [
@@ -44,8 +50,10 @@ const AdminResellers = () => {
   const [loading, setLoading] = useState(true);
   const [leagueMap, setLeagueMap] = useState<LeagueMap>({});
   const [statsMap, setStatsMap] = useState<Record<string, ResellerStats>>({});
+  const [subsMap, setSubsMap] = useState<Record<string, SubInfo>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchResellers = async () => {
@@ -66,10 +74,20 @@ const AdminResellers = () => {
     setLeagueMap(map);
   };
 
+  const fetchSubs = async () => {
+    const { data } = await supabase.from("seller_subscriptions").select("reseller_id, status, weekly_fee, discount_code");
+    const map: Record<string, SubInfo> = {};
+    if (data) {
+      data.forEach((s: any) => {
+        map[s.reseller_id] = { status: s.status, weekly_fee: s.weekly_fee, discount_code: s.discount_code };
+      });
+    }
+    setSubsMap(map);
+  };
+
   const fetchStats = async (resellerList: Reseller[]) => {
     const map: Record<string, ResellerStats> = {};
     for (const r of resellerList) {
-      // Tickets by this reseller
       const { data: tickets } = await supabase
         .from("tickets")
         .select("quantity, quantity_sold, price")
@@ -80,7 +98,6 @@ const AdminResellers = () => {
       const soldTickets = (tickets || []).reduce((sum, t) => sum + t.quantity_sold, 0);
       const totalRevenue = (tickets || []).reduce((sum, t) => sum + t.quantity_sold * Number(t.price), 0);
 
-      // Orders with fees
       const { data: orders } = await supabase
         .from("orders")
         .select("fees_amount")
@@ -96,6 +113,7 @@ const AdminResellers = () => {
     const init = async () => {
       await fetchResellers();
       await fetchLeagues();
+      await fetchSubs();
     };
     init();
   }, []);
@@ -132,6 +150,87 @@ const AdminResellers = () => {
     fetchResellers();
   };
 
+  const suspendSeller = async (reseller: Reseller) => {
+    setActionLoading(`suspend-${reseller.id}`);
+    // Suspend the reseller
+    const { error } = await supabase
+      .from("resellers")
+      .update({ is_suspended: true } as any)
+      .eq("id", reseller.id);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      // Delist all their tickets
+      await supabase
+        .from("tickets")
+        .update({ is_active: false })
+        .eq("seller_id", reseller.user_id)
+        .eq("is_reseller_ticket", true);
+
+      // Update subscription status
+      await supabase
+        .from("seller_subscriptions")
+        .update({ status: "suspended" })
+        .eq("reseller_id", reseller.id);
+
+      toast({ title: "Seller Suspended", description: "All tickets delisted and account suspended." });
+      fetchResellers();
+      fetchSubs();
+    }
+    setActionLoading(null);
+  };
+
+  const unsuspendSeller = async (reseller: Reseller) => {
+    setActionLoading(`unsuspend-${reseller.id}`);
+    const { error } = await supabase
+      .from("resellers")
+      .update({ is_suspended: false } as any)
+      .eq("id", reseller.id);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      // Re-activate subscription if it was suspended
+      await supabase
+        .from("seller_subscriptions")
+        .update({ status: "active" })
+        .eq("reseller_id", reseller.id)
+        .eq("status", "suspended");
+
+      // Re-activate tickets
+      await supabase
+        .from("tickets")
+        .update({ is_active: true })
+        .eq("seller_id", reseller.user_id)
+        .eq("is_reseller_ticket", true);
+
+      toast({ title: "Seller Unsuspended", description: "Account restored and tickets re-listed." });
+      fetchResellers();
+      fetchSubs();
+    }
+    setActionLoading(null);
+  };
+
+  const preauthHold = async (reseller: Reseller) => {
+    if (!reseller.stripe_customer_id) {
+      toast({ title: "Error", description: "Seller has no payment method on file.", variant: "destructive" });
+      return;
+    }
+    setActionLoading(`preauth-${reseller.id}`);
+    try {
+      const { data, error } = await supabase.functions.invoke("seller-preauth", {
+        body: { reseller_id: reseller.id, amount_cents: 50000 },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Pre-Auth Hold Placed", description: `$500 hold placed. Intent: ${data.payment_intent_id}` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setActionLoading(null);
+  };
+
   const filteredResellers = resellers.filter((r) => {
     const status = r.status || (r.is_enabled ? "live" : "pending");
     const matchesSearch = !searchQuery ||
@@ -148,7 +247,7 @@ const AdminResellers = () => {
     <div>
       <h2 className="font-display text-xl font-semibold mb-2">Resellers ({resellers.length})</h2>
       <p className="text-sm text-muted-foreground mb-6">
-        Manage reseller applications. Set status, toggle leagues, view performance.
+        Manage reseller applications, subscriptions, suspend accounts, and place pre-auth holds.
       </p>
 
       {/* Filters */}
@@ -175,14 +274,21 @@ const AdminResellers = () => {
           const currentStatus = r.status || (r.is_enabled ? "live" : "pending");
           const config = statusConfig[currentStatus] || statusConfig.pending;
           const stats = statsMap[r.id];
+          const subInfo = subsMap[r.id];
 
           return (
-            <div key={r.id} className="glass rounded-xl p-4 space-y-3">
+            <div key={r.id} className={`glass rounded-xl p-4 space-y-3 ${r.is_suspended ? "border-destructive/50" : ""}`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="font-semibold text-foreground">{r.business_name}</h3>
                     <Badge variant={config.variant}>{config.label}</Badge>
+                    {r.is_suspended && <Badge variant="destructive">SUSPENDED</Badge>}
+                    {subInfo && (
+                      <Badge variant={subInfo.status === "active" ? "default" : "secondary"}>
+                        Sub: {subInfo.status} {subInfo.discount_code ? `(${subInfo.discount_code})` : `$${subInfo.weekly_fee}/wk`}
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {r.first_name} {r.last_name} {r.email ? `• ${r.email}` : ""} {r.phone ? `• ${r.phone}` : ""}
@@ -191,11 +297,46 @@ const AdminResellers = () => {
                     {r.ticket_count ? `${r.ticket_count} tickets declared` : "No ticket count"} • Joined {new Date(r.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {currentStatus !== "live" && <Button variant="hero" size="sm" onClick={() => setStatus(r, "live")}>Set Live</Button>}
                   {currentStatus !== "pending" && <Button variant="glass" size="sm" onClick={() => setStatus(r, "pending")}>Set Pending</Button>}
                   {currentStatus !== "disabled" && <Button variant="destructive" size="sm" onClick={() => setStatus(r, "disabled")}>Disable</Button>}
                 </div>
+              </div>
+
+              {/* Enforcement actions */}
+              <div className="flex gap-2 flex-wrap border-t border-border/50 pt-3">
+                {!r.is_suspended ? (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => suspendSeller(r)}
+                    disabled={actionLoading === `suspend-${r.id}`}
+                  >
+                    {actionLoading === `suspend-${r.id}` ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ShieldAlert className="h-3 w-3 mr-1" />}
+                    Suspend
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => unsuspendSeller(r)}
+                    disabled={actionLoading === `unsuspend-${r.id}`}
+                  >
+                    {actionLoading === `unsuspend-${r.id}` ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ShieldOff className="h-3 w-3 mr-1" />}
+                    Unsuspend
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => preauthHold(r)}
+                  disabled={!r.stripe_customer_id || actionLoading === `preauth-${r.id}`}
+                  title={!r.stripe_customer_id ? "No payment method on file" : "Place $500 hold"}
+                >
+                  {actionLoading === `preauth-${r.id}` ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <CreditCard className="h-3 w-3 mr-1" />}
+                  Pre-Auth $500
+                </Button>
               </div>
 
               {/* Stats row */}
