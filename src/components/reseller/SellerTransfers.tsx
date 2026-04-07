@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle, Clock, AlertTriangle, ImageIcon } from "lucide-react";
+import { Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail } from "lucide-react";
 
 interface Transfer {
   id: string;
