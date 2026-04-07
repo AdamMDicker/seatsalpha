@@ -6,12 +6,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Store, DollarSign, Eye, Zap, Users, CheckCircle, FileText, ShieldAlert, BarChart3, Ticket, CreditCard, Settings } from "lucide-react";
+import { Store, DollarSign, Eye, Zap, Users, CheckCircle, FileText, ShieldAlert, BarChart3, Ticket, CreditCard, Settings, ArrowRightLeft, Upload } from "lucide-react";
 import ResellerCsvUpload from "@/components/reseller/ResellerCsvUpload";
 import ResellerMyTickets from "@/components/reseller/ResellerMyTickets";
 import SellerBillingSetup from "@/components/reseller/SellerBillingSetup";
 import SellerSalesDashboard from "@/components/reseller/SellerSalesDashboard";
 import SellerBillingTab from "@/components/reseller/SellerBillingTab";
+import SellerTransfers from "@/components/reseller/SellerTransfers";
 
 const benefits = [
   { icon: DollarSign, title: "Zero Listing Fees", description: "List your tickets for free — we only take a small commission on completed sales." },
@@ -23,8 +24,9 @@ const benefits = [
 
 const portalTabs = [
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+  { id: "transfers", label: "Transfers", icon: ArrowRightLeft },
   { id: "listings", label: "My Tickets", icon: Ticket },
-  { id: "upload", label: "Upload", icon: Store },
+  { id: "upload", label: "Upload", icon: Upload },
   { id: "billing", label: "Billing", icon: CreditCard },
 ];
 
@@ -227,6 +229,7 @@ const ResellerDashboard = () => {
               </div>
 
               {activeTab === "dashboard" && <SellerSalesDashboard />}
+              {activeTab === "transfers" && <SellerTransfers />}
               {activeTab === "listings" && <ResellerMyTickets />}
               {activeTab === "upload" && <ResellerCsvUpload />}
               {activeTab === "billing" && <SellerBillingTab />}

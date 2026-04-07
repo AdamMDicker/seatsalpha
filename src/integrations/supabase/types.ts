@@ -396,6 +396,64 @@ export type Database = {
           },
         ]
       }
+      order_transfers: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          id: string
+          order_id: string
+          seller_id: string
+          status: string
+          ticket_id: string
+          transfer_image_url: string | null
+          uploaded_at: string | null
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          seller_id: string
+          status?: string
+          ticket_id: string
+          transfer_image_url?: string | null
+          uploaded_at?: string | null
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          seller_id?: string
+          status?: string
+          ticket_id?: string
+          transfer_image_url?: string | null
+          uploaded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_transfers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_transfers_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "public_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_transfers_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string
