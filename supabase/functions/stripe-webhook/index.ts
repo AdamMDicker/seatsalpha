@@ -283,6 +283,25 @@ serve(async (req) => {
     const meta = session.metadata || {};
     const customerEmail = session.customer_email || session.customer_details?.email || "";
 
+    // Handle seller signup fee payment
+    if (meta.type === "seller_signup_fee" && meta.reseller_id) {
+      await supabase
+        .from("resellers")
+        .update({ signup_fee_paid_at: new Date().toISOString() })
+        .eq("id", meta.reseller_id);
+
+      if (meta.user_id) {
+        await supabase.from("notifications").insert({
+          user_id: meta.user_id,
+          type: "seller",
+          title: "Sign-Up Fee Paid",
+          body: "Your $100 seller sign-up fee has been processed. You can now set up your weekly membership.",
+        });
+      }
+      console.log(`Seller signup fee paid for reseller ${meta.reseller_id}`);
+      return new Response(JSON.stringify({ received: true }), { status: 200 });
+    }
+
     // Only process ticket purchases (not membership-only)
     if (!meta.event_title) {
       return new Response(JSON.stringify({ received: true }), { status: 200 });

@@ -6,13 +6,15 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Store, DollarSign, Eye, Zap, Users, CheckCircle, FileText, ShieldAlert, BarChart3, Ticket, CreditCard, Settings, ArrowRightLeft, Upload } from "lucide-react";
+import { Store, DollarSign, Eye, Zap, Users, CheckCircle, FileText, ShieldAlert, BarChart3, Ticket, CreditCard, Settings, ArrowRightLeft, Upload, Wallet } from "lucide-react";
 import ResellerCsvUpload from "@/components/reseller/ResellerCsvUpload";
 import ResellerMyTickets from "@/components/reseller/ResellerMyTickets";
 import SellerBillingSetup from "@/components/reseller/SellerBillingSetup";
+import SellerSignupFee from "@/components/reseller/SellerSignupFee";
 import SellerSalesDashboard from "@/components/reseller/SellerSalesDashboard";
 import SellerBillingTab from "@/components/reseller/SellerBillingTab";
 import SellerTransfers from "@/components/reseller/SellerTransfers";
+import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 
 const benefits = [
   { icon: DollarSign, title: "Zero Listing Fees", description: "List your tickets for free — we only take a small commission on completed sales." },
@@ -28,6 +30,7 @@ const portalTabs = [
   { id: "listings", label: "My Tickets", icon: Ticket },
   { id: "upload", label: "Upload", icon: Upload },
   { id: "billing", label: "Billing", icon: CreditCard },
+  { id: "payouts", label: "Payouts", icon: Wallet },
 ];
 
 const ResellerDashboard = () => {
@@ -40,18 +43,28 @@ const ResellerDashboard = () => {
   const [applying, setApplying] = useState(false);
   const [resellerStatus, setResellerStatus] = useState<string | null>(null);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
+  const [signupFeePaid, setSignupFeePaid] = useState(false);
   const [isSuspended, setIsSuspended] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+  const [connectAccountId, setConnectAccountId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [connectLoading, setConnectLoading] = useState(false);
   const [form, setForm] = useState({
     firstName: "", lastName: "", companyName: "", phone: "", email: "", ticketCount: "",
   });
 
   useEffect(() => {
-    // Show success toast if returning from Stripe
     const subParam = searchParams.get("subscription");
+    const signupParam = searchParams.get("signup_fee");
+    const connectParam = searchParams.get("connect");
     if (subParam === "success") {
       toast({ title: "Subscription Active!", description: "Your seller membership is now active." });
+    }
+    if (signupParam === "success") {
+      toast({ title: "Sign-Up Fee Paid!", description: "Your $100 sign-up fee has been processed. Now set up your weekly membership." });
+    }
+    if (connectParam === "success") {
+      toast({ title: "Payout Account Connected!", description: "Your payout account is being set up." });
     }
   }, [searchParams]);
 
@@ -60,7 +73,7 @@ const ResellerDashboard = () => {
       if (!user) { setLoading(false); return; }
       const { data, error } = await supabase
         .from("resellers")
-        .select("id, status, agreement_accepted_at, is_suspended")
+        .select("id, status, agreement_accepted_at, is_suspended, signup_fee_paid_at, stripe_connect_account_id")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1);
@@ -68,7 +81,9 @@ const ResellerDashboard = () => {
       if (!error && data && data.length > 0) {
         setResellerStatus(data[0].status);
         setAgreementAccepted(!!data[0].agreement_accepted_at);
+        setSignupFeePaid(!!(data[0] as any).signup_fee_paid_at);
         setIsSuspended(data[0].is_suspended);
+        setConnectAccountId((data[0] as any).stripe_connect_account_id || null);
 
         // Check subscription status
         if (data[0].status === "live" && data[0].agreement_accepted_at) {
@@ -87,7 +102,24 @@ const ResellerDashboard = () => {
 
   const isApproved = resellerStatus === "live";
   const hasActiveSubscription = subscriptionStatus === "active";
-  const isFullyUnlocked = isApproved && agreementAccepted && hasActiveSubscription && !isSuspended;
+  const isFullyUnlocked = isApproved && agreementAccepted && signupFeePaid && hasActiveSubscription && !isSuspended;
+
+  const handleSetupPayouts = async () => {
+    setConnectLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-seller-connect-account");
+      if (error) throw error;
+      if (data?.url) {
+        redirectToStripeCheckout(data.url);
+      } else {
+        throw new Error("No onboarding URL returned");
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to start payout setup", variant: "destructive" });
+    } finally {
+      setConnectLoading(false);
+    }
+  };
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,8 +234,13 @@ const ResellerDashboard = () => {
             </div>
           )}
 
+          {/* Gate: Signup fee needed */}
+          {isApproved && agreementAccepted && !signupFeePaid && !isSuspended && (
+            <SellerSignupFee />
+          )}
+
           {/* Gate: Billing setup needed */}
-          {isApproved && agreementAccepted && !hasActiveSubscription && !isSuspended && subscriptionStatus !== "past_due" && (
+          {isApproved && agreementAccepted && signupFeePaid && !hasActiveSubscription && !isSuspended && subscriptionStatus !== "past_due" && (
             <SellerBillingSetup />
           )}
 
@@ -233,6 +270,33 @@ const ResellerDashboard = () => {
               {activeTab === "listings" && <ResellerMyTickets />}
               {activeTab === "upload" && <ResellerCsvUpload />}
               {activeTab === "billing" && <SellerBillingTab />}
+              {activeTab === "payouts" && (
+                <div>
+                  <h2 className="font-display text-xl font-bold mb-4">Payouts</h2>
+                  <div className="glass rounded-xl p-6 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="h-5 w-5 text-primary" />
+                      <span className="font-semibold">Payout Account</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {connectAccountId
+                        ? "Your payout account is connected. Payouts are processed 2 weeks after each event."
+                        : "Set up your payout account to receive payments for ticket sales. Payouts are processed 2 weeks after each event."}
+                    </p>
+                    <Button
+                      variant={connectAccountId ? "outline" : "hero"}
+                      onClick={handleSetupPayouts}
+                      disabled={connectLoading}
+                    >
+                      {connectLoading
+                        ? "Redirecting..."
+                        : connectAccountId
+                          ? "Update Payout Account"
+                          : "Set Up Payouts"}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

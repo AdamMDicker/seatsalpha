@@ -35,6 +35,7 @@ const LEAGUES = [
   { key: "NFL", logo: nflLogo },
   { key: "MLS", logo: mlsLogo },
   { key: "CFL", logo: cflLogo },
+  { key: "OTHER", logo: null },
 ] as const;
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
