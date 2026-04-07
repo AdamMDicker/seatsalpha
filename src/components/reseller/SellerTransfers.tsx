@@ -11,6 +11,7 @@ interface Transfer {
   order_id: string;
   ticket_id: string;
   transfer_image_url: string | null;
+  transfer_email_alias: string | null;
   status: string;
   uploaded_at: string | null;
   created_at: string;
