@@ -336,16 +336,27 @@ const AdminResellers = () => {
                     Unsuspend
                   </Button>
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => preauthHold(r)}
-                  disabled={!r.stripe_customer_id || actionLoading === `preauth-${r.id}`}
-                  title={!r.stripe_customer_id ? "No payment method on file" : "Place $500 hold"}
-                >
-                  {actionLoading === `preauth-${r.id}` ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <CreditCard className="h-3 w-3 mr-1" />}
-                  Pre-Auth $500
-                </Button>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    placeholder="500"
+                    value={preauthAmounts[r.id] || ""}
+                    onChange={(e) => setPreauthAmounts((prev) => ({ ...prev, [r.id]: e.target.value }))}
+                    className="w-20 px-2 py-1.5 rounded-lg bg-secondary border border-border text-foreground text-xs"
+                    min="1"
+                    max="10000"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => preauthHold(r)}
+                    disabled={!r.stripe_customer_id || actionLoading === `preauth-${r.id}`}
+                    title={!r.stripe_customer_id ? "No payment method on file" : "Place hold"}
+                  >
+                    {actionLoading === `preauth-${r.id}` ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <CreditCard className="h-3 w-3 mr-1" />}
+                    Pre-Auth ${preauthAmounts[r.id] || "500"}
+                  </Button>
+                </div>
               </div>
 
               {/* Stats row */}
@@ -381,7 +392,11 @@ const AdminResellers = () => {
                         enabled ? "border-primary bg-primary/10 shadow-sm" : "border-border/50 opacity-30 grayscale hover:opacity-60"
                       }`}
                       title={`${league.key} – ${enabled ? "Enabled" : "Disabled"}`}>
-                      <img src={league.logo} alt={league.key} className="w-6 h-6 object-contain" />
+                      {league.logo ? (
+                        <img src={league.logo} alt={league.key} className="w-6 h-6 object-contain" />
+                      ) : (
+                        <span className="text-[10px] font-bold text-foreground">{league.key}</span>
+                      )}
                     </button>
                   );
                 })}
