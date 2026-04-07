@@ -1,53 +1,66 @@
 
 
-# Solving the Transfer Email Problem
+# Seller System Updates
 
-## The Gap
-Ticket platforms (Ticketmaster, AXS, etc.) require an email to transfer tickets. We've hidden the buyer's email from sellers, but haven't provided an alternative.
+## Summary
+Change the weekly fee to $1, add a one-time $100 seller sign-up fee, add an "Other/Events" category for non-league listings, and lay groundwork for Stripe Connect payouts.
 
-## Recommended Approach: Seats.ca Relay Email
+## Changes
 
-Create a **dedicated transfer email** like `transfers@seats.ca` (or per-order unique aliases like `order-ABC12345@transfers.seats.ca`) that Seats.ca controls. The flow becomes:
+### 1. Weekly fee: $9.99 → $1.00
+- `supabase/functions/create-seller-checkout/index.ts`: Change `unit_amount: 999` to `unit_amount: 100`
+- `supabase/functions/seller-stripe-webhook/index.ts`: Change fallback `|| 999` to `|| 100`
+- `src/components/reseller/SellerBillingSetup.tsx`: Update "$9.99 CAD/week" text to "$1.00 CAD/week"
+- `src/components/reseller/SellerBillingTab.tsx`: No code change needed (reads fee from DB)
+- Database migration: Update `seller_subscriptions` default `weekly_fee` from 9.99 to 1.00
+- Delete the cached `seller_weekly_price_id` from `site_settings` so a new $1 Stripe price is created on next checkout
 
-```text
-1. Sale happens → seller sees "Transfer to: transfers@seats.ca" (or a unique alias)
-2. Seller transfers tickets on Ticketmaster to that email
-3. Seats.ca accepts the transfer in the relay inbox
-4. Seats.ca then re-transfers to the buyer's actual email (or sends them the tickets directly)
-```
+### 2. One-time $100 seller sign-up fee
+This is a separate one-time Stripe charge before the weekly subscription begins. The flow becomes: **Apply → Approve → Sign Agreement → Pay $100 sign-up fee → Set up $1/week billing → List tickets.**
 
-### Problem with this approach
-Seats.ca would need to **manually accept and re-transfer every ticket** — this doesn't scale without significant ops or automation tooling (Ticketmaster has no public API for accepting transfers programmatically).
+- Create a new edge function `create-seller-signup-fee/index.ts` that creates a Stripe Checkout session in `mode: "payment"` for $100 CAD
+- Add a `signup_fee_paid_at` column to `resellers` table
+- Update the stripe-webhook to handle the signup fee checkout completion (set `signup_fee_paid_at`)
+- Update `ResellerDashboard.tsx` gating logic: after agreement, check `signup_fee_paid_at` before showing the weekly billing setup
+- Create a `SellerSignupFee.tsx` component (similar to `SellerBillingSetup.tsx`) with a "Pay $100 Sign-Up Fee" button
+- Update `SellerBillingSetup.tsx` text to clarify this is the recurring weekly charge (separate from sign-up)
 
-## Practical Alternative: Buyer-Specific Transfer Email (Masked)
+### 3. "Other/Events" category for non-league listings
+- Add "OTHER" to the league/category system so sellers can list concerts, NFL, etc.
+- Update `reseller_leagues` seed/defaults to include "OTHER"
+- Update `AdminLeagueVisibility.tsx` and admin reseller league toggles to include "OTHER"
+- Update CSV import validation to accept "OTHER" as a valid sport/league
+- Update team page routing to handle generic "Other" events (or list them on a general events page)
 
-Generate a **masked forwarding alias** per order that maps to the buyer's real email but hides it from the seller. For example:
+### 4. Stripe Connect for seller payouts (foundation only)
+This is a larger feature. For now, lay the groundwork:
+- Add a `stripe_connect_account_id` column to `resellers` table
+- Create `create-seller-connect-account/index.ts` edge function that creates a Stripe Connect Express account and returns the onboarding link
+- Add a "Set Up Payouts" section in the seller portal that initiates Connect onboarding
+- Actual payout automation (transfers after events) will be a follow-up task
 
-- Seller sees: `order-a1b2c3@transfers.seats.ca`
-- That alias forwards to: `buyer@gmail.com`
-- Buyer receives the Ticketmaster transfer directly
+### 5. Pre-auth hold amount — make configurable in admin UI
+- Currently hardcoded to $500 default but already accepts custom `amount_cents`
+- Add an input field in `AdminResellers.tsx` next to the Pre-Auth button so admins can specify the hold amount per complaint (default $500, adjustable)
 
-### Implementation
+## Files to create
+- `supabase/functions/create-seller-signup-fee/index.ts`
+- `src/components/reseller/SellerSignupFee.tsx`
+- `supabase/functions/create-seller-connect-account/index.ts`
 
-1. **Email forwarding infrastructure** — Set up a catch-all on `transfers.seats.ca` that routes `order-{id}@transfers.seats.ca` to the buyer's real email
-2. **Show the alias in Seller Transfers UI** — each pending transfer card displays "Transfer tickets to: `order-XXXX@transfers.seats.ca`"
-3. **Database** — add `transfer_email_alias` column to `order_transfers`
-4. **Edge function update** — when `order_transfers` is created (in stripe-webhook), generate and store the alias
+## Files to modify
+- `supabase/functions/create-seller-checkout/index.ts`
+- `supabase/functions/seller-stripe-webhook/index.ts`
+- `supabase/functions/stripe-webhook/index.ts` (handle signup fee completion)
+- `src/components/reseller/SellerBillingSetup.tsx`
+- `src/pages/ResellerDashboard.tsx`
+- `src/components/admin/AdminResellers.tsx`
+- `src/components/admin/AdminLeagueVisibility.tsx`
+- CSV import components (reseller + admin)
 
-### Files to modify
-- `supabase/functions/stripe-webhook/index.ts` — generate alias when creating `order_transfers`
-- `src/components/reseller/SellerTransfers.tsx` — display the transfer email alias on each card
-- Migration — add `transfer_email_alias` text column to `order_transfers`
-- Email infrastructure — configure catch-all forwarding on `transfers.seats.ca` subdomain
-
-### Trade-off
-This requires **email forwarding infrastructure** (e.g., Mailgun/SendGrid inbound routes, or a simple SMTP forwarder). The alias approach is the cleanest — sellers transfer directly to the buyer via Ticketmaster, but never see the real email. Seats.ca maintains the mapping.
-
-### Alternative: Manual / No-Tech Option
-If email forwarding infra is too complex right now, the simplest stopgap is:
-- **Admin manually provides the buyer email** to the transfer system (not to the seller) and Seats.ca staff handle transfers
-- Or: display the buyer's email **only in the transfer UI** with a disclaimer that it's for transfer purposes only — weaker privacy but functional
-
-## Decision needed
-The masked forwarding alias is the strongest solution but requires email routing setup. Want to proceed with that, or start with a simpler interim approach?
+## Database migration
+- `ALTER TABLE resellers ADD COLUMN signup_fee_paid_at timestamptz;`
+- `ALTER TABLE resellers ADD COLUMN stripe_connect_account_id text;`
+- `ALTER TABLE seller_subscriptions ALTER COLUMN weekly_fee SET DEFAULT 1.00;`
+- Delete cached price ID: `DELETE FROM site_settings WHERE key = 'seller_weekly_price_id';`
 
