@@ -1,70 +1,33 @@
 
 
-# Hide Buyer Identity from Sellers — Transfer Relay System
+# Add Separate Key Terms Acknowledgment to Seller Agreement Flow
 
-## Problem
-Currently, when a ticket sells, the seller receives the buyer's email address so they can transfer tickets (e.g., via Ticketmaster). This lets sellers poach customers and cut Seats.ca out of future transactions.
+## Summary
+After the full 27-section Seller Agreement, add a dedicated "Key Terms Acknowledgment" section where sellers must type their initials, full name, and signature (typed), with a date auto-filled. This acts as a legally stronger confirmation of the most critical terms. The acknowledgment data is stored in the `resellers` table.
 
-## Solution: Seats.ca as the Transfer Middleman
+## Changes
 
-The seller never sees the buyer's email. Instead:
+### 1. Database: Add acknowledgment fields to `resellers`
+- `acknowledgment_initials` (text, nullable)
+- `acknowledgment_name` (text, nullable)
+- `acknowledgment_signed_at` (timestamptz, nullable)
 
-1. **Seller notification emails and in-app notifications no longer include buyer email** — replaced with an order reference number (e.g., "Order #ABC123")
-2. **Seller uploads transfer confirmation** (screenshot/image) to their Seller Portal, tagged to the specific order
-3. **Seats.ca forwards the transfer details to the buyer** automatically via email, including the transfer image/screenshot
-4. **Admin can review** all pending transfers and manually intervene if needed
+The `agreement_accepted_at` timestamp continues to be set only after both the agreement checkbox AND the key terms acknowledgment are completed.
 
-```text
-Current flow:
-  Sale → Seller gets buyer email → Seller transfers directly → Buyer gets tickets
+### 2. Update `SellerAgreement.tsx`
+After the 27 agreement sections and before the submit button, add a new bordered section:
 
-New flow:
-  Sale → Seller gets order ref (no email) → Seller uploads transfer proof →
-  System emails buyer with transfer details → Buyer gets tickets
-```
+- **Header**: "Seats.ca Seller Agreement – Key Terms Acknowledgment"
+- **Body**: The 12 key terms bullet points provided by the user, displayed as numbered items
+- **Form fields**:
+  - "Seller Initials" — short text input (2-4 chars, required)
+  - "Seller Name / Business Name" — text input (required)
+  - "Signature" — text input styled in a cursive/script font to simulate a signature (required)
+  - "Date" — auto-filled with today's date (read-only)
+- **Validation**: All three fields must be filled AND the agreement checkbox checked before the submit button enables
+- On submit, save initials + name + signed_at to the reseller record alongside `agreement_accepted_at`
 
-## Implementation
-
-### 1. Database: New `order_transfers` table
-- `id`, `order_id`, `ticket_id`, `seller_id`, `transfer_image_url` (storage path), `status` (pending/uploaded/confirmed/disputed), `uploaded_at`, `confirmed_at`, `created_at`
-- RLS: sellers can insert/update own rows; admins full access; buyers cannot see
-
-### 2. Remove buyer email from seller-facing data
-- **stripe-webhook**: Remove `buyerEmail` from `sellerEmailHtml()` — replace "Buyer" row with "Order Ref" showing order ID
-- **stripe-webhook**: Remove `buyer_email` from seller notification metadata
-- **send-transactional-email**: Same removal from `sellerNotificationHtml()`
-- **Seller Sales Dashboard**: Never display buyer email anywhere
-
-### 3. Seller Portal: Transfer Upload UI
-- Add a "Pending Transfers" section to the seller dashboard showing orders awaiting transfer proof
-- Each order card shows: event, section/row, quantity, order ref — no buyer info
-- Upload button lets seller attach a screenshot from `seat-images` storage bucket
-- On upload, status moves to `uploaded` and triggers an automated email to the buyer
-
-### 4. Edge Function: `notify-buyer-transfer`
-- Triggered when seller uploads transfer proof (or via database trigger/webhook)
-- Looks up buyer email from `orders.user_id → profiles.email`
-- Sends buyer an email: "Your tickets have been transferred! Here's the confirmation:" with the attached image
-- Seller never touches the buyer's email — the system handles delivery
-
-### 5. Admin Transfer Monitor
-- New tab or section in admin dashboard showing all transfers
-- Filter by status (pending/uploaded/confirmed)
-- Admin can mark confirmed, flag disputes, or re-send buyer notification
-
-## Files to Create
-- `src/components/reseller/SellerTransfers.tsx` — upload UI for pending transfers
-- `supabase/functions/notify-buyer-transfer/index.ts` — sends transfer proof to buyer
-
-## Files to Modify
-- `supabase/functions/stripe-webhook/index.ts` — remove buyer email from seller notifications
-- `supabase/functions/send-transactional-email/index.ts` — remove buyer email from seller template
-- `src/pages/ResellerDashboard.tsx` — add Transfers tab
-- `src/components/reseller/SellerSalesDashboard.tsx` — ensure no buyer emails shown
-- Database migration for `order_transfers` table
-
-## Key Decisions
-- Sellers are identified by order reference only — they see event details, seat info, and an order number, but never the buyer's name or email
-- The transfer image goes through Seats.ca storage, then is forwarded to the buyer by the system
-- This preserves the customer relationship with Seats.ca while still enabling ticket fulfillment
+### 3. Files
+- **Migration**: Add 3 columns to `resellers`
+- **Modify**: `src/pages/SellerAgreement.tsx` — add the key terms acknowledgment UI below the agreement sections, add form state + validation, update `handleAccept` to save the new fields
 
