@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail } from "lucide-react";
+import { Upload, CheckCircle, Clock, AlertTriangle, ImageIcon } from "lucide-react";
 
 interface Transfer {
   id: string;
@@ -189,30 +189,9 @@ const SellerTransfers = () => {
 
               {transfer.status === "pending" && (
                 <div className="pt-2 border-t border-border space-y-3">
-                  {transfer.transfer_email_alias && (
-                    <div className="bg-muted/50 rounded-lg p-3 space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                        <Mail className="h-3.5 w-3.5" />
-                        Transfer tickets to this email:
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <code className="text-sm font-mono text-primary flex-1 break-all">
-                          {transfer.transfer_email_alias}
-                        </code>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 shrink-0"
-                          onClick={() => {
-                            navigator.clipboard.writeText(transfer.transfer_email_alias!);
-                            toast({ title: "Copied!", description: "Transfer email copied to clipboard." });
-                          }}
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                  <p className="text-sm text-muted-foreground">
+                    Upload a screenshot of the completed transfer to confirm fulfillment.
+                  </p>
                   <label className="cursor-pointer">
                     <input
                       type="file"
