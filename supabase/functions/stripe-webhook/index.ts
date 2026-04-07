@@ -386,7 +386,7 @@ serve(async (req) => {
 
           if (ticketForTransfer?.seller_id && orderId) {
             const aliasRef = orderId.replace(/-/g, "").slice(0, 8).toLowerCase();
-            const transferEmailAlias = `order-${aliasRef}@transfers.seats.ca`;
+            const transferEmailAlias = `order-${aliasRef}@seats.ca`;
 
             await supabase.from("order_transfers").insert({
               order_id: orderId,
