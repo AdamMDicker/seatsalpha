@@ -405,6 +405,7 @@ export type Database = {
           seller_id: string
           status: string
           ticket_id: string
+          transfer_email_alias: string | null
           transfer_image_url: string | null
           uploaded_at: string | null
         }
@@ -416,6 +417,7 @@ export type Database = {
           seller_id: string
           status?: string
           ticket_id: string
+          transfer_email_alias?: string | null
           transfer_image_url?: string | null
           uploaded_at?: string | null
         }
@@ -427,6 +429,7 @@ export type Database = {
           seller_id?: string
           status?: string
           ticket_id?: string
+          transfer_email_alias?: string | null
           transfer_image_url?: string | null
           uploaded_at?: string | null
         }

@@ -1,0 +1,1 @@
+ALTER TABLE public.order_transfers ADD COLUMN transfer_email_alias text;
