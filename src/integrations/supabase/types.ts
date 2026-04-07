@@ -579,7 +579,9 @@ export type Database = {
           is_suspended: boolean
           last_name: string | null
           phone: string | null
+          signup_fee_paid_at: string | null
           status: string
+          stripe_connect_account_id: string | null
           stripe_customer_id: string | null
           ticket_count: number | null
           updated_at: string
@@ -599,7 +601,9 @@ export type Database = {
           is_suspended?: boolean
           last_name?: string | null
           phone?: string | null
+          signup_fee_paid_at?: string | null
           status?: string
+          stripe_connect_account_id?: string | null
           stripe_customer_id?: string | null
           ticket_count?: number | null
           updated_at?: string
@@ -619,7 +623,9 @@ export type Database = {
           is_suspended?: boolean
           last_name?: string | null
           phone?: string | null
+          signup_fee_paid_at?: string | null
           status?: string
+          stripe_connect_account_id?: string | null
           stripe_customer_id?: string | null
           ticket_count?: number | null
           updated_at?: string

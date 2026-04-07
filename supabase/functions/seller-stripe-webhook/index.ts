@@ -59,7 +59,7 @@ serve(async (req) => {
         // Fetch the subscription to get period end
         const sub = await stripe.subscriptions.retrieve(subscriptionId);
         const periodEnd = new Date(sub.current_period_end * 1000).toISOString();
-        const weeklyFee = (sub.items.data[0]?.price?.unit_amount || 999) / 100;
+        const weeklyFee = (sub.items.data[0]?.price?.unit_amount || 100) / 100;
 
         // Upsert seller_subscriptions
         await supabase.from("seller_subscriptions").upsert({
