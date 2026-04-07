@@ -563,6 +563,9 @@ export type Database = {
       }
       resellers: {
         Row: {
+          acknowledgment_initials: string | null
+          acknowledgment_name: string | null
+          acknowledgment_signed_at: string | null
           agreement_accepted_at: string | null
           business_name: string
           created_at: string
@@ -580,6 +583,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          acknowledgment_initials?: string | null
+          acknowledgment_name?: string | null
+          acknowledgment_signed_at?: string | null
           agreement_accepted_at?: string | null
           business_name: string
           created_at?: string
@@ -597,6 +603,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          acknowledgment_initials?: string | null
+          acknowledgment_name?: string | null
+          acknowledgment_signed_at?: string | null
           agreement_accepted_at?: string | null
           business_name?: string
           created_at?: string
