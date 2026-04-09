@@ -45,7 +45,6 @@ const ResellerDashboard = () => {
   const [searchParams] = useSearchParams();
 
   const [loading, setLoading] = useState(true);
-  const [applying, setApplying] = useState(false);
   const [resellerStatus, setResellerStatus] = useState<string | null>(null);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [signupFeePaid, setSignupFeePaid] = useState(false);
@@ -54,9 +53,6 @@ const ResellerDashboard = () => {
   const [connectAccountId, setConnectAccountId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [connectLoading, setConnectLoading] = useState(false);
-  const [form, setForm] = useState({
-    firstName: "", lastName: "", companyName: "", phone: "", email: "", ticketCount: "",
-  });
 
   useEffect(() => {
     const subParam = searchParams.get("subscription");
