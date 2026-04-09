@@ -92,7 +92,7 @@ const ResellerDashboard = () => {
             .from("seller_subscriptions")
             .select("status")
             .eq("reseller_id", data[0].id)
-            .single();
+            .maybeSingle();
           setSubscriptionStatus(subData?.status || null);
         }
       }
