@@ -122,36 +122,7 @@ const ResellerDashboard = () => {
     }
   };
 
-  const handleApply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.companyName.trim() || !form.email.trim()) {
-      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" });
-      return;
-    }
-    setApplying(true);
-    if (!user) {
-      toast({ title: "Sign in required", description: "Please create an account first, then come back to apply." });
-      setApplying(false);
-      return;
-    }
-    const { error } = await supabase.from("resellers").insert({
-      user_id: user.id,
-      business_name: form.companyName.trim(),
-      first_name: form.firstName.trim(),
-      last_name: form.lastName.trim(),
-      phone: form.phone.trim() || null,
-      email: form.email.trim(),
-      ticket_count: form.ticketCount ? parseInt(form.ticketCount) : null,
-    });
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Application submitted!", description: "Our team will review your application and get back to you." });
-    }
-    setApplying(false);
-  };
 
-  const inputClass = "w-full px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50";
 
   return (
     <div className="min-h-screen bg-background">
