@@ -1,54 +1,71 @@
 
 
-# Fix the Transfer Email Gap
+# Update Seller Page, Agreement, and Navigation
 
-## Problem
-Ticketmaster and similar platforms require a recipient email to transfer tickets. The masked alias system was removed, leaving no email for sellers to use when fulfilling orders externally.
+## Overview
+Three concrete changes plus a recommendation on the featured ticket rotation strategy.
 
-## Recommended Solution: Restore Masked Aliases with Simple Forwarding
+---
 
-Generate a unique per-order alias (e.g., `order-a1b2c3d4@transfers.seats.ca`) that forwards to the buyer's real email. The seller sees only the alias.
+## 1. Add "Become a Seller" link to top navigation
 
-### How it works
-1. Sale happens → system generates alias `order-XXXX@transfers.seats.ca` and stores it in `order_transfers.transfer_email_alias`
-2. Seller sees the alias in their Transfers tab with a "Copy" button and instructions: "Transfer your tickets to this address on Ticketmaster"
-3. Buyer receives the Ticketmaster transfer notification at their real email (via forwarding)
-4. Seller also uploads proof-of-transfer screenshot on Seats.ca as confirmation
+**Navbar.tsx** — Add a "Become a Seller" link in the `pageLinks` array (desktop + mobile) that navigates to `/reseller`. Place it after "Membership" and before "Contact".
 
-### Infrastructure required (outside Lovable)
-- **Cloudflare Email Routing** (or similar): Set up a catch-all on `transfers.seats.ca` that forwards `*@transfers.seats.ca` → a worker or directly to a lookup endpoint
-- Alternatively, use a simple email forwarding service that accepts a webhook to resolve the alias → real email mapping
+---
 
-### Code changes
+## 2. Update "Why Sell on Seats.ca?" benefits
 
-**1. Restore alias generation in stripe-webhook**
-- In `supabase/functions/stripe-webhook/index.ts`, re-add the alias generation when creating `order_transfers`:
-  ```
-  const aliasRef = orderId.replace(/-/g, "").slice(0, 8).toLowerCase();
-  const transferEmailAlias = `order-${aliasRef}@transfers.seats.ca`;
-  ```
-- Store it in `transfer_email_alias` column (already exists in DB)
+**ResellerDashboard.tsx** — Replace the current 5-benefit `benefits` array with the 11 benefits you provided, using appropriate icons:
 
-**2. Restore alias display in SellerTransfers.tsx**
-- Show the alias in the pending transfer card with a copy button
-- Instructions: "Transfer your tickets to this email on Ticketmaster (or your ticket platform). Then upload a screenshot of the completed transfer below."
-- Add `Copy` and `Mail` icon imports back
+| Benefit | Icon |
+|---------|------|
+| Keep More Profit | DollarSign |
+| Real Buyers, Not Browsers | Users |
+| Fair Marketplace | Eye |
+| You Set the Price | Settings |
+| All-In Pricing Wins | CheckCircle |
+| More Exposure | Zap |
+| Bulk Listing Made Easy | Upload |
+| Active Seller Network | ShieldAlert → ShieldCheck |
+| Fewer Headaches | CheckCircle |
+| Professional Platform | Store |
+| Simple, Low Cost | CreditCard |
 
-**3. Create a forwarding lookup edge function**
-- `supabase/functions/resolve-transfer-email/index.ts`
-- Accepts `{ alias: "order-a1b2c3d4@transfers.seats.ca" }`
-- Looks up `order_transfers` by alias → finds order → finds buyer profile email
-- Returns the real email (for the email forwarding service to use)
-- Secured with a shared secret header (not public)
+Also update the subtitle text to: *"$100/year + $0.50/week to sell smarter."*
+
+---
+
+## 3. Update Seller Agreement to 29-section version
+
+**`src/data/sellerAgreementSections.ts`** — Replace all 27 sections with the new 29-section agreement text you provided (adds sections 15 "Third-Party Integrations", 20 "Buyer Access Restriction", and 28 "General Terms"; renumbers remaining sections).
+
+**`src/components/reseller/SellerKeyTerms.tsx`** — Update the KEY_TERMS array to reflect any new acknowledgment points from the updated agreement (e.g., third-party integrations, buyer access restriction, collections/pre-auth).
+
+---
+
+## 4. Featured Ticket Rotation Strategy (Discussion)
+
+For the featured area once your own inventory sells out, here's my recommendation:
+
+**Weighted rotation based on seller performance**, combining:
+- **Sales velocity** — sellers whose tickets sell fastest get more featured time
+- **Listing freshness** — newer listings get a boost to ensure visibility
+- **Price competitiveness** — listings priced closer to face value rank higher
+
+This avoids the downsides of pure rotation (low-quality sellers get equal time) and consumer-based personalization (too complex for now). It rewards good sellers and naturally surfaces the best deals.
+
+Implementation would be a database view or function that scores listings and rotates the "featured" flag on a schedule (e.g., hourly cron). This can be built as a separate task when you're ready — it doesn't block the other changes above.
+
+---
+
+## Technical Details
 
 ### Files to modify
-- `supabase/functions/stripe-webhook/index.ts` — restore alias generation
-- `src/components/reseller/SellerTransfers.tsx` — restore alias display + copy button
+- `src/components/Navbar.tsx` — add pageLink entry
+- `src/pages/ResellerDashboard.tsx` — replace benefits array + subtitle
+- `src/data/sellerAgreementSections.ts` — replace with 29-section content
+- `src/components/reseller/SellerKeyTerms.tsx` — update KEY_TERMS array
 
-### Files to create
-- `supabase/functions/resolve-transfer-email/index.ts` — alias→email lookup for forwarding
-
-### What you need to set up externally
-- DNS: MX record for `transfers.seats.ca` pointing to your forwarder
-- Cloudflare Email Routing (free) or Mailgun/Resend inbound routing with a webhook that calls the `resolve-transfer-email` function to get the real destination
+### No database changes needed
+All changes are frontend copy/content updates.
 
