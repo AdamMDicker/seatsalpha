@@ -532,6 +532,47 @@ export type Database = {
         }
         Relationships: []
       }
+      reseller_application_seats: {
+        Row: {
+          created_at: string
+          id: string
+          league: string
+          lowest_seat: string
+          reseller_id: string
+          row_name: string
+          seat_count: number
+          section: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          league: string
+          lowest_seat: string
+          reseller_id: string
+          row_name: string
+          seat_count: number
+          section: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          league?: string
+          lowest_seat?: string
+          reseller_id?: string
+          row_name?: string
+          seat_count?: number
+          section?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reseller_application_seats_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: false
+            referencedRelation: "resellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reseller_leagues: {
         Row: {
           created_at: string
@@ -571,11 +612,13 @@ export type Database = {
           acknowledgment_signed_at: string | null
           agreement_accepted_at: string | null
           business_name: string
+          corporation_number: string | null
           created_at: string
           email: string | null
           first_name: string | null
           id: string
           is_enabled: boolean
+          is_registered_company: boolean
           is_suspended: boolean
           last_name: string | null
           phone: string | null
@@ -583,6 +626,7 @@ export type Database = {
           status: string
           stripe_connect_account_id: string | null
           stripe_customer_id: string | null
+          tax_collection_number: string | null
           ticket_count: number | null
           updated_at: string
           user_id: string
@@ -593,11 +637,13 @@ export type Database = {
           acknowledgment_signed_at?: string | null
           agreement_accepted_at?: string | null
           business_name: string
+          corporation_number?: string | null
           created_at?: string
           email?: string | null
           first_name?: string | null
           id?: string
           is_enabled?: boolean
+          is_registered_company?: boolean
           is_suspended?: boolean
           last_name?: string | null
           phone?: string | null
@@ -605,6 +651,7 @@ export type Database = {
           status?: string
           stripe_connect_account_id?: string | null
           stripe_customer_id?: string | null
+          tax_collection_number?: string | null
           ticket_count?: number | null
           updated_at?: string
           user_id: string
@@ -615,11 +662,13 @@ export type Database = {
           acknowledgment_signed_at?: string | null
           agreement_accepted_at?: string | null
           business_name?: string
+          corporation_number?: string | null
           created_at?: string
           email?: string | null
           first_name?: string | null
           id?: string
           is_enabled?: boolean
+          is_registered_company?: boolean
           is_suspended?: boolean
           last_name?: string | null
           phone?: string | null
@@ -627,6 +676,7 @@ export type Database = {
           status?: string
           stripe_connect_account_id?: string | null
           stripe_customer_id?: string | null
+          tax_collection_number?: string | null
           ticket_count?: number | null
           updated_at?: string
           user_id?: string
