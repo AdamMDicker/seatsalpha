@@ -38,7 +38,7 @@ const SellerBillingTab = () => {
           .from("seller_subscriptions")
           .select("status, current_period_end, weekly_fee, discount_code")
           .eq("reseller_id", reseller.id)
-          .single();
+          .maybeSingle();
 
         if (data) setSub(data);
       }
