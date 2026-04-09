@@ -157,6 +157,7 @@ const Navbar = () => {
     { label: "How It Works", action: () => handleNavClick("how-it-works") },
     { label: "Features", action: () => handleNavClick("features") },
     { label: "Membership", action: () => { setIsOpen(false); navigate("/membership"); } },
+    { label: "Become a Seller", action: () => { setIsOpen(false); navigate("/reseller"); } },
     { label: "Contact", action: () => { setIsOpen(false); navigate("/contact"); } },
   ];
 

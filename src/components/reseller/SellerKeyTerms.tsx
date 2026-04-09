@@ -2,18 +2,21 @@ import { ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const KEY_TERMS = [
-  "You are fully responsible for all tickets you list and sell, including fulfillment, accuracy, and any buyer issues.",
-  "You authorize Seats.ca to charge your credit card for any costs related to your sales, including refunds, replacement tickets, service fees, dispute-related charges, and chargebacks, with supporting evidence provided.",
-  "You understand that payouts occur approximately two (2) weeks after the event and may be withheld or offset for disputes, complaints, or amounts owed.",
+  "You are solely responsible for all tickets you list and sell, including fulfillment, accuracy, and any buyer issues — including on third-party platforms or integrations used by Seats.ca.",
+  "You authorize Seats.ca to charge your credit card for any costs related to your sales, including refunds, replacement tickets, service fees, dispute-related charges, chargebacks, and pre-authorization holds, with supporting evidence provided upon request.",
+  "You understand that payouts occur approximately two (2) weeks after the event and may be withheld, delayed, or offset for disputes, complaints, investigations, or amounts owed.",
   "You agree to meet ticket transfer requirements, including the 48-hour advance transfer rule and expedited timelines for last-minute sales.",
   "You confirm that you own or control all tickets listed and will not engage in speculative selling.",
-  "You agree that all listings (including face value and pricing) must be accurate and compliant with applicable laws.",
-  "You accept full responsibility for all taxes and compliance with ticket resale laws in all applicable jurisdictions.",
+  "You agree that all listings (including face value and pricing) must be accurate, complete, and compliant with applicable laws.",
+  "You accept full responsibility for all taxes, duties, and compliance with ticket resale laws in all applicable jurisdictions.",
   "You agree that event changes will follow the original ticket issuer's policies and that you remain responsible for your tickets.",
-  "You agree to indemnify and hold Seats.ca harmless from any claims or legal actions arising from your ticket sales.",
+  "You agree to indemnify and hold Seats.ca harmless from any claims, damages, or legal actions arising from your ticket sales, including those on third-party platforms.",
   "You acknowledge that Seats.ca has final decision-making authority on disputes and that disputes will be resolved via mediation and/or binding arbitration.",
-  "You understand that Seats.ca may remove, pause, or adjust your listings at any time.",
-  "You agree to maintain a valid credit card on file at all times and understand that failure to do so may result in account suspension.",
+  "You understand that Seats.ca may remove, pause, or adjust your listings at any time to maintain marketplace integrity.",
+  "You agree to maintain a valid credit card on file at all times and understand that failure to do so may result in account suspension and a reactivation fee.",
+  "You acknowledge that Seats.ca may pursue collections or legal recovery for any outstanding balances.",
+  "You understand that seller funds are not your property until released and that Seats.ca may place pre-authorizations on your credit card.",
+  "You agree that buyer membership must be purchased separately and seller funds cannot be used for this purpose.",
 ];
 
 interface SellerKeyTermsProps {

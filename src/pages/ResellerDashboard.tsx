@@ -17,11 +17,17 @@ import SellerTransfers from "@/components/reseller/SellerTransfers";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 
 const benefits = [
-  { icon: DollarSign, title: "Zero Listing Fees", description: "List your tickets for free — we only take a small commission on completed sales." },
-  { icon: Eye, title: "Maximum Exposure", description: "Your tickets appear alongside our featured inventory on every team page and the homepage." },
-  { icon: Zap, title: "Instant Listings", description: "Upload your inventory and have tickets live within minutes of admin approval." },
-  { icon: Users, title: "Growing Audience", description: "Tap into our rapidly growing base of Canadian sports, concert, and theatre fans." },
-  { icon: CheckCircle, title: "Fast Approvals", description: "Our team reviews applications quickly so you can start selling as soon as possible." },
+  { icon: DollarSign, title: "Keep More Profit", description: "No hidden fees eating into your margins." },
+  { icon: Users, title: "Real Buyers, Not Browsers", description: "Higher intent shoppers = faster sales." },
+  { icon: Eye, title: "Fair Marketplace", description: "No bots. No games. Just equal visibility." },
+  { icon: Settings, title: "You Set the Price", description: "Full control, no forced discounts." },
+  { icon: CheckCircle, title: "All-In Pricing Wins", description: "Transparent pricing builds trust and boosts conversions." },
+  { icon: Zap, title: "More Exposure", description: "Reach both members and non-members." },
+  { icon: Upload, title: "Bulk Listing Made Easy", description: "Upload multiple games at once with simple CSV tools — no manual entry." },
+  { icon: ShieldAlert, title: "Active Seller Network", description: "Every seller is verified and engaged, reducing risk." },
+  { icon: CheckCircle, title: "Fewer Headaches", description: "Less chance of failed transfers or inactive accounts." },
+  { icon: Store, title: "Professional Platform", description: "Built for reliability, not chaos." },
+  { icon: CreditCard, title: "Simple, Low Cost", description: "$100/year + $0.50/week to sell smarter." },
 ];
 
 const portalTabs = [
@@ -205,7 +211,8 @@ const ResellerDashboard = () => {
           {/* Benefits (show when not fully unlocked) */}
           {!isFullyUnlocked && !isSuspended && (
             <div className="mb-16">
-              <h2 className="font-display text-2xl font-bold text-center mb-10">Why sell on seats.ca?</h2>
+              <h2 className="font-display text-2xl font-bold text-center mb-3">Why Sell on Seats.ca?</h2>
+              <p className="text-muted-foreground text-center mb-10">$100/year + $0.50/week to sell smarter.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {benefits.map((b) => (
                   <div key={b.title} className="glass rounded-xl p-6 text-center hover:border-primary/30 transition-all">
