@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Store, DollarSign, Eye, Zap, Users, CheckCircle, FileText, ShieldAlert, BarChart3, Ticket, CreditCard, Settings, ArrowRightLeft, Upload, Wallet, Mail } from "lucide-react";
 import ResellerCsvUpload from "@/components/reseller/ResellerCsvUpload";
 import ResellerMyTickets from "@/components/reseller/ResellerMyTickets";
+import SellerApplicationForm from "@/components/reseller/SellerApplicationForm";
 import SellerBillingSetup from "@/components/reseller/SellerBillingSetup";
 import SellerSignupFee from "@/components/reseller/SellerSignupFee";
 import SellerSalesDashboard from "@/components/reseller/SellerSalesDashboard";
