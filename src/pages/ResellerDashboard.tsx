@@ -277,52 +277,7 @@ const ResellerDashboard = () => {
           {(isLoading || loading) ? (
             <div className="text-center text-muted-foreground py-8">Loading...</div>
           ) : !isApproved && !isSuspended ? (
-            <div id="apply" className="max-w-xl mx-auto">
-              <div className="glass rounded-xl p-8">
-                <h2 className="font-display text-2xl font-bold text-center mb-2">Apply to Become a Seller</h2>
-                <p className="text-sm text-muted-foreground text-center mb-8">
-                  {user ? "Fill out the form below and our team will review your application." : "Create an account first, then fill out the form below."}
-                </p>
-                <form onSubmit={handleApply} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">First Name *</label>
-                      <input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} placeholder="John" required maxLength={50} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">Last Name *</label>
-                      <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} placeholder="Smith" required maxLength={50} className={inputClass} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Company Name *</label>
-                    <input value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} placeholder="Your ticket company" required maxLength={100} className={inputClass} />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">Phone Number</label>
-                      <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(416) 555-0123" maxLength={20} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">Email *</label>
-                      <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@company.com" required maxLength={100} className={inputClass} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">How many tickets do you own?</label>
-                    <input type="number" value={form.ticketCount} onChange={(e) => setForm({ ...form, ticketCount: e.target.value })} placeholder="e.g. 500" min="1" max="100000" className={inputClass} />
-                  </div>
-                  {!user && (
-                    <p className="text-xs text-gold text-center">
-                      You'll need to <a href="/auth" className="underline hover:text-primary">create an account</a> before submitting your application.
-                    </p>
-                  )}
-                  <Button variant="hero" className="w-full" size="lg" disabled={applying || !user}>
-                    {applying ? "Submitting..." : "Submit Application"}
-                  </Button>
-                </form>
-              </div>
-            </div>
+            <SellerApplicationForm />
           ) : null}
         </div>
       </div>
