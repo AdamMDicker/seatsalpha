@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Store, DollarSign, Eye, Zap, Users, CheckCircle, FileText, ShieldAlert, BarChart3, Ticket, CreditCard, Settings, ArrowRightLeft, Upload, Wallet, Mail } from "lucide-react";
 import ResellerCsvUpload from "@/components/reseller/ResellerCsvUpload";
 import ResellerMyTickets from "@/components/reseller/ResellerMyTickets";
+import SellerApplicationForm from "@/components/reseller/SellerApplicationForm";
 import SellerBillingSetup from "@/components/reseller/SellerBillingSetup";
 import SellerSignupFee from "@/components/reseller/SellerSignupFee";
 import SellerSalesDashboard from "@/components/reseller/SellerSalesDashboard";
@@ -44,7 +45,6 @@ const ResellerDashboard = () => {
   const [searchParams] = useSearchParams();
 
   const [loading, setLoading] = useState(true);
-  const [applying, setApplying] = useState(false);
   const [resellerStatus, setResellerStatus] = useState<string | null>(null);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [signupFeePaid, setSignupFeePaid] = useState(false);
@@ -53,9 +53,6 @@ const ResellerDashboard = () => {
   const [connectAccountId, setConnectAccountId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [connectLoading, setConnectLoading] = useState(false);
-  const [form, setForm] = useState({
-    firstName: "", lastName: "", companyName: "", phone: "", email: "", ticketCount: "",
-  });
 
   useEffect(() => {
     const subParam = searchParams.get("subscription");
@@ -125,36 +122,7 @@ const ResellerDashboard = () => {
     }
   };
 
-  const handleApply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.companyName.trim() || !form.email.trim()) {
-      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" });
-      return;
-    }
-    setApplying(true);
-    if (!user) {
-      toast({ title: "Sign in required", description: "Please create an account first, then come back to apply." });
-      setApplying(false);
-      return;
-    }
-    const { error } = await supabase.from("resellers").insert({
-      user_id: user.id,
-      business_name: form.companyName.trim(),
-      first_name: form.firstName.trim(),
-      last_name: form.lastName.trim(),
-      phone: form.phone.trim() || null,
-      email: form.email.trim(),
-      ticket_count: form.ticketCount ? parseInt(form.ticketCount) : null,
-    });
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Application submitted!", description: "Our team will review your application and get back to you." });
-    }
-    setApplying(false);
-  };
 
-  const inputClass = "w-full px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50";
 
   return (
     <div className="min-h-screen bg-background">
@@ -309,52 +277,7 @@ const ResellerDashboard = () => {
           {(isLoading || loading) ? (
             <div className="text-center text-muted-foreground py-8">Loading...</div>
           ) : !isApproved && !isSuspended ? (
-            <div id="apply" className="max-w-xl mx-auto">
-              <div className="glass rounded-xl p-8">
-                <h2 className="font-display text-2xl font-bold text-center mb-2">Apply to Become a Seller</h2>
-                <p className="text-sm text-muted-foreground text-center mb-8">
-                  {user ? "Fill out the form below and our team will review your application." : "Create an account first, then fill out the form below."}
-                </p>
-                <form onSubmit={handleApply} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">First Name *</label>
-                      <input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} placeholder="John" required maxLength={50} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">Last Name *</label>
-                      <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} placeholder="Smith" required maxLength={50} className={inputClass} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Company Name *</label>
-                    <input value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} placeholder="Your ticket company" required maxLength={100} className={inputClass} />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">Phone Number</label>
-                      <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(416) 555-0123" maxLength={20} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">Email *</label>
-                      <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@company.com" required maxLength={100} className={inputClass} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">How many tickets do you own?</label>
-                    <input type="number" value={form.ticketCount} onChange={(e) => setForm({ ...form, ticketCount: e.target.value })} placeholder="e.g. 500" min="1" max="100000" className={inputClass} />
-                  </div>
-                  {!user && (
-                    <p className="text-xs text-gold text-center">
-                      You'll need to <a href="/auth" className="underline hover:text-primary">create an account</a> before submitting your application.
-                    </p>
-                  )}
-                  <Button variant="hero" className="w-full" size="lg" disabled={applying || !user}>
-                    {applying ? "Submitting..." : "Submit Application"}
-                  </Button>
-                </form>
-              </div>
-            </div>
+            <SellerApplicationForm />
           ) : null}
         </div>
       </div>
