@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Store, DollarSign, Eye, Zap, Users, CheckCircle, FileText, ShieldAlert, BarChart3, Ticket, CreditCard, Settings, ArrowRightLeft, Upload, Wallet } from "lucide-react";
+import { Store, DollarSign, Eye, Zap, Users, CheckCircle, FileText, ShieldAlert, BarChart3, Ticket, CreditCard, Settings, ArrowRightLeft, Upload, Wallet, Mail } from "lucide-react";
 import ResellerCsvUpload from "@/components/reseller/ResellerCsvUpload";
 import ResellerMyTickets from "@/components/reseller/ResellerMyTickets";
 import SellerBillingSetup from "@/components/reseller/SellerBillingSetup";
@@ -24,9 +24,7 @@ const benefits = [
   { icon: CheckCircle, title: "All-In Pricing Wins", description: "Transparent pricing builds trust and boosts conversions." },
   { icon: Zap, title: "More Exposure", description: "Reach both members and non-members." },
   { icon: Upload, title: "Bulk Listing Made Easy", description: "Upload multiple games at once with simple CSV tools — no manual entry." },
-  { icon: ShieldAlert, title: "Active Seller Network", description: "Every seller is verified and engaged, reducing risk." },
-  { icon: CheckCircle, title: "Fewer Headaches", description: "Less chance of failed transfers or inactive accounts." },
-  { icon: Store, title: "Professional Platform", description: "Built for reliability, not chaos." },
+  { icon: Mail, title: "Email-Based Transfers", description: "Tickets transfer via email — not barcodes. Your account stays private, and buyers get reliable, trackable delivery." },
   { icon: CreditCard, title: "Simple, Low Cost", description: "$100/year + $0.50/week to sell smarter." },
 ];
 
