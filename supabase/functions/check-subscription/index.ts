@@ -18,6 +18,12 @@ serve(async (req) => {
     { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } }
   );
 
+  // Service-role client for memberships table fallback
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
+
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
@@ -33,7 +39,6 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const { data, error } = await supabaseClient.auth.getUser(token);
     if (error || !data?.user?.email) {
-      // Session expired or invalid — return gracefully instead of 500
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -44,34 +49,48 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
-    if (customers.data.length === 0) {
-      return new Response(JSON.stringify({ subscribed: false }), {
+    if (customers.data.length > 0) {
+      const customerId = customers.data[0].id;
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
+      });
+
+      if (subscriptions.data.length > 0) {
+        const endTs = subscriptions.data[0].current_period_end;
+        return new Response(JSON.stringify({
+          subscribed: true,
+          subscription_end: endTs ? new Date(endTs * 1000).toISOString() : null,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
+
+    // Fallback: check local memberships table
+    const { data: membership } = await supabaseAdmin
+      .from("memberships")
+      .select("expires_at")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .gt("expires_at", new Date().toISOString())
+      .order("expires_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (membership) {
+      return new Response(JSON.stringify({
+        subscribed: true,
+        subscription_end: membership.expires_at,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
-    const customerId = customers.data[0].id;
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-
-    const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionEnd = null;
-
-    if (hasActiveSub) {
-      const endTs = subscriptions.data[0].current_period_end;
-      if (endTs) {
-        subscriptionEnd = new Date(endTs * 1000).toISOString();
-      }
-    }
-
-    return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      subscription_end: subscriptionEnd,
-    }), {
+    return new Response(JSON.stringify({ subscribed: false }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
