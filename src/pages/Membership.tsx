@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import {
   Accordion,
   AccordionContent,
@@ -63,6 +64,26 @@ const sellerFaqs = [
 const platformLogos: Record<string, string> = { Ticketmaster: "TM", StubHub: "SH", "Vivid Seats": "VS" };
 const platformColors: Record<string, string> = { Ticketmaster: "bg-blue-600", StubHub: "bg-purple-600", "Vivid Seats": "bg-orange-600" };
 
+const getEdgeFunctionErrorMessage = async (err: any, fallback: string) => {
+  const defaultMessage = err?.message || fallback;
+  const context = err?.context;
+
+  if (!context || typeof context.json !== "function") {
+    return defaultMessage;
+  }
+
+  try {
+    const body = await context.json();
+    if (typeof body?.error === "string" && body.error.trim()) {
+      return body.error;
+    }
+  } catch {
+    // ignore body parsing issues
+  }
+
+  return defaultMessage;
+};
+
 const Membership = () => {
   const totalSaved = savingsExamples.reduce((sum, e) => sum + e.saved, 0);
   const { user, isMember, membershipEnd, checkMembership } = useAuth();
@@ -78,7 +99,7 @@ const Membership = () => {
     if (searchParams.get("canceled") === "true") {
       toast({ title: "Membership not purchased", description: "You can join anytime.", variant: "destructive" });
     }
-  }, [searchParams]);
+  }, [searchParams, checkMembership, toast]);
 
   const handleJoin = async () => {
     if (!user) {
@@ -89,9 +110,12 @@ const Membership = () => {
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout");
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) {
+        redirectToStripeCheckout(data.url);
+      }
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Could not start checkout", variant: "destructive" });
+      const message = await getEdgeFunctionErrorMessage(err, "Could not start checkout");
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -102,9 +126,12 @@ const Membership = () => {
     try {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) {
+        redirectToStripeCheckout(data.url);
+      }
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Could not open portal", variant: "destructive" });
+      const message = await getEdgeFunctionErrorMessage(err, "Could not open portal");
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }

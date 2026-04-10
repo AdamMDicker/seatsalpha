@@ -54,6 +54,26 @@ const MEMBERSHIP_BENEFITS = [
   "Works across all sports & events",
 ];
 
+const getEdgeFunctionErrorMessage = async (err: any, fallback: string) => {
+  const defaultMessage = err?.message || fallback;
+  const context = err?.context;
+
+  if (!context || typeof context.json !== "function") {
+    return defaultMessage;
+  }
+
+  try {
+    const body = await context.json();
+    if (typeof body?.error === "string" && body.error.trim()) {
+      return body.error;
+    }
+  } catch {
+    // ignore body parsing issues
+  }
+
+  return defaultMessage;
+};
+
 const FeeGateDialog = ({
   open,
   onOpenChange,
@@ -102,8 +122,9 @@ const FeeGateDialog = ({
     if (open) {
       setConfirmed(false);
       setQuantity(getInitialQuantity());
+      setSelectedOption(isMember ? "hst" : "membership");
     }
-  }, [open, availableQuantity]);
+  }, [open, availableQuantity, isMember]);
 
   const handleQuantityChange = (delta: number) => {
     const currentIdx = validQuantities.indexOf(quantity);
@@ -146,7 +167,8 @@ const FeeGateDialog = ({
       }
       throw new Error("Checkout URL was not returned");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Could not start checkout", variant: "destructive" });
+      const message = await getEdgeFunctionErrorMessage(err, "Could not start checkout");
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setMembershipLoading(false);
     }
