@@ -65,6 +65,26 @@ const PERK_LABELS: Record<string, { label: string; emoji: string }> = {
   giveaway_guaranteed: { label: "Giveaway Guaranteed", emoji: "🎁" },
 };
 
+const getEdgeFunctionErrorMessage = async (err: any, fallback: string) => {
+  const defaultMessage = err?.message || fallback;
+  const context = err?.context;
+
+  if (!context || typeof context.json !== "function") {
+    return defaultMessage;
+  }
+
+  try {
+    const body = await context.json();
+    if (typeof body?.error === "string" && body.error.trim()) {
+      return body.error;
+    }
+  } catch {
+    // ignore body parsing issues
+  }
+
+  return defaultMessage;
+};
+
 const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaway, giveawayItem, gameTitle, gameId, venueName, eventDate }: TicketListingsProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -83,9 +103,10 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   const [showAuthSheet, setShowAuthSheet] = useState(false);
   const [pendingBuyTicket, setPendingBuyTicket] = useState<TicketInfo | null>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const [memberCheckoutOverride, setMemberCheckoutOverride] = useState<boolean | null>(null);
   const filterBarRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
-  const { user, isMember, isAdmin } = useAuth();
+  const { user, isMember, isAdmin, checkMembership } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -118,7 +139,9 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       if (buyQty && ["2", "3", "4"].includes(buyQty)) {
         setDesiredSeats(buyQty);
       }
-      setFeeGateTicket(ticket);
+      checkMembership().finally(() => {
+        setFeeGateTicket(ticket);
+      });
     }
     // Clean up the URL params
     const newParams = new URLSearchParams(searchParams);
@@ -126,7 +149,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     newParams.delete("buyQty");
     setSearchParams(newParams, { replace: true });
     setAutoOpenHandled(true);
-  }, [user, tickets, searchParams, autoOpenHandled]);
+  }, [user, tickets, searchParams, autoOpenHandled, checkMembership, setSearchParams]);
 
   const openLightbox = (images: SeatImage[], startIndex: number) => {
     setLightboxImages(images);
@@ -160,14 +183,16 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       }
       throw new Error("Checkout URL was not returned");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Could not start checkout", variant: "destructive" });
+      const message = await getEdgeFunctionErrorMessage(err, "Could not start checkout");
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setBuyingTicketId(null);
       setFeeGateTicket(null);
+      setMemberCheckoutOverride(null);
     }
   };
 
-  const handleBuy = (ticket: TicketInfo) => {
+  const handleBuy = async (ticket: TicketInfo) => {
     if (!user) {
       if (isMobile) {
         // Mobile: open auth sheet instead of redirecting
@@ -188,6 +213,9 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       navigate(`/auth?redirect=${encodeURIComponent(redirectPath)}`);
       return;
     }
+
+    await checkMembership();
+    setMemberCheckoutOverride(isMember);
     setFeeGateTicket(ticket);
   };
 
@@ -587,7 +615,12 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       {feeGateTicket && (
         <FeeGateDialog
           open={!!feeGateTicket}
-          onOpenChange={(open) => { if (!open) setFeeGateTicket(null); }}
+          onOpenChange={(open) => {
+            if (!open) {
+              setFeeGateTicket(null);
+              setMemberCheckoutOverride(null);
+            }
+          }}
           ticketPrice={feeGateTicket.price}
           section={feeGateTicket.section}
           rowName={feeGateTicket.row_name}
@@ -598,7 +631,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           venueName={venueName}
           gameTitle={gameTitle}
           eventDate={eventDate}
-          isMember={isMember}
+          isMember={memberCheckoutOverride ?? isMember}
           isAdmin={isAdmin}
           availableQuantity={feeGateTicket.quantity - feeGateTicket.quantity_sold}
           splitType={feeGateTicket.split_type}
