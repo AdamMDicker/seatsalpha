@@ -615,7 +615,12 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       {feeGateTicket && (
         <FeeGateDialog
           open={!!feeGateTicket}
-          onOpenChange={(open) => { if (!open) setFeeGateTicket(null); }}
+          onOpenChange={(open) => {
+            if (!open) {
+              setFeeGateTicket(null);
+              setMemberCheckoutOverride(null);
+            }
+          }}
           ticketPrice={feeGateTicket.price}
           section={feeGateTicket.section}
           rowName={feeGateTicket.row_name}
@@ -626,7 +631,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
           venueName={venueName}
           gameTitle={gameTitle}
           eventDate={eventDate}
-          isMember={isMember}
+          isMember={memberCheckoutOverride ?? isMember}
           isAdmin={isAdmin}
           availableQuantity={feeGateTicket.quantity - feeGateTicket.quantity_sold}
           splitType={feeGateTicket.split_type}
