@@ -25,9 +25,6 @@ serve(async (req) => {
   );
 
   try {
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ subscribed: false }), {
@@ -46,27 +43,35 @@ serve(async (req) => {
     }
     const user = data.user;
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    // Try Stripe first (non-fatal if it fails)
+    try {
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (stripeKey) {
+        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+        const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
-    if (customers.data.length > 0) {
-      const customerId = customers.data[0].id;
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "active",
-        limit: 1,
-      });
+        if (customers.data.length > 0) {
+          const customerId = customers.data[0].id;
+          const subscriptions = await stripe.subscriptions.list({
+            customer: customerId,
+            status: "active",
+            limit: 1,
+          });
 
-      if (subscriptions.data.length > 0) {
-        const endTs = subscriptions.data[0].current_period_end;
-        return new Response(JSON.stringify({
-          subscribed: true,
-          subscription_end: endTs ? new Date(endTs * 1000).toISOString() : null,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
+          if (subscriptions.data.length > 0) {
+            const endTs = subscriptions.data[0].current_period_end;
+            return new Response(JSON.stringify({
+              subscribed: true,
+              subscription_end: endTs ? new Date(endTs * 1000).toISOString() : null,
+            }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200,
+            });
+          }
+        }
       }
+    } catch (stripeErr) {
+      console.warn("Stripe check failed, falling back to memberships table:", stripeErr.message);
     }
 
     // Fallback: check local memberships table
