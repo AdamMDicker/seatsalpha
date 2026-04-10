@@ -34,7 +34,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const checkMembership = async () => {
     try {
       const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (!error && data) {
+      if (error) {
+        console.warn("check-subscription error, retrying...", error);
+        // Retry once after a brief delay
+        await new Promise(r => setTimeout(r, 1000));
+        const retry = await supabase.functions.invoke("check-subscription");
+        if (!retry.error && retry.data) {
+          setIsMember(!!retry.data.subscribed);
+          setMembershipEnd(retry.data.subscription_end || null);
+        }
+        return;
+      }
+      if (data) {
         setIsMember(!!data.subscribed);
         setMembershipEnd(data.subscription_end || null);
       }
