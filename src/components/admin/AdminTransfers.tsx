@@ -7,8 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch } from "lucide-react";
+import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
+
+const PAGE_SIZE = 20;
 
 interface AdminTransfer {
   id: string;
@@ -50,6 +52,7 @@ const AdminTransfers = () => {
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; transfer: AdminTransfer | null; action: "confirm" | "dispute" | "reset" }>({ open: false, transfer: null, action: "confirm" });
   const [actionLoading, setActionLoading] = useState(false);
   const [reverifying, setReverifying] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   const fetchTransfers = useCallback(async () => {
     setLoading(true);
@@ -186,6 +189,12 @@ const AdminTransfers = () => {
     return true;
   });
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [statusFilter, search]);
+
   const actionLabel = { confirm: "Confirm", dispute: "Dispute", reset: "Reset" };
 
   if (loading) {
@@ -233,137 +242,135 @@ const AdminTransfers = () => {
       {filtered.length === 0 ? (
         <p className="text-center text-muted-foreground py-8">No transfers found.</p>
       ) : (
-        <div className="rounded-lg border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Event</TableHead>
-                <TableHead>Seller</TableHead>
-                <TableHead>Buyer</TableHead>
-                <TableHead>Section / Row</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Proof</TableHead>
-                <TableHead>AI Result</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((t) => {
-                const cfg = statusConfig[t.status] || statusConfig.pending;
-                const vr = t.verification_result as any;
-                return (
-                  <TableRow key={t.id}>
-                    <TableCell className="max-w-[200px]">
-                      <div className="font-medium text-sm truncate">{t.event_title || "—"}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {t.event_date ? format(new Date(t.event_date), "MMM d, yyyy") : ""}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">{t.seller_name || "—"}</div>
-                      <div className="text-xs text-muted-foreground">{t.seller_email || ""}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm truncate max-w-[150px]">{t.buyer_email || "—"}</div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">
-                        {t.section || "—"}{t.row_name ? ` / ${t.row_name}` : ""}
-                        {t.quantity ? ` (×${t.quantity})` : ""}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={cfg.variant}>{cfg.label}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {t.transfer_image_url ? (
-                        <a href={t.transfer_image_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1 text-sm">
-                          View <ExternalLink className="h-3 w-3" />
-                        </a>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">None</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {vr ? (
-                        <div className="flex items-center gap-1">
-                          {vr.overall_match ? (
-                            <ShieldCheck className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <ShieldAlert className="h-4 w-4 text-destructive" />
-                          )}
-                          <span className="text-xs">{vr.overall_match ? "Match" : "Mismatch"}</span>
+        <>
+          <div className="rounded-lg border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Event</TableHead>
+                  <TableHead>Seller</TableHead>
+                  <TableHead>Buyer</TableHead>
+                  <TableHead>Section / Row</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Proof</TableHead>
+                  <TableHead>AI Result</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paged.map((t) => {
+                  const cfg = statusConfig[t.status] || statusConfig.pending;
+                  const vr = t.verification_result as any;
+                  return (
+                    <TableRow key={t.id}>
+                      <TableCell className="max-w-[200px]">
+                        <div className="font-medium text-sm truncate">{t.event_title || "—"}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {t.event_date ? format(new Date(t.event_date), "MMM d, yyyy") : ""}
                         </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1 flex-wrap">
-                        {t.status !== "confirmed" && (
-                          <Button
-                            size="sm"
-                            variant="default"
-                            className="h-7 text-xs"
-                            onClick={() => setConfirmDialog({ open: true, transfer: t, action: "confirm" })}
-                          >
-                            <CheckCircle className="h-3 w-3 mr-1" /> Confirm
-                          </Button>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">{t.seller_name || "—"}</div>
+                        <div className="text-xs text-muted-foreground">{t.seller_email || ""}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm truncate max-w-[150px]">{t.buyer_email || "—"}</div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">
+                          {t.section || "—"}{t.row_name ? ` / ${t.row_name}` : ""}
+                          {t.quantity ? ` (×${t.quantity})` : ""}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {t.transfer_image_url ? (
+                          <a href={t.transfer_image_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1 text-sm">
+                            View <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">None</span>
                         )}
-                        {t.status !== "disputed" && t.status !== "pending" && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="h-7 text-xs"
-                            onClick={() => setConfirmDialog({ open: true, transfer: t, action: "dispute" })}
-                          >
-                            <ShieldAlert className="h-3 w-3 mr-1" /> Dispute
-                          </Button>
+                      </TableCell>
+                      <TableCell>
+                        {vr ? (
+                          <div className="flex items-center gap-1">
+                            {vr.overall_match ? (
+                              <ShieldCheck className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <ShieldAlert className="h-4 w-4 text-destructive" />
+                            )}
+                            <span className="text-xs">{vr.overall_match ? "Match" : "Mismatch"}</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
-                        {t.status !== "pending" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs"
-                            onClick={() => setConfirmDialog({ open: true, transfer: t, action: "reset" })}
-                          >
-                            <RefreshCw className="h-3 w-3 mr-1" /> Reset
-                          </Button>
-                        )}
-                        {t.transfer_image_url && (
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="h-7 text-xs"
-                            disabled={reverifying === t.id}
-                            onClick={async () => {
-                              setReverifying(t.id);
-                              try {
-                                const { error } = await supabase.functions.invoke("verify-transfer-image", {
-                                  body: { transfer_id: t.id },
-                                });
-                                if (error) throw error;
-                                toast({ title: "Re-verification triggered", description: "AI is analyzing the transfer proof." });
-                                setTimeout(() => fetchTransfers(), 3000);
-                              } catch {
-                                toast({ title: "Error", description: "Failed to trigger re-verification.", variant: "destructive" });
-                              } finally {
-                                setReverifying(null);
-                              }
-                            }}
-                          >
-                            {reverifying === t.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ScanSearch className="h-3 w-3 mr-1" />}
-                            Re-verify
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap">
+                          {t.status !== "confirmed" && (
+                            <Button size="sm" variant="default" className="h-7 text-xs" onClick={() => setConfirmDialog({ open: true, transfer: t, action: "confirm" })}>
+                              <CheckCircle className="h-3 w-3 mr-1" /> Confirm
+                            </Button>
+                          )}
+                          {t.status !== "disputed" && t.status !== "pending" && (
+                            <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={() => setConfirmDialog({ open: true, transfer: t, action: "dispute" })}>
+                              <ShieldAlert className="h-3 w-3 mr-1" /> Dispute
+                            </Button>
+                          )}
+                          {t.status !== "pending" && (
+                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setConfirmDialog({ open: true, transfer: t, action: "reset" })}>
+                              <RefreshCw className="h-3 w-3 mr-1" /> Reset
+                            </Button>
+                          )}
+                          {t.transfer_image_url && (
+                            <Button
+                              size="sm" variant="secondary" className="h-7 text-xs"
+                              disabled={reverifying === t.id}
+                              onClick={async () => {
+                                setReverifying(t.id);
+                                try {
+                                  const { error } = await supabase.functions.invoke("verify-transfer-image", { body: { transfer_id: t.id } });
+                                  if (error) throw error;
+                                  toast({ title: "Re-verification triggered", description: "AI is analyzing the transfer proof." });
+                                  setTimeout(() => fetchTransfers(), 3000);
+                                } catch {
+                                  toast({ title: "Error", description: "Failed to trigger re-verification.", variant: "destructive" });
+                                } finally {
+                                  setReverifying(null);
+                                }
+                              }}
+                            >
+                              {reverifying === t.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ScanSearch className="h-3 w-3 mr-1" />}
+                              Re-verify
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-3">
+              <span className="text-sm text-muted-foreground">
+                Page {page} of {totalPages} ({filtered.length} total)
+              </span>
+              <div className="flex gap-1">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                  <ChevronLeft className="h-4 w-4" /> Prev
+                </Button>
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+                  Next <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <Dialog open={confirmDialog.open} onOpenChange={(o) => !o && setConfirmDialog({ open: false, transfer: null, action: "confirm" })}>

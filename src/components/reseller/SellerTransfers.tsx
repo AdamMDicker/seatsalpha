@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import {
   Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail,
-  Loader2, ShieldCheck, ShieldAlert, ExternalLink, Search, RefreshCw,
+  Loader2, ShieldCheck, ShieldAlert, ExternalLink, Search, RefreshCw, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { format } from "date-fns";
+
+const PAGE_SIZE = 20;
 
 interface Transfer {
   id: string;
@@ -47,6 +49,7 @@ const SellerTransfers = () => {
   const [verifying, setVerifying] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   const fetchTransfers = useCallback(async () => {
     if (!user) return;
@@ -163,6 +166,11 @@ const SellerTransfers = () => {
     return true;
   });
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => { setPage(1); }, [statusFilter, search]);
+
   const pendingCount = transfers.filter((t) => t.status === "pending" || t.status === "disputed").length;
 
   if (loading) {
@@ -223,6 +231,7 @@ const SellerTransfers = () => {
       {filtered.length === 0 ? (
         <p className="text-center text-muted-foreground py-8">No transfers found.</p>
       ) : (
+        <>
         <div className="rounded-lg border overflow-x-auto">
           <Table>
             <TableHeader>
@@ -237,7 +246,7 @@ const SellerTransfers = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((t) => {
+              {paged.map((t) => {
                 const cfg = statusConfig[t.status] || statusConfig.pending;
                 const vr = t.verification_result as any;
                 const isCurrentlyVerifying = verifying === t.id;
@@ -351,6 +360,22 @@ const SellerTransfers = () => {
             </TableBody>
           </Table>
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-3">
+            <span className="text-sm text-muted-foreground">
+              Page {page} of {totalPages} ({filtered.length} total)
+            </span>
+            <div className="flex gap-1">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                <ChevronLeft className="h-4 w-4" /> Prev
+              </Button>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+        </>
       )}
     </div>
   );
