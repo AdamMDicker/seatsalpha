@@ -139,6 +139,7 @@ function sellerEmailHtml(meta: {
   salePrice: string;
   quantity: string;
   orderRef: string;
+  transferEmail?: string;
 }): string {
   const qty = parseInt(meta.quantity) || 1;
   const pricePerTicket = parseFloat(meta.salePrice) || 0;
@@ -180,12 +181,38 @@ function sellerEmailHtml(meta: {
     </td></tr>
   </table>
 
-  <!-- Transfer upload reminder -->
+  ${meta.transferEmail ? `
+  <!-- Transfer Email -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;background:#eff6ff;border-radius:8px;border:1px solid #93c5fd;">
+    <tr><td style="padding:16px;">
+      <p style="margin:0 0 8px;color:#1e40af;font-size:13px;font-weight:700;">📧 Transfer Email Address</p>
+      <p style="margin:0;color:#1e3a8a;font-size:16px;font-weight:700;font-family:'Courier New',monospace;background:#dbeafe;padding:10px 14px;border-radius:6px;letter-spacing:0.5px;">${meta.transferEmail}</p>
+      <p style="margin:8px 0 0;color:#3b82f6;font-size:12px;line-height:1.5;">Transfer your tickets to this email address on Ticketmaster (or your ticket platform).</p>
+    </td></tr>
+  </table>
+  ` : ""}
+
+  <!-- Step-by-step transfer guide -->
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;background:#fef3c7;border-radius:8px;border:1px solid #fbbf24;">
     <tr><td style="padding:16px;">
-      <p style="margin:0;color:#92400e;font-size:13px;font-weight:700;line-height:1.5;">
-        📤 Please ensure you upload a copy/image of the ticket transfer to your Seats.ca Seller Portal after completion.
-      </p>
+      <p style="margin:0 0 12px;color:#92400e;font-size:14px;font-weight:700;">📤 How to Complete Your Transfer</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="color:#92400e;font-size:12px;line-height:2;padding:0;">
+          <strong>1.</strong> Log in to your <a href="https://seats.ca/reseller-dashboard?tab=transfers" style="color:#d6193d;text-decoration:none;font-weight:600;">Seats.ca Seller Portal</a><br>
+          <strong>2.</strong> Go to the <strong>Transfers</strong> tab<br>
+          <strong>3.</strong> Locate this sale (Order Ref: ${meta.orderRef})<br>
+          <strong>4.</strong> Transfer your tickets to the email shown above via Ticketmaster (or your platform)<br>
+          <strong>5.</strong> Take a screenshot of the completed transfer<br>
+          <strong>6.</strong> Upload the screenshot to confirm delivery
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+
+  <!-- CTA Button -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
+    <tr><td align="center">
+      <a href="https://seats.ca/reseller-dashboard?tab=transfers" style="display:inline-block;background:linear-gradient(135deg,#059669,#047857);color:#ffffff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;">View Transfer in Seller Portal →</a>
     </td></tr>
   </table>
 
@@ -488,6 +515,10 @@ serve(async (req) => {
 
         const orderRefShort = orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
 
+        // Retrieve the transfer email alias for this order
+        const aliasRef = orderId ? orderId.replace(/-/g, "").slice(0, 8).toLowerCase() : "";
+        const transferEmailForSeller = aliasRef ? `order-${aliasRef}@seats.ca` : undefined;
+
         const sellerHtml = sellerEmailHtml({
           eventTitle,
           venue,
@@ -498,6 +529,7 @@ serve(async (req) => {
           salePrice,
           quantity,
           orderRef: orderRefShort,
+          transferEmail: transferEmailForSeller,
         });
 
         const sellerBody = [
@@ -570,6 +602,8 @@ serve(async (req) => {
     // Fallback: if no ticket_id or ticket not found, still notify admin
     if (!sellerNotificationSent) {
       const fallbackOrderRef = orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
+      const fallbackAliasRef = orderId ? orderId.replace(/-/g, "").slice(0, 8).toLowerCase() : "";
+      const fallbackTransferEmail = fallbackAliasRef ? `order-${fallbackAliasRef}@seats.ca` : undefined;
       const fallbackHtml = sellerEmailHtml({
         eventTitle,
         venue,
@@ -580,6 +614,7 @@ serve(async (req) => {
         salePrice: totalAmount,
         quantity,
         orderRef: fallbackOrderRef,
+        transferEmail: fallbackTransferEmail,
       });
       await enqueueEmail(
         ADMIN_EMAIL,
