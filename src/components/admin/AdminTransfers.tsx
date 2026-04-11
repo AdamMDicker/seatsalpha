@@ -395,6 +395,18 @@ const AdminTransfers = () => {
               <p><strong>Buyer:</strong> {confirmDialog.transfer.buyer_email || "—"}</p>
             </div>
           )}
+          {confirmDialog.action === "dispute" && (
+            <div className="space-y-2">
+              <Label htmlFor="dispute-reason">Reason for dispute (included in seller email)</Label>
+              <Textarea
+                id="dispute-reason"
+                placeholder="e.g. Screenshot is blurry, wrong recipient email, missing seat details..."
+                value={disputeReason}
+                onChange={(e) => setDisputeReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDialog({ open: false, transfer: null, action: "confirm" })} disabled={actionLoading}>Cancel</Button>
             <Button
