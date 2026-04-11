@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw } from "lucide-react";
+import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch } from "lucide-react";
 import { format } from "date-fns";
 
 interface AdminTransfer {
@@ -49,6 +49,7 @@ const AdminTransfers = () => {
   const [search, setSearch] = useState("");
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; transfer: AdminTransfer | null; action: "confirm" | "dispute" | "reset" }>({ open: false, transfer: null, action: "confirm" });
   const [actionLoading, setActionLoading] = useState(false);
+  const [reverifying, setReverifying] = useState<string | null>(null);
 
   const fetchTransfers = useCallback(async () => {
     setLoading(true);
@@ -332,6 +333,32 @@ const AdminTransfers = () => {
                             onClick={() => setConfirmDialog({ open: true, transfer: t, action: "reset" })}
                           >
                             <RefreshCw className="h-3 w-3 mr-1" /> Reset
+                          </Button>
+                        )}
+                        {t.transfer_image_url && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="h-7 text-xs"
+                            disabled={reverifying === t.id}
+                            onClick={async () => {
+                              setReverifying(t.id);
+                              try {
+                                const { error } = await supabase.functions.invoke("verify-transfer-image", {
+                                  body: { transferId: t.id },
+                                });
+                                if (error) throw error;
+                                toast({ title: "Re-verification triggered", description: "AI is analyzing the transfer proof." });
+                                setTimeout(() => fetchTransfers(), 3000);
+                              } catch {
+                                toast({ title: "Error", description: "Failed to trigger re-verification.", variant: "destructive" });
+                              } finally {
+                                setReverifying(null);
+                              }
+                            }}
+                          >
+                            {reverifying === t.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <ScanSearch className="h-3 w-3 mr-1" />}
+                            Re-verify
                           </Button>
                         )}
                       </div>
