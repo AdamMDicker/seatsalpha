@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Package, Calendar, ChevronRight, ShoppingBag } from "lucide-react";
 import { format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
+import { useResellerAccount } from "@/hooks/useResellerAccount";
 
 type OrderItem = Tables<"order_items"> & {
   tickets: {
@@ -24,6 +25,7 @@ type OrderWithItems = Tables<"orders"> & {
 
 const MyOrders = () => {
   const { user, isLoading: authLoading } = useAuth();
+  const { hasResellerAccount, isLoading: resellerLoading } = useResellerAccount();
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +45,10 @@ const MyOrders = () => {
 
   if (authLoading) return null;
   if (!user) return <Navigate to="/auth?redirect=/my-orders" replace />;
+  if (resellerLoading) return null;
+  if (hasResellerAccount && !loading && orders.length === 0) {
+    return <Navigate to="/reseller" replace />;
+  }
 
   const statusColor = (status: string) => {
     switch (status) {
