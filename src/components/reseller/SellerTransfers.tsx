@@ -4,7 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail, Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail,
+  Loader2, ShieldCheck, ShieldAlert, ExternalLink, Search, RefreshCw,
+} from "lucide-react";
+import { format } from "date-fns";
 
 interface Transfer {
   id: string;
@@ -24,11 +31,11 @@ interface Transfer {
   quantity?: number;
 }
 
-const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof Clock }> = {
-  pending: { label: "Awaiting Upload", variant: "destructive", icon: Clock },
-  uploaded: { label: "Analyzing...", variant: "secondary", icon: Loader2 },
-  confirmed: { label: "Verified ✓", variant: "default", icon: ShieldCheck },
-  disputed: { label: "Needs Review", variant: "destructive", icon: ShieldAlert },
+const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  pending: { label: "Awaiting Upload", variant: "destructive" },
+  uploaded: { label: "Analyzing...", variant: "secondary" },
+  confirmed: { label: "Verified ✓", variant: "default" },
+  disputed: { label: "Needs Re-upload", variant: "destructive" },
 };
 
 const SellerTransfers = () => {
@@ -38,9 +45,12 @@ const SellerTransfers = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
 
   const fetchTransfers = useCallback(async () => {
     if (!user) return;
+    setLoading(true);
     const { data, error } = await supabase
       .from("order_transfers")
       .select("*")
@@ -120,14 +130,12 @@ const SellerTransfers = () => {
       setUploading(null);
       setVerifying(transferId);
 
-      // Trigger AI verification
       const { error: verifyError } = await supabase.functions.invoke("verify-transfer-image", {
         body: { transfer_id: transferId },
       });
 
       if (verifyError) {
         console.error("Verification error:", verifyError);
-        // Fallback: still notify buyer even if AI fails
         await supabase.functions.invoke("notify-buyer-transfer", {
           body: { transfer_id: transferId },
         });
@@ -142,8 +150,27 @@ const SellerTransfers = () => {
     }
   };
 
+  const filtered = transfers.filter((t) => {
+    if (statusFilter !== "all" && t.status !== statusFilter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return (
+        (t.event_title || "").toLowerCase().includes(q) ||
+        (t.venue || "").toLowerCase().includes(q) ||
+        t.order_id.toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
+
+  const pendingCount = transfers.filter((t) => t.status === "pending" || t.status === "disputed").length;
+
   if (loading) {
-    return <div className="text-center text-muted-foreground py-8">Loading transfers...</div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   if (transfers.length === 0) {
@@ -156,167 +183,175 @@ const SellerTransfers = () => {
     );
   }
 
-  const pendingCount = transfers.filter((t) => t.status === "pending").length;
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold">Ticket Transfers</h2>
-        {pendingCount > 0 && (
-          <Badge variant="destructive">{pendingCount} awaiting upload</Badge>
-        )}
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div className="flex gap-2 items-center flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search events, orders..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 w-56"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="pending">Awaiting Upload</SelectItem>
+              <SelectItem value="uploaded">Analyzing</SelectItem>
+              <SelectItem value="confirmed">Verified</SelectItem>
+              <SelectItem value="disputed">Needs Re-upload</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex gap-2 items-center text-sm text-muted-foreground">
+          {pendingCount > 0 && (
+            <Badge variant="destructive">{pendingCount} action needed</Badge>
+          )}
+          <span>{filtered.length} transfer{filtered.length !== 1 ? "s" : ""}</span>
+          <Button variant="ghost" size="sm" onClick={fetchTransfers}>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        {transfers.map((transfer) => {
-          const config = statusConfig[transfer.status] || statusConfig.pending;
-          const StatusIcon = config.icon;
-          const orderRef = transfer.order_id.slice(0, 8).toUpperCase();
-          const isCurrentlyVerifying = verifying === transfer.id;
+      {filtered.length === 0 ? (
+        <p className="text-center text-muted-foreground py-8">No transfers found.</p>
+      ) : (
+        <div className="rounded-lg border overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Event</TableHead>
+                <TableHead>Section / Row</TableHead>
+                <TableHead>Transfer Email</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Proof</TableHead>
+                <TableHead>AI Result</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((t) => {
+                const cfg = statusConfig[t.status] || statusConfig.pending;
+                const vr = t.verification_result as any;
+                const isCurrentlyVerifying = verifying === t.id;
 
-          return (
-            <div key={transfer.id} className="glass rounded-xl p-5 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-semibold text-foreground truncate">
-                    {transfer.event_title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{transfer.venue}</p>
-                  <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-                    <span>Order #{orderRef}</span>
-                    <span>Section {transfer.section}{transfer.row_name ? ` · Row ${transfer.row_name}` : ""}</span>
-                    <span>Qty: {transfer.quantity}</span>
-                  </div>
-                </div>
-                <Badge
-                  variant={isCurrentlyVerifying ? "secondary" : config.variant}
-                  className="flex items-center gap-1 shrink-0"
-                >
-                  {isCurrentlyVerifying ? (
-                    <>
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <StatusIcon className={`h-3 w-3 ${transfer.status === "uploaded" ? "animate-spin" : ""}`} />
-                      {config.label}
-                    </>
-                  )}
-                </Badge>
-              </div>
-
-              {/* Verified confirmation banner */}
-              {transfer.status === "confirmed" && (
-                <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3 flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" />
-                  <p className="text-sm text-emerald-700 dark:text-emerald-400">
-                    Transfer verified! The buyer has been notified automatically.
-                  </p>
-                </div>
-              )}
-
-              {/* Disputed alert banner */}
-              {transfer.status === "disputed" && (
-                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-3 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert className="h-5 w-5 text-red-600 shrink-0" />
-                    <p className="text-sm font-medium text-red-700 dark:text-red-400">
-                      Verification found discrepancies
-                    </p>
-                  </div>
-                  {transfer.verification_result?.notes && (
-                    <p className="text-xs text-red-600 dark:text-red-400 ml-7">
-                      {transfer.verification_result.notes}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground ml-7">
-                    Our team has been notified and will review. You may re-upload if the screenshot was incorrect.
-                  </p>
-                </div>
-              )}
-
-              {(transfer.status === "pending" || transfer.status === "disputed") && (
-                <div className="pt-2 border-t border-border space-y-3">
-                  {transfer.transfer_email_alias && (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                        <Mail className="h-4 w-4 text-primary" />
-                        Transfer Email
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <code className="flex-1 bg-muted px-3 py-2 rounded-lg text-sm font-mono text-foreground truncate">
-                          {transfer.transfer_email_alias}
-                        </code>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            navigator.clipboard.writeText(transfer.transfer_email_alias!);
-                            toast({ title: "Copied!", description: "Transfer email copied to clipboard." });
-                          }}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
+                return (
+                  <TableRow key={t.id}>
+                    <TableCell className="max-w-[200px]">
+                      <div className="font-medium text-sm truncate">{t.event_title || "—"}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {t.event_date ? format(new Date(t.event_date), "MMM d, yyyy") : ""}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Transfer your tickets to this email on Ticketmaster (or your ticket platform). Then upload a screenshot of the completed transfer below.
-                      </p>
-                    </div>
-                  )}
-                  {!transfer.transfer_email_alias && (
-                    <p className="text-sm text-muted-foreground">
-                      Upload a screenshot of the completed transfer to confirm fulfillment.
-                    </p>
-                  )}
-                  <label className="cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleUpload(transfer.id, file);
-                      }}
-                    />
-                    <Button
-                      variant="hero"
-                      size="sm"
-                      className="w-full"
-                      disabled={uploading === transfer.id || isCurrentlyVerifying}
-                      asChild
-                    >
-                      <span>
-                        {uploading === transfer.id ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Uploading...</>
-                        ) : isCurrentlyVerifying ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verifying...</>
-                        ) : (
-                          <><Upload className="h-4 w-4 mr-2" />{transfer.status === "disputed" ? "Re-upload Transfer Proof" : "Upload Transfer Proof"}</>
-                        )}
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">
+                        {t.section || "—"}{t.row_name ? ` / ${t.row_name}` : ""}
+                        {t.quantity ? ` (×${t.quantity})` : ""}
                       </span>
-                    </Button>
-                  </label>
-                </div>
-              )}
-
-              {transfer.transfer_image_url && (
-                <div className="pt-2 border-t border-border">
-                  <a
-                    href={transfer.transfer_image_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline flex items-center gap-1"
-                  >
-                    <ImageIcon className="h-3.5 w-3.5" />
-                    View uploaded proof
-                  </a>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                    </TableCell>
+                    <TableCell>
+                      {t.transfer_email_alias ? (
+                        <div className="flex items-center gap-1">
+                          <code className="text-xs bg-muted px-2 py-1 rounded truncate max-w-[140px] block">
+                            {t.transfer_email_alias}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={() => {
+                              navigator.clipboard.writeText(t.transfer_email_alias!);
+                              toast({ title: "Copied!", description: "Transfer email copied." });
+                            }}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {isCurrentlyVerifying ? (
+                        <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+                          <Loader2 className="h-3 w-3 animate-spin" /> Analyzing...
+                        </Badge>
+                      ) : (
+                        <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {t.transfer_image_url ? (
+                        <a href={t.transfer_image_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1 text-sm">
+                          View <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">None</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {vr ? (
+                        <div className="flex items-center gap-1">
+                          {vr.overall_match ? (
+                            <ShieldCheck className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <ShieldAlert className="h-4 w-4 text-destructive" />
+                          )}
+                          <span className="text-xs">{vr.overall_match ? "Match" : "Mismatch"}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {(t.status === "pending" || t.status === "disputed") && (
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleUpload(t.id, file);
+                            }}
+                          />
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="h-7 text-xs"
+                            disabled={uploading === t.id || isCurrentlyVerifying}
+                            asChild
+                          >
+                            <span>
+                              {uploading === t.id ? (
+                                <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Uploading</>
+                              ) : (
+                                <><Upload className="h-3 w-3 mr-1" />{t.status === "disputed" ? "Re-upload" : "Upload Proof"}</>
+                              )}
+                            </span>
+                          </Button>
+                        </label>
+                      )}
+                      {t.status === "confirmed" && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3 text-green-500" /> Complete
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 };
