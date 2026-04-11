@@ -1,89 +1,77 @@
 
 
-# Redesign Seller Application Form
+## Plan: Enhanced Seller Transfer Flow
 
-## Overview
-Replace the current simple form with a multi-section application that captures business info, sport-by-sport seat inventory details, and optional company/tax info. Remove the "How many tickets do you own?" field. Add dynamic sport selection with per-location seat details.
-
----
-
-## 1. Database: New table for application seat locations
-
-Create a `reseller_application_seats` table to store the per-sport, per-location seat details submitted with the application.
-
-```text
-reseller_application_seats
-├── id (uuid, PK)
-├── reseller_id (uuid, FK → resellers.id)
-├── league (text)          -- e.g. "NHL", "MLB"
-├── section (text)
-├── row_name (text)
-├── seat_count (integer)
-├── lowest_seat (text)
-├── created_at (timestamptz)
-```
-
-RLS: Sellers can insert/read own rows (via reseller_id join). Admins can read all.
-
-Also add columns to `resellers` table:
-- `is_registered_company` (boolean, default false)
-- `corporation_number` (text, nullable)
-- `tax_collection_number` (text, nullable)
-
-Remove the `ticket_count` column usage from the form (keep column for backward compat but stop writing to it).
+This plan adds the transfer email to the seller confirmation email, provides a step-by-step transfer guide, and introduces AI-powered verification of uploaded transfer proof with automatic confirmation/alert emails.
 
 ---
 
-## 2. Redesigned Application Form
+### 1. Add Transfer Email to Seller Confirmation Email
 
-The form will have three sections:
+**File:** `supabase/functions/stripe-webhook/index.ts`
 
-### Section A: Personal & Business Info
-- First Name * / Last Name *
-- Phone / Email *
-- **Are you a registered company?** — Yes/No toggle
-  - If Yes: **Company Name** * (mandatory)
-  - If Yes: **Corporation Number** (optional)
-  - **Do you have a tax collection number (e.g. HST/GST)?** (optional text field)
+- Add `transferEmail` parameter to `sellerEmailHtml()` function
+- Display the masked transfer email (e.g., `order-a1b2c3d4@seats.ca`) prominently in the seller email, right after the sale details
+- Add a styled "Transfer Email" row in the details table
+- Pass the `transferEmailAlias` value when calling `sellerEmailHtml()` (it's already generated at that point in the webhook)
 
-### Section B: Sport Selection & Seat Inventory
-- **What sports are you applying for?** — Multi-select checkboxes: NHL, NFL, MLB, NBA, MLS, CFL, WNBA
-- For each selected sport, show a card:
-  - **How many seat locations do you have?** — dropdown (1–10)
-  - For each location, expandable fields:
-    - Section *
-    - Row *
-    - Number of Seats *
-    - Lowest Seat Number *
+Also update the `send-transactional-email` version of `sellerNotificationHtml` to match.
 
-### Section C: Submit
-- Standard submit button (same gating as today — must be logged in)
+### 2. Add Step-by-Step Transfer Guide in Seller Email
+
+Replace the generic "upload a copy" reminder with a clear numbered guide:
+
+1. Log in to your Seats.ca Seller Portal
+2. Go to the **Transfers** tab
+3. Locate this sale (Order Ref shown above)
+4. Transfer your tickets to the email shown above via Ticketmaster (or your platform)
+5. Take a screenshot of the completed transfer
+6. Upload the screenshot to confirm delivery
+
+Include a CTA button: **"View Transfer in Seller Portal"** linking to `https://seats.ca/reseller-dashboard?tab=transfers`
+
+### 3. Add AI Verification of Transfer Proof
+
+**New edge function:** `supabase/functions/verify-transfer-image/index.ts`
+
+When a seller uploads transfer proof, use AI (Lovable AI Gateway with Gemini Vision) to analyze the screenshot and extract:
+- Recipient email address
+- Event name/date
+- Seat details (section, row)
+
+Compare extracted data against the order record. Possible outcomes:
+- **Match** → Auto-set status to `confirmed`, send confirmation email to both buyer and seller
+- **Mismatch** → Set status to `disputed`, send alert email to admin with details of what didn't match
+
+### 4. Add New Transfer Statuses & Database Update
+
+**Migration:** Add `verification_result` jsonb column to `order_transfers` to store AI extraction results.
+
+### 5. Update SellerTransfers UI
+
+**File:** `src/components/reseller/SellerTransfers.tsx`
+
+- Show verification status after upload (analyzing → confirmed / disputed)
+- Display a "Verified" badge with checkmark when AI confirms the transfer
+- Show alert if details don't match
+
+### 6. Confirmation & Alert Emails
+
+**In `stripe-webhook/index.ts` or `notify-buyer-transfer/index.ts`:**
+
+- **Transfer Confirmed email** (to buyer): "Your tickets have been verified and confirmed for [Event]"
+- **Transfer Alert email** (to admin): "Transfer mismatch detected for Order #XYZ — [details of what didn't match]"
+
+### 7. Redeploy Edge Functions
+
+Deploy: `stripe-webhook`, `send-transactional-email`, `notify-buyer-transfer`, `verify-transfer-image`
 
 ---
 
-## 3. Files to modify
+### Technical Details
 
-| File | Change |
-|------|--------|
-| `src/pages/ResellerDashboard.tsx` | Replace application form with new multi-section component |
-| New: `src/components/reseller/SellerApplicationForm.tsx` | Extract form into dedicated component for cleanliness |
-| Migration SQL | Add `reseller_application_seats` table + new columns on `resellers` |
-
----
-
-## 4. What stays the same
-
-- Payment flow remains post-approval (signup fee → weekly sub)
-- Document uploads (invoice, seat photos) will be required after approval, before first listing — no changes needed now
-- Seat perks (accessible, aisle, food) captured at listing time only
-- The `handleApply` insert to `resellers` table continues to work, just with updated fields
-
----
-
-## Technical Details
-
-- The sport multi-select uses the same league list already in the codebase (`NHL`, `NFL`, `MLB`, `NBA`, `MLS`, `CFL`, `WNBA`)
-- Dynamic seat location fields use React state: `Record<string, Array<{section, row, seatCount, lowestSeat}>>`
-- On submit: insert into `resellers` first, then batch insert into `reseller_application_seats` using the returned reseller ID
-- Form validation: at least one sport selected, each location must have section + row + seat count filled
+- AI verification uses Gemini 2.5 Flash via the Lovable AI gateway (no API key needed) with a structured prompt asking it to extract email, event name, date, and seats from the screenshot
+- The verification runs asynchronously after upload — the seller sees "Analyzing..." status briefly
+- The `verify-transfer-image` function downloads the image from the public storage URL and sends it to the vision model
+- Verification result is stored as JSON in `order_transfers.verification_result` for audit trail
 
