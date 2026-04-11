@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail } from "lucide-react";
+import { Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail, Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
 
 interface Transfer {
   id: string;
@@ -15,6 +15,7 @@ interface Transfer {
   status: string;
   uploaded_at: string | null;
   created_at: string;
+  verification_result?: any;
   event_title?: string;
   venue?: string;
   event_date?: string;
@@ -25,9 +26,9 @@ interface Transfer {
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof Clock }> = {
   pending: { label: "Awaiting Upload", variant: "destructive", icon: Clock },
-  uploaded: { label: "Uploaded", variant: "secondary", icon: Upload },
-  confirmed: { label: "Confirmed", variant: "default", icon: CheckCircle },
-  disputed: { label: "Disputed", variant: "destructive", icon: AlertTriangle },
+  uploaded: { label: "Analyzing...", variant: "secondary", icon: Loader2 },
+  confirmed: { label: "Verified ✓", variant: "default", icon: ShieldCheck },
+  disputed: { label: "Needs Review", variant: "destructive", icon: ShieldAlert },
 };
 
 const SellerTransfers = () => {
@@ -36,6 +37,7 @@ const SellerTransfers = () => {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState<string | null>(null);
 
   const fetchTransfers = useCallback(async () => {
     if (!user) return;
@@ -51,7 +53,6 @@ const SellerTransfers = () => {
       return;
     }
 
-    // Enrich with ticket/event info
     const enriched: Transfer[] = [];
     for (const t of data || []) {
       const { data: orderItem } = await supabase
@@ -66,6 +67,7 @@ const SellerTransfers = () => {
 
       enriched.push({
         ...t,
+        verification_result: (t as any).verification_result,
         event_title: event?.title || "Unknown Event",
         venue: event?.venue || "",
         event_date: event?.event_date || "",
@@ -102,7 +104,6 @@ const SellerTransfers = () => {
 
       const imageUrl = urlData.publicUrl;
 
-      // Update the transfer record
       const { error: updateError } = await supabase
         .from("order_transfers")
         .update({
@@ -115,21 +116,29 @@ const SellerTransfers = () => {
 
       if (updateError) throw updateError;
 
-      // Trigger buyer notification
-      const { error: notifyError } = await supabase.functions.invoke("notify-buyer-transfer", {
+      toast({ title: "Transfer proof uploaded!", description: "AI verification is analyzing your screenshot..." });
+      setUploading(null);
+      setVerifying(transferId);
+
+      // Trigger AI verification
+      const { error: verifyError } = await supabase.functions.invoke("verify-transfer-image", {
         body: { transfer_id: transferId },
       });
 
-      if (notifyError) {
-        console.error("Failed to notify buyer:", notifyError);
+      if (verifyError) {
+        console.error("Verification error:", verifyError);
+        // Fallback: still notify buyer even if AI fails
+        await supabase.functions.invoke("notify-buyer-transfer", {
+          body: { transfer_id: transferId },
+        });
       }
 
-      toast({ title: "Transfer proof uploaded!", description: "The buyer has been notified automatically." });
+      setVerifying(null);
       fetchTransfers();
     } catch (err: any) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
-    } finally {
       setUploading(null);
+      setVerifying(null);
     }
   };
 
@@ -163,12 +172,10 @@ const SellerTransfers = () => {
           const config = statusConfig[transfer.status] || statusConfig.pending;
           const StatusIcon = config.icon;
           const orderRef = transfer.order_id.slice(0, 8).toUpperCase();
+          const isCurrentlyVerifying = verifying === transfer.id;
 
           return (
-            <div
-              key={transfer.id}
-              className="glass rounded-xl p-5 space-y-3"
-            >
+            <div key={transfer.id} className="glass rounded-xl p-5 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-display font-semibold text-foreground truncate">
@@ -181,13 +188,55 @@ const SellerTransfers = () => {
                     <span>Qty: {transfer.quantity}</span>
                   </div>
                 </div>
-                <Badge variant={config.variant} className="flex items-center gap-1 shrink-0">
-                  <StatusIcon className="h-3 w-3" />
-                  {config.label}
+                <Badge
+                  variant={isCurrentlyVerifying ? "secondary" : config.variant}
+                  className="flex items-center gap-1 shrink-0"
+                >
+                  {isCurrentlyVerifying ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <StatusIcon className={`h-3 w-3 ${transfer.status === "uploaded" ? "animate-spin" : ""}`} />
+                      {config.label}
+                    </>
+                  )}
                 </Badge>
               </div>
 
-              {transfer.status === "pending" && (
+              {/* Verified confirmation banner */}
+              {transfer.status === "confirmed" && (
+                <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3 flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" />
+                  <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                    Transfer verified! The buyer has been notified automatically.
+                  </p>
+                </div>
+              )}
+
+              {/* Disputed alert banner */}
+              {transfer.status === "disputed" && (
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-3 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="h-5 w-5 text-red-600 shrink-0" />
+                    <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                      Verification found discrepancies
+                    </p>
+                  </div>
+                  {transfer.verification_result?.notes && (
+                    <p className="text-xs text-red-600 dark:text-red-400 ml-7">
+                      {transfer.verification_result.notes}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground ml-7">
+                    Our team has been notified and will review. You may re-upload if the screenshot was incorrect.
+                  </p>
+                </div>
+              )}
+
+              {(transfer.status === "pending" || transfer.status === "disputed") && (
                 <div className="pt-2 border-t border-border space-y-3">
                   {transfer.transfer_email_alias && (
                     <div className="space-y-2">
@@ -234,12 +283,17 @@ const SellerTransfers = () => {
                       variant="hero"
                       size="sm"
                       className="w-full"
-                      disabled={uploading === transfer.id}
+                      disabled={uploading === transfer.id || isCurrentlyVerifying}
                       asChild
                     >
                       <span>
-                        <Upload className="h-4 w-4 mr-2" />
-                        {uploading === transfer.id ? "Uploading..." : "Upload Transfer Proof"}
+                        {uploading === transfer.id ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Uploading...</>
+                        ) : isCurrentlyVerifying ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verifying...</>
+                        ) : (
+                          <><Upload className="h-4 w-4 mr-2" />{transfer.status === "disputed" ? "Re-upload Transfer Proof" : "Upload Transfer Proof"}</>
+                        )}
                       </span>
                     </Button>
                   </label>

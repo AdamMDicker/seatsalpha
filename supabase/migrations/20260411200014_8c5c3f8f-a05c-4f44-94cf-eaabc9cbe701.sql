@@ -1,0 +1,1 @@
+ALTER TABLE public.order_transfers ADD COLUMN IF NOT EXISTS verification_result jsonb DEFAULT NULL;
