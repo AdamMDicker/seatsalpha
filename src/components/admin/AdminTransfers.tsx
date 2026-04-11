@@ -52,6 +52,7 @@ const AdminTransfers = () => {
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; transfer: AdminTransfer | null; action: "confirm" | "dispute" | "reset" }>({ open: false, transfer: null, action: "confirm" });
   const [actionLoading, setActionLoading] = useState(false);
   const [reverifying, setReverifying] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   const fetchTransfers = useCallback(async () => {
     setLoading(true);

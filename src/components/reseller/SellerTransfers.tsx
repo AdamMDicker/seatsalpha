@@ -10,8 +10,13 @@ import { Input } from "@/components/ui/input";
 import {
   Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail,
   Loader2, ShieldCheck, ShieldAlert, ExternalLink, Search, RefreshCw,
+import {
+  Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail,
+  Loader2, ShieldCheck, ShieldAlert, ExternalLink, Search, RefreshCw, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { format } from "date-fns";
+
+const PAGE_SIZE = 20;
 
 interface Transfer {
   id: string;
