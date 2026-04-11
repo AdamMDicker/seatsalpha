@@ -378,7 +378,7 @@ const AdminTransfers = () => {
         </>
       )}
 
-      <Dialog open={confirmDialog.open} onOpenChange={(o) => !o && setConfirmDialog({ open: false, transfer: null, action: "confirm" })}>
+      <Dialog open={confirmDialog.open} onOpenChange={(o) => { if (!o) { setConfirmDialog({ open: false, transfer: null, action: "confirm" }); setDisputeReason(""); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{actionLabel[confirmDialog.action]} Transfer</DialogTitle>
