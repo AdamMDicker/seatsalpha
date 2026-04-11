@@ -408,6 +408,7 @@ export type Database = {
           transfer_email_alias: string | null
           transfer_image_url: string | null
           uploaded_at: string | null
+          verification_result: Json | null
         }
         Insert: {
           confirmed_at?: string | null
@@ -420,6 +421,7 @@ export type Database = {
           transfer_email_alias?: string | null
           transfer_image_url?: string | null
           uploaded_at?: string | null
+          verification_result?: Json | null
         }
         Update: {
           confirmed_at?: string | null
@@ -432,6 +434,7 @@ export type Database = {
           transfer_email_alias?: string | null
           transfer_image_url?: string | null
           uploaded_at?: string | null
+          verification_result?: Json | null
         }
         Relationships: [
           {
