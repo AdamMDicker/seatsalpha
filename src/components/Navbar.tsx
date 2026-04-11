@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Ticket, LogOut, Shield, ChevronDown } from "lucide-react";
+import { Menu, X, Ticket, LogOut, Shield, ChevronDown, Store } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +19,7 @@ import { CFL_TEAMS_CONFIG, CFL_DIVISIONS } from "@/data/cflTeams";
 import { CFL_LOGOS } from "@/data/cflLogos";
 import { WNBA_TEAMS_CONFIG, WNBA_CONFERENCES } from "@/data/wnbaTeams";
 import { WNBA_LOGOS } from "@/data/wnbaLogos";
+import { useResellerAccount } from "@/hooks/useResellerAccount";
 
 const MLB_DIVISIONS_LIST = ["AL East", "AL Central", "AL West", "NL East", "NL Central", "NL West"] as const;
 
@@ -88,6 +89,7 @@ const Navbar = () => {
   const [showTeams, setShowTeams] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAdmin, signOut } = useAuth();
+  const { hasResellerAccount } = useResellerAccount();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -269,6 +271,11 @@ const Navbar = () => {
             )}
             {user ? (
               <div className="flex items-center gap-2 flex-shrink-0">
+                {hasResellerAccount && (
+                  <Link to="/reseller" className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1">
+                    <Store className="h-3.5 w-3.5" /> Seller Portal
+                  </Link>
+                )}
                 <Link to="/my-orders" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                   My Orders
                 </Link>
@@ -320,6 +327,11 @@ const Navbar = () => {
 
             {user && (
               <>
+                {hasResellerAccount && (
+                  <Link to="/reseller" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]">
+                    Seller Portal
+                  </Link>
+                )}
                 <Link to="/my-orders" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]">
                   My Orders
                 </Link>
