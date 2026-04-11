@@ -345,7 +345,7 @@ const AdminTransfers = () => {
                               setReverifying(t.id);
                               try {
                                 const { error } = await supabase.functions.invoke("verify-transfer-image", {
-                                  body: { transferId: t.id },
+                                  body: { transfer_id: t.id },
                                 });
                                 if (error) throw error;
                                 toast({ title: "Re-verification triggered", description: "AI is analyzing the transfer proof." });
