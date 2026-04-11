@@ -55,6 +55,7 @@ const AdminTransfers = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [reverifying, setReverifying] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [disputeReason, setDisputeReason] = useState("");
 
   const fetchTransfers = useCallback(async () => {
     setLoading(true);
