@@ -231,6 +231,7 @@ const SellerTransfers = () => {
       {filtered.length === 0 ? (
         <p className="text-center text-muted-foreground py-8">No transfers found.</p>
       ) : (
+        <>
         <div className="rounded-lg border overflow-x-auto">
           <Table>
             <TableHeader>
