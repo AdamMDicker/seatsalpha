@@ -154,17 +154,12 @@ const AdminTransfers = () => {
     } else {
       toast({ title: "Updated", description: `Transfer ${action === "confirm" ? "confirmed" : action === "dispute" ? "disputed" : "reset"} successfully.` });
 
-      // If confirming, also notify buyer
-      if (action === "confirm" && transfer.buyer_email) {
+      // Notify buyer (confirm) or seller (dispute) via edge function
+      if (action === "confirm" || action === "dispute") {
         await supabase.functions.invoke("notify-buyer-transfer", {
           body: {
-            orderId: transfer.order_id,
-            ticketId: transfer.ticket_id,
-            buyerEmail: transfer.buyer_email,
-            eventTitle: transfer.event_title || "Event",
-            section: transfer.section || "",
-            row: transfer.row_name || "",
-            quantity: transfer.quantity || 1,
+            transfer_id: transfer.id,
+            action,
           },
         });
       }
