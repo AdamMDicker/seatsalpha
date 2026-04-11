@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
@@ -53,6 +55,7 @@ const AdminTransfers = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [reverifying, setReverifying] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [disputeReason, setDisputeReason] = useState("");
 
   const fetchTransfers = useCallback(async () => {
     setLoading(true);
@@ -163,6 +166,7 @@ const AdminTransfers = () => {
           body: {
             transfer_id: transfer.id,
             action,
+            ...(action === "dispute" && disputeReason ? { reason: disputeReason } : {}),
           },
         });
       }
@@ -171,6 +175,7 @@ const AdminTransfers = () => {
     }
 
     setActionLoading(false);
+    setDisputeReason("");
     setConfirmDialog({ open: false, transfer: null, action: "confirm" });
   };
 
@@ -373,7 +378,7 @@ const AdminTransfers = () => {
         </>
       )}
 
-      <Dialog open={confirmDialog.open} onOpenChange={(o) => !o && setConfirmDialog({ open: false, transfer: null, action: "confirm" })}>
+      <Dialog open={confirmDialog.open} onOpenChange={(o) => { if (!o) { setConfirmDialog({ open: false, transfer: null, action: "confirm" }); setDisputeReason(""); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{actionLabel[confirmDialog.action]} Transfer</DialogTitle>
@@ -388,6 +393,18 @@ const AdminTransfers = () => {
               <p><strong>Event:</strong> {confirmDialog.transfer.event_title || "—"}</p>
               <p><strong>Seller:</strong> {confirmDialog.transfer.seller_name} ({confirmDialog.transfer.seller_email})</p>
               <p><strong>Buyer:</strong> {confirmDialog.transfer.buyer_email || "—"}</p>
+            </div>
+          )}
+          {confirmDialog.action === "dispute" && (
+            <div className="space-y-2">
+              <Label htmlFor="dispute-reason">Reason for dispute (included in seller email)</Label>
+              <Textarea
+                id="dispute-reason"
+                placeholder="e.g. Screenshot is blurry, wrong recipient email, missing seat details..."
+                value={disputeReason}
+                onChange={(e) => setDisputeReason(e.target.value)}
+                rows={3}
+              />
             </div>
           )}
           <DialogFooter>
