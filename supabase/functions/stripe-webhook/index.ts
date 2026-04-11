@@ -378,24 +378,27 @@ serve(async (req) => {
           }
 
           // Create pending order_transfer for seller to upload proof
+          // For admin-listed tickets (seller_id is null), assign to admin user
           const { data: ticketForTransfer } = await supabase
             .from("tickets")
             .select("seller_id")
             .eq("id", meta.ticket_id)
             .single();
 
-          if (ticketForTransfer?.seller_id && orderId) {
+          if (orderId) {
+            const ADMIN_USER_ID = "8904900d-db33-4f03-bdb1-ca4d5b6dfa8f";
+            const effectiveSellerId = ticketForTransfer?.seller_id || ADMIN_USER_ID;
             const aliasRef = orderId.replace(/-/g, "").slice(0, 8).toLowerCase();
             const transferEmailAlias = `order-${aliasRef}@seats.ca`;
 
             await supabase.from("order_transfers").insert({
               order_id: orderId,
               ticket_id: meta.ticket_id,
-              seller_id: ticketForTransfer.seller_id,
+              seller_id: effectiveSellerId,
               status: "pending",
               transfer_email_alias: transferEmailAlias,
             });
-            console.log(`Created pending order_transfer for order ${orderId}, alias: ${transferEmailAlias}`);
+            console.log(`Created pending order_transfer for order ${orderId}, seller: ${effectiveSellerId}, alias: ${transferEmailAlias}`);
           }
         }
       }
