@@ -49,6 +49,7 @@ const SellerTransfers = () => {
   const [verifying, setVerifying] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   const fetchTransfers = useCallback(async () => {
     if (!user) return;
