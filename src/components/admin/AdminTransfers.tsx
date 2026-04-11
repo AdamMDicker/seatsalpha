@@ -91,7 +91,7 @@ const AdminTransfers = () => {
           enriched.event_date = item.tickets?.events?.event_date;
         }
 
-        // Get seller info
+        // Get seller info (try resellers first, fallback to profiles)
         const { data: reseller } = await supabase
           .from("resellers")
           .select("first_name, last_name, email")
@@ -101,6 +101,14 @@ const AdminTransfers = () => {
         if (reseller) {
           enriched.seller_name = `${reseller.first_name || ""} ${reseller.last_name || ""}`.trim();
           enriched.seller_email = reseller.email || undefined;
+        } else {
+          const { data: sellerProfile } = await supabase
+            .from("profiles")
+            .select("full_name, email")
+            .eq("user_id", t.seller_id)
+            .maybeSingle();
+          enriched.seller_name = sellerProfile?.full_name || undefined;
+          enriched.seller_email = sellerProfile?.email || undefined;
         }
 
         // Get buyer email from profile
