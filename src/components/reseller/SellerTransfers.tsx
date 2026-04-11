@@ -31,6 +31,7 @@ interface Transfer {
   section?: string;
   row_name?: string;
   quantity?: number;
+  listing_quantity?: number;
 }
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -54,6 +55,7 @@ const SellerTransfers = () => {
   const fetchTransfers = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+
     const { data, error } = await supabase
       .from("order_transfers")
       .select("*")
@@ -66,32 +68,77 @@ const SellerTransfers = () => {
       return;
     }
 
-    const enriched: Transfer[] = [];
-    for (const t of data || []) {
-      const { data: orderItem } = await supabase
+    const transfersData = data || [];
+    const orderIds = [...new Set(transfersData.map((transfer) => transfer.order_id))];
+    const ticketIds = [...new Set(transfersData.map((transfer) => transfer.ticket_id))];
+
+    const [{ data: orderItems }, { data: tickets, error: ticketsError }] = await Promise.all([
+      supabase
         .from("order_items")
-        .select("quantity, tickets(section, row_name, event_id, events(title, venue, event_date))")
-        .eq("order_id", t.order_id)
-        .eq("ticket_id", t.ticket_id)
-        .maybeSingle();
+        .select("order_id, ticket_id, quantity")
+        .in("order_id", orderIds)
+        .in("ticket_id", ticketIds),
+      supabase
+        .from("tickets")
+        .select("id, section, row_name, quantity, event_id")
+        .in("id", ticketIds),
+    ]);
 
-      const ticket = orderItem?.tickets as any;
-      const event = ticket?.events as any;
+    if (ticketsError) {
+      console.error("Failed to fetch transfer ticket details:", ticketsError);
+    }
 
-      enriched.push({
-        ...t,
-        verification_result: (t as any).verification_result,
-        event_title: event?.title || "Unknown Event",
+    const eventIds = [...new Set((tickets || []).map((ticket) => ticket.event_id))];
+    const { data: events, error: eventsError } = eventIds.length
+      ? await supabase
+          .from("events")
+          .select("id, title, venue, event_date")
+          .in("id", eventIds)
+      : { data: [], error: null };
+
+    if (eventsError) {
+      console.error("Failed to fetch transfer event details:", eventsError);
+    }
+
+    const orderItemsByKey = new Map(
+      (orderItems || []).map((item) => [`${item.order_id}:${item.ticket_id}`, item])
+    );
+    const ticketsById = new Map((tickets || []).map((ticket) => [ticket.id, ticket]));
+    const eventsById = new Map((events || []).map((event) => [event.id, event]));
+
+    const enriched: Transfer[] = transfersData.map((transfer) => {
+      const orderItem = orderItemsByKey.get(`${transfer.order_id}:${transfer.ticket_id}`);
+      const ticket = ticketsById.get(transfer.ticket_id);
+      const event = ticket ? eventsById.get(ticket.event_id) : null;
+
+      return {
+        ...transfer,
+        verification_result: (transfer as any).verification_result,
+        event_title: event?.title || "Event unavailable",
         venue: event?.venue || "",
         event_date: event?.event_date || "",
         section: ticket?.section || "",
         row_name: ticket?.row_name || "",
         quantity: orderItem?.quantity || 1,
-      });
-    }
+        listing_quantity: ticket?.quantity || orderItem?.quantity || 1,
+      };
+    });
+
     setTransfers(enriched);
     setLoading(false);
   }, [user]);
+
+  const getQuantityLabel = (transfer: Transfer) => {
+    const soldQuantity = transfer.quantity || 1;
+    const listingQuantity = transfer.listing_quantity || soldQuantity;
+    const ticketWord = soldQuantity === 1 ? "ticket" : "tickets";
+
+    if (listingQuantity > soldQuantity) {
+      return `Transfer ${soldQuantity} of original ${listingQuantity} ${ticketWord}`;
+    }
+
+    return `Transfer all ${soldQuantity} ${ticketWord}`;
+  };
 
   useEffect(() => {
     fetchTransfers();
@@ -258,12 +305,19 @@ const SellerTransfers = () => {
                       <div className="text-xs text-muted-foreground">
                         {t.event_date ? format(new Date(t.event_date), "MMM d, yyyy") : ""}
                       </div>
+                      {t.venue && (
+                        <div className="text-xs text-muted-foreground truncate">{t.venue}</div>
+                      )}
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm">
-                        {t.section || "—"}{t.row_name ? ` / ${t.row_name}` : ""}
-                        {t.quantity ? ` (×${t.quantity})` : ""}
-                      </span>
+                      <div className="space-y-1">
+                        <div className="text-sm font-medium">
+                          {t.section || "—"}{t.row_name ? ` / ${t.row_name}` : ""}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {getQuantityLabel(t)}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell>
                       {t.transfer_email_alias ? (
