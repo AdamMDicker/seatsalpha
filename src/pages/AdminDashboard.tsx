@@ -41,6 +41,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("events");
   const [serverVerified, setServerVerified] = useState(false);
+  const [transferCounts, setTransferCounts] = useState<{ pending: number; disputed: number }>({ pending: 0, disputed: 0 });
 
   useEffect(() => {
     if (!isLoading && (!user || !isAdmin)) {
@@ -59,8 +60,23 @@ const AdminDashboard = () => {
     if (user && isAdmin) verify();
   }, [user, isAdmin, navigate]);
 
+  // Fetch transfer counts for badge
+  useEffect(() => {
+    if (!serverVerified) return;
+    const fetchCounts = async () => {
+      const [{ count: pending }, { count: disputed }] = await Promise.all([
+        supabase.from("order_transfers").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("order_transfers").select("*", { count: "exact", head: true }).eq("status", "disputed"),
+      ]);
+      setTransferCounts({ pending: pending || 0, disputed: disputed || 0 });
+    };
+    fetchCounts();
+  }, [serverVerified]);
+
   if (isLoading || (!serverVerified && isAdmin)) return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Loading...</p></div>;
   if (!isAdmin || !serverVerified) return null;
+
+  const transferBadgeCount = transferCounts.pending + transferCounts.disputed;
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,7 +92,7 @@ const AdminDashboard = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${
                 activeTab === tab.id
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                   : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -84,6 +100,11 @@ const AdminDashboard = () => {
             >
               <tab.icon className="h-4 w-4" />
               {tab.label}
+              {tab.id === "transfers" && transferBadgeCount > 0 && (
+                <span className="ml-1 inline-flex items-center justify-center h-5 min-w-[20px] px-1 rounded-full bg-destructive text-destructive-foreground text-xs font-bold">
+                  {transferBadgeCount}
+                </span>
+              )}
             </button>
           ))}
         </div>
