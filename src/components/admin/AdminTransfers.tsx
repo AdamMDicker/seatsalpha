@@ -166,6 +166,7 @@ const AdminTransfers = () => {
           body: {
             transfer_id: transfer.id,
             action,
+            ...(action === "dispute" && disputeReason ? { reason: disputeReason } : {}),
           },
         });
       }
@@ -174,6 +175,7 @@ const AdminTransfers = () => {
     }
 
     setActionLoading(false);
+    setDisputeReason("");
     setConfirmDialog({ open: false, transfer: null, action: "confirm" });
   };
 
