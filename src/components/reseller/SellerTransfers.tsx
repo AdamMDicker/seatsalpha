@@ -166,6 +166,11 @@ const SellerTransfers = () => {
     return true;
   });
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => { setPage(1); }, [statusFilter, search]);
+
   const pendingCount = transfers.filter((t) => t.status === "pending" || t.status === "disputed").length;
 
   if (loading) {
