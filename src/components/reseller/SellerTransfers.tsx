@@ -245,7 +245,7 @@ const SellerTransfers = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((t) => {
+              {paged.map((t) => {
                 const cfg = statusConfig[t.status] || statusConfig.pending;
                 const vr = t.verification_result as any;
                 const isCurrentlyVerifying = verifying === t.id;
@@ -359,6 +359,22 @@ const SellerTransfers = () => {
             </TableBody>
           </Table>
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-3">
+            <span className="text-sm text-muted-foreground">
+              Page {page} of {totalPages} ({filtered.length} total)
+            </span>
+            <div className="flex gap-1">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                <ChevronLeft className="h-4 w-4" /> Prev
+              </Button>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+        </>
       )}
     </div>
   );
