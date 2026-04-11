@@ -189,6 +189,12 @@ const AdminTransfers = () => {
     return true;
   });
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [statusFilter, search]);
+
   const actionLabel = { confirm: "Confirm", dispute: "Dispute", reset: "Reset" };
 
   if (loading) {
