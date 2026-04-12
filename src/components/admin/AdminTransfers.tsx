@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight, MailX } from "lucide-react";
 import { format } from "date-fns";
 
 const PAGE_SIZE = 20;
@@ -38,11 +38,11 @@ interface AdminTransfer {
   buyer_email?: string;
 }
 
-const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "Pending Upload", variant: "outline" },
-  uploaded: { label: "Uploaded", variant: "secondary" },
-  confirmed: { label: "Confirmed", variant: "default" },
-  disputed: { label: "Disputed", variant: "destructive" },
+const statusConfig: Record<string, { label: string; className: string }> = {
+  pending: { label: "Upload Needed", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+  uploaded: { label: "Analyzing...", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+  confirmed: { label: "Verified ✓", className: "bg-green-100 text-green-800 border-green-300" },
+  disputed: { label: "Error — Mismatch", className: "bg-red-100 text-red-800 border-red-300" },
 };
 
 const AdminTransfers = () => {
@@ -296,7 +296,14 @@ const AdminTransfers = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant="outline" className={cfg.className}>{cfg.label}</Badge>
+                          {t.status === "disputed" && (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-red-600 font-medium">
+                              <MailX className="h-3 w-3" /> Forward blocked
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {t.transfer_image_url ? (
