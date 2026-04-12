@@ -440,7 +440,7 @@ serve(async (req) => {
             for (let i = 0; i < 10; i++) {
               aliasRef += letters[Math.floor(Math.random() * 26)];
             }
-            const transferEmailAlias = `order-${aliasRef}@seats.ca`;
+            const transferEmailAlias = `order-${aliasRef}@transfers.seats.ca`;
 
             await supabase.from("order_transfers").insert({
               order_id: orderId,
@@ -541,7 +541,7 @@ serve(async (req) => {
 
         // Retrieve the transfer email alias for this order
         const aliasRef = orderId ? orderId.replace(/-/g, "").slice(0, 8).toLowerCase() : "";
-        const transferEmailForSeller = aliasRef ? `order-${aliasRef}@seats.ca` : undefined;
+        const transferEmailForSeller = aliasRef ? `order-${aliasRef}@transfers.seats.ca` : undefined;
 
         const sellerHtml = sellerEmailHtml({
           eventTitle,
@@ -627,7 +627,7 @@ serve(async (req) => {
     if (!sellerNotificationSent) {
       const fallbackOrderRef = orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
       const fallbackAliasRef = orderId ? orderId.replace(/-/g, "").slice(0, 8).toLowerCase() : "";
-      const fallbackTransferEmail = fallbackAliasRef ? `order-${fallbackAliasRef}@seats.ca` : undefined;
+      const fallbackTransferEmail = fallbackAliasRef ? `order-${fallbackAliasRef}@transfers.seats.ca` : undefined;
       const fallbackHtml = sellerEmailHtml({
         eventTitle,
         venue,
