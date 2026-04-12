@@ -265,6 +265,24 @@ async function extractAcceptLink(resendApiKey: string, emailId: string): Promise
     }
 
     const emailData = await res.json();
+
+    // Debug: dump raw Resend response structure
+    console.log("=== RESEND INBOUND API RESPONSE ===");
+    console.log("Resend response keys:", Object.keys(emailData).join(", "));
+    console.log("Resend response type:", typeof emailData);
+    // Log each top-level field's type and length
+    for (const [key, val] of Object.entries(emailData)) {
+      if (typeof val === "string") {
+        console.log(`  ${key}: string (${val.length} chars) preview: ${val.substring(0, 200)}`);
+      } else if (Array.isArray(val)) {
+        console.log(`  ${key}: array (${val.length} items)`);
+      } else if (val && typeof val === "object") {
+        console.log(`  ${key}: object keys=[${Object.keys(val as Record<string, unknown>).join(",")}]`);
+      } else {
+        console.log(`  ${key}: ${typeof val} = ${String(val)}`);
+      }
+    }
+
     const contentCandidates = collectContentCandidates(emailData);
 
     console.log(
