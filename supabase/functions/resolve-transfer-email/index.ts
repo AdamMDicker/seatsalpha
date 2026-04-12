@@ -204,9 +204,19 @@ Deno.serve(async (req) => {
 
     await sendEmail(resendApiKey, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
 
+    // Persist the inbound email ID and extracted link for future admin resends
+    const updatePayload: Record<string, unknown> = {
+      forward_sent_at: new Date().toISOString(),
+      inbound_email_id: email_id,
+    };
+    if (acceptLink) {
+      updatePayload.accept_link = acceptLink;
+      updatePayload.accept_link_extracted_at = new Date().toISOString();
+    }
+
     await supabase
       .from("order_transfers")
-      .update({ forward_sent_at: new Date().toISOString() })
+      .update(updatePayload)
       .eq("transfer_email_alias", alias);
 
     console.log(`Forwarded transfer email for alias ${alias} to buyer (link: ${acceptLink ? "yes" : "no"})`);
