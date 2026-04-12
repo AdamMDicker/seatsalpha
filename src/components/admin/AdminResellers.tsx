@@ -28,6 +28,14 @@ interface SubInfo {
   discount_code: string | null;
 }
 
+interface AppSeat {
+  league: string;
+  section: string;
+  row_name: string;
+  seat_count: number;
+  lowest_seat: string;
+}
+
 const LEAGUES = [
   { key: "NHL", logo: nhlLogo },
   { key: "NBA", logo: nbaLogo },
