@@ -398,11 +398,14 @@ export type Database = {
       }
       order_transfers: {
         Row: {
+          accept_link: string | null
+          accept_link_extracted_at: string | null
           confirmed_at: string | null
           created_at: string
           fallback_sent_at: string | null
           forward_sent_at: string | null
           id: string
+          inbound_email_id: string | null
           order_id: string
           seller_id: string
           status: string
@@ -413,11 +416,14 @@ export type Database = {
           verification_result: Json | null
         }
         Insert: {
+          accept_link?: string | null
+          accept_link_extracted_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           fallback_sent_at?: string | null
           forward_sent_at?: string | null
           id?: string
+          inbound_email_id?: string | null
           order_id: string
           seller_id: string
           status?: string
@@ -428,11 +434,14 @@ export type Database = {
           verification_result?: Json | null
         }
         Update: {
+          accept_link?: string | null
+          accept_link_extracted_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           fallback_sent_at?: string | null
           forward_sent_at?: string | null
           id?: string
+          inbound_email_id?: string | null
           order_id?: string
           seller_id?: string
           status?: string
