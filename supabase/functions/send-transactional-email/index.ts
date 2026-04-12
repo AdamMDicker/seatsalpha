@@ -211,6 +211,12 @@ function sellerNotificationHtml(meta: {
       <p style="margin:0 0 8px;color:#1e40af;font-size:13px;font-weight:700;">📧 Transfer Email Address</p>
       <p style="margin:0;color:#1e3a8a;font-size:16px;font-weight:700;font-family:'Courier New',monospace;background:#dbeafe;padding:10px 14px;border-radius:6px;letter-spacing:0.5px;">${meta.transferEmail}</p>
       <p style="margin:8px 0 0;color:#3b82f6;font-size:12px;line-height:1.5;">Transfer your tickets to this email address on Ticketmaster (or your ticket platform).</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;background:#dbeafe;border-radius:6px;">
+        <tr><td style="padding:10px 14px;">
+          <p style="margin:0 0 4px;color:#1e40af;font-size:12px;font-weight:700;">👤 Recipient Name (for Ticketmaster)</p>
+          <p style="margin:0;color:#1e3a8a;font-size:15px;font-weight:700;">First Name: <span style="font-family:'Courier New',monospace;">Seats</span> &nbsp;|&nbsp; Last Name: <span style="font-family:'Courier New',monospace;">Customer</span></p>
+        </td></tr>
+      </table>
     </td></tr>
   </table>
   ` : ""}
