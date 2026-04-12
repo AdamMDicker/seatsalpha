@@ -16,6 +16,14 @@ import { format } from "date-fns";
 
 const PAGE_SIZE = 20;
 
+// Extract letters-only order ref from transfer email alias
+const getOrderRef = (t: Transfer): string => {
+  if (t.transfer_email_alias) {
+    return t.transfer_email_alias.replace("order-", "").replace("@inbound.seats.ca", "").toUpperCase();
+  }
+  return t.order_id.slice(0, 8).toUpperCase();
+};
+
 interface Transfer {
   id: string;
   order_id: string;
@@ -208,7 +216,7 @@ const SellerTransfers = () => {
       return (
         (t.event_title || "").toLowerCase().includes(q) ||
         (t.venue || "").toLowerCase().includes(q) ||
-        t.order_id.toLowerCase().includes(q)
+        getOrderRef(t).toLowerCase().includes(q)
       );
     }
     return true;
@@ -309,6 +317,9 @@ const SellerTransfers = () => {
                       {t.venue && (
                         <div className="text-xs text-muted-foreground truncate">{t.venue}</div>
                       )}
+                      <div className="text-xs font-mono text-muted-foreground mt-0.5">
+                        Ref: {getOrderRef(t)}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
