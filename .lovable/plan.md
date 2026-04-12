@@ -1,64 +1,40 @@
 
 
-## Plan: Brand Emails + Forward Ticketmaster Transfers
+## Plan: Soften Pricing Display + Add Legal Sign-Off Before Payment
 
-Three issues to address:
+### Problem
+1. The "$100/year + $0.50/week" price is shown prominently in benefits — can scare people off before they understand the value
+2. The fee structure needs to clarify it's per sport/league (not all-inclusive)
+3. Terms of Service and Privacy Policy aren't explicitly accepted before payment — only the Seller Agreement is
 
-1. **Brand all transactional emails** — add Seats.ca logo, brand colors, and consistent styling
-2. **Add event date + seat location** to the buyer transfer confirmation email
-3. **Fix Ticketmaster email forwarding** — the `resolve-transfer-email` function exists but isn't configured in `config.toml` and has no logs (never deployed or not receiving webhooks)
+### Changes
 
----
+#### 1. Soften pricing in benefits section
+**File:** `src/pages/ResellerDashboard.tsx`
 
-### 1. Brand the Transfer Confirmation Emails
+- Change the "Simple, Low Cost" benefit description from `"$100/year + $0.50/week to sell smarter."` → `"Annual Membership fee* — affordable access to Canada's fastest-growing marketplace."`
+- Change the subtitle under "Why Sell on Seats.ca?" from `"$100/year + $0.50/week to sell smarter."` → `"Low annual membership fee* to start selling."`
+- Add a small footnote below the benefits grid: `"*Membership fee applies per sport listing category. See Seller Agreement for full details."`
 
-**Files:** `supabase/functions/verify-transfer-image/index.ts`, `supabase/functions/notify-buyer-transfer/index.ts`
+#### 2. Add Terms + Privacy sign-off to the Seller Agreement page
+**File:** `src/pages/SellerAgreement.tsx`
 
-Both the "confirmed" and "disputed" email templates will be updated to match the brand standard already used in `send-transactional-email` and `stripe-webhook`:
+- Add two additional checkboxes before the "I Agree" button:
+  - "I have read and agree to the Terms of Service" (linked)
+  - "I have read and agree to the Privacy Policy" (linked)
+- All three checkboxes (agreement + terms + privacy) must be checked before the submit button enables
+- This keeps everything in one place before any payment step
 
-- Add the Seats.ca wordmark logo (300x300px) at the top of every email, above the gradient header
-- Use the brand red gradient (`#d6193d → #b81535`) header
-- Use Space Grotesk / Helvetica Neue font stack
-- Add the spam/junk warning footer consistent with other emails
+#### 3. Remove explicit dollar amounts from SellerSignupFee and SellerBillingSetup
+**Files:** `src/components/reseller/SellerSignupFee.tsx`, `src/components/reseller/SellerBillingSetup.tsx`
 
-The logo URL is: `https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png`
+- SellerSignupFee: Change "A one-time $100.00 CAD sign-up fee..." → "A one-time sign-up fee is required to activate your seller account." Button: "Pay Sign-Up Fee" (no dollar amount)
+- SellerBillingSetup: Change "$1.00 CAD/week" → "Set up your recurring weekly seller membership." These amounts are already disclosed in the Seller Agreement they've signed.
 
-### 2. Add Event Date + Ticket Location to Buyer Transfer Email
+The actual prices remain unchanged in Stripe — this only softens the marketing copy so people see the value proposition first, with full pricing details in the agreement they've already signed.
 
-**File:** `supabase/functions/verify-transfer-image/index.ts`
-
-The confirmed buyer email currently shows event title and venue but not the date or seat details. Update to:
-
-- Fetch `event_date` from the event record (already available via `orderItem.tickets.events`)
-- Fetch `section` and `row_name` from the ticket record
-- Add a details table showing: Date, Venue, Section/Row — matching the layout in buyer confirmation emails
-- Format the date using the same `formatEventDateET` helper
-
-### 3. Fix Ticketmaster Email Forwarding
-
-The `resolve-transfer-email` edge function exists and the code looks correct, but:
-
-- It's **not in `config.toml`** — needs `verify_jwt = false` since it receives Resend inbound webhooks
-- It may not be deployed — no logs exist
-- Resend inbound webhook needs to be configured to point to this function's URL
-
-**Actions:**
-- Add `[functions.resolve-transfer-email]` with `verify_jwt = false` to `config.toml`
-- Deploy the function
-- The Resend inbound webhook URL should be: `https://fkcszgrewzhswdtsqpad.supabase.co/functions/v1/resolve-transfer-email`
-- Verify the function works by checking logs after deployment
-
-The user mentioned they'll forward a sample Ticketmaster email — once received, we can test the full relay flow.
-
-### 4. Deploy
-
-Deploy all updated functions: `verify-transfer-image`, `notify-buyer-transfer`, `resolve-transfer-email`
-
----
-
-### Technical Details
-
-- Logo is already hosted in the `email-assets` public storage bucket
-- The `resolve-transfer-email` function uses `from: "Seats.ca Transfers <noreply@seats.ca>"` which sends via Resend directly (not the queue) — this is fine for forwarded emails since they need immediate delivery
-- The Resend inbound webhook must be configured in the Resend dashboard to forward `email.received` events for `*@seats.ca` to the edge function URL
+### Flow (unchanged order, stronger legal gate)
+```text
+Apply → Approved → Sign Agreement + Terms + Privacy → Pay signup fee → Weekly billing → Unlocked
+```
 
