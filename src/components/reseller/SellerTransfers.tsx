@@ -359,7 +359,7 @@ const SellerTransfers = () => {
                           <Loader2 className="h-3 w-3 animate-spin" /> Analyzing...
                         </Badge>
                       ) : (
-                        <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                        <Badge variant="outline" className={cfg.className}>{cfg.label}</Badge>
                       )}
                     </TableCell>
                     <TableCell>
