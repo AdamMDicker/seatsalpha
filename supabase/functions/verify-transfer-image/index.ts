@@ -274,15 +274,14 @@ Be lenient with matching - partial matches and similar names should count as mat
   <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">${eventTitle}</h2>
   ${detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">${detailsRows}</table>` : ""}
   <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
-    Great news! The seller has transferred your tickets, and our team has verified the transfer. Please check your Ticketmaster account (or relevant platform) to accept the incoming transfer.
+    Great news! The seller has transferred your tickets, and our team has verified the transfer.
   </p>
   <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
     <tr><td style="padding:16px;">
       <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
       <ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
-        <li>Log in to your Ticketmaster account (or relevant platform)</li>
         <li>Look for an incoming ticket transfer notification</li>
-        <li>Accept the transfer to add the tickets to your account</li>
+        <li>Accept the transfer to add the tickets to your Ticketmaster account</li>
       </ol>
     </td></tr>
   </table>
@@ -328,7 +327,7 @@ Be lenient with matching - partial matches and similar names should count as mat
           user_id: order.user_id,
           type: "transfer_confirmed",
           title: `✅ Transfer Verified — ${eventTitle}`,
-          body: `Your tickets for ${eventTitle} have been verified and confirmed. Check your Ticketmaster account to accept the transfer.`,
+          body: `Your tickets for ${eventTitle} have been verified and confirmed. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.`,
           metadata: { event_title: eventTitle, venue, transfer_id },
         });
       }

@@ -86,15 +86,14 @@ function transferConfirmedHtml(meta: {
   <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
   ${detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">${detailsRows}</table>` : ""}
   <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
-    The seller has completed the ticket transfer and it has been verified by our team. Please check your Ticketmaster account (or relevant platform) to accept the incoming transfer.
+    The seller has completed the ticket transfer and it has been verified by our team.
   </p>
   <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
     <tr><td style="padding:16px;">
       <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
       <ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
-        <li>Log in to your Ticketmaster account (or relevant platform)</li>
         <li>Look for an incoming ticket transfer notification</li>
-        <li>Accept the transfer to add the tickets to your account</li>
+        <li>Accept the transfer to add the tickets to your Ticketmaster account</li>
       </ol>
     </td></tr>
   </table>

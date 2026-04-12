@@ -123,15 +123,14 @@ Deno.serve(async (req) => {
 </td></tr>
 <tr><td style="padding:32px 40px;">
   <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
-    Good news! A ticket transfer has been initiated for your order. Please log in to your Ticketmaster account (or relevant platform) to accept the incoming tickets.
+    Good news! A ticket transfer has been initiated for your order.
   </p>
   <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
     <tr><td style="padding:16px;">
       <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
       <ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
-        <li>Log in to your Ticketmaster account (or relevant platform)</li>
         <li>Look for an incoming ticket transfer notification</li>
-        <li>Accept the transfer to add the tickets to your account</li>
+        <li>Accept the transfer to add the tickets to your Ticketmaster account</li>
       </ol>
     </td></tr>
   </table>
@@ -149,7 +148,7 @@ Deno.serve(async (req) => {
 </body></html>`;
 
     await forwardEmail(resendApiKey, buyerEmail, inboundSubject, safeHtml,
-      "A ticket transfer has been sent to your account. Please log in to your Ticketmaster account to accept the incoming tickets."
+      "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account."
     );
 
     console.log(`Forwarded transfer email for alias ${alias} to buyer`);
