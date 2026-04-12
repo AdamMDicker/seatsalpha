@@ -230,7 +230,6 @@ Deno.serve(async (req) => {
         eventDate,
         section,
         rowName,
-        imageUrl: transfer.transfer_image_url,
       });
 
       await supabase.from("email_send_log").insert({
