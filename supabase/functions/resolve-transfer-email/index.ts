@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
 
     const { data: transfer, error: transferError } = await supabase
       .from("order_transfers")
-      .select("order_id")
+      .select("order_id, status, verification_result")
       .eq("transfer_email_alias", alias)
       .single();
 
@@ -70,6 +70,15 @@ Deno.serve(async (req) => {
       console.error("Alias not found:", alias, transferError);
       return new Response(JSON.stringify({ error: "Alias not found" }), {
         status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Block forwarding if AI verification found a mismatch
+    if (transfer.status === "disputed") {
+      console.log(`BLOCKED forward for alias ${alias} — status is disputed (mismatch detected). Admin must manually confirm before buyer is notified.`);
+      return new Response(JSON.stringify({ forwarded: false, reason: "mismatch_blocked" }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
