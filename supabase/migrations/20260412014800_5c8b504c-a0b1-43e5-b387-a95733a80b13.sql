@@ -1,0 +1,1 @@
+ALTER TABLE public.resellers ADD COLUMN seller_type text DEFAULT 'sth';

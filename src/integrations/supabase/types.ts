@@ -625,6 +625,7 @@ export type Database = {
           is_suspended: boolean
           last_name: string | null
           phone: string | null
+          seller_type: string | null
           signup_fee_paid_at: string | null
           status: string
           stripe_connect_account_id: string | null
@@ -650,6 +651,7 @@ export type Database = {
           is_suspended?: boolean
           last_name?: string | null
           phone?: string | null
+          seller_type?: string | null
           signup_fee_paid_at?: string | null
           status?: string
           stripe_connect_account_id?: string | null
@@ -675,6 +677,7 @@ export type Database = {
           is_suspended?: boolean
           last_name?: string | null
           phone?: string | null
+          seller_type?: string | null
           signup_fee_paid_at?: string | null
           status?: string
           stripe_connect_account_id?: string | null
@@ -1026,6 +1029,10 @@ export type Database = {
       }
     }
     Functions: {
+      auto_approve_reseller: {
+        Args: { _reseller_id: string }
+        Returns: undefined
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
