@@ -1029,6 +1029,10 @@ export type Database = {
       }
     }
     Functions: {
+      auto_approve_reseller: {
+        Args: { _reseller_id: string }
+        Returns: undefined
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
