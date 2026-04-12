@@ -1,49 +1,47 @@
 
 
-## Plan: Redesign Seller Application with STH/Casual Seller Gate
+## Plan: Block Buyer Forward on Transfer Mismatch
 
-### What changes
+### Problem
+Currently, `resolve-transfer-email` forwards the Ticketmaster transfer notification to the buyer immediately, regardless of whether the AI verification found a mismatch. This means a buyer could accept wrong tickets before anyone catches the error.
 
-**Step 1 — New first-screen selector** in `SellerApplicationForm.tsx`:
-- Two big cards: "Season Ticket Holder" and "I Want to Sell a Few Tickets"
-- Selecting "Sell a few tickets" shows a friendly "Coming Soon" message (e.g., "Thanks for your interest! We're building tools for casual sellers — check back soon.") with no further form.
-- Selecting "Season Ticket Holder" proceeds to the application form.
+### Solution
+Modify `resolve-transfer-email` to check the transfer's `status` and `verification_result` before forwarding:
 
-**Step 2 — Replace league checkboxes with dropdowns**:
-- Replace the current checkbox grid with a repeatable "Add a Sport" pattern using `<Select>` dropdowns populated from the existing `LEAGUES` list.
-- Add an "Other" option in the dropdown. When selected, show a free-text field ("Tell us more — what sport/event type?") plus the standard Section/Row/Seat Count/Lowest Seat fields.
-- Non-"Other" selections use the existing seat location flow unchanged.
+1. **If status is `disputed`** (AI found mismatch) — do NOT forward to buyer. Log the blocked forward and notify admin.
+2. **If status is `confirmed`** (AI verified match) — forward immediately as today.
+3. **If status is `pending`** (proof not yet uploaded / not yet verified) — forward as today (the transfer email often arrives before the seller uploads proof, so we cannot block on pending).
 
-**Step 3 — "Other" goes to review; sports-only goes to payment**:
-- If the applicant selected only standard leagues (no "Other"), submitting the form inserts the reseller record and immediately redirects to the credit card / signup-fee step (existing `SellerSignupFee` component flow).
-- If the applicant selected "Other" (with or without standard leagues), the submission lands in a "pending review" state with a confirmation message: "Our team will review your application and follow up shortly."
+Additionally, when a `disputed` transfer is later manually confirmed by admin (via AdminTransfers "Confirm" action), we should trigger the buyer notification at that point.
 
-**Step 4 — Store seller type in database**:
-- Add a migration: `ALTER TABLE resellers ADD COLUMN seller_type text DEFAULT 'sth';` (values: `sth`, `casual`).
-- On submit, save `seller_type` so admin can differentiate.
+### Changes
 
-### Files modified
-1. `src/components/reseller/SellerApplicationForm.tsx` — full rewrite of the form flow
-2. New migration — add `seller_type` column and optionally auto-approve non-"Other" STH applications
+**File 1: `supabase/functions/resolve-transfer-email/index.ts`**
+- After looking up the transfer, fetch `status` and `verification_result` (currently only fetches `order_id`)
+- If `status === "disputed"`, skip forwarding, log a console message, and return `{ forwarded: false, reason: "mismatch_blocked" }`
+- If `status === "confirmed"` or `pending`, proceed with forward as normal
 
-### Flow summary
+**File 2: `src/components/admin/AdminTransfers.tsx`**
+- When admin clicks "Confirm" on a disputed transfer, after updating the status, also invoke `notify-buyer-transfer` with `action: "confirm"` to send the buyer their transfer notification (this already exists and sends the branded "Transfer Verified" email)
+
+### Flow After Changes
+
 ```text
-Landing
-  ├─ "Season Ticket Holder"
-  │    ├─ Select sport(s) via dropdown (NHL, NFL, MLB, NBA, MLS, CFL, WNBA, Other)
-  │    │    ├─ Standard sport → seat details (Section, Row, Count, Lowest)
-  │    │    └─ "Other" → free-text description + seat details
-  │    ├─ Personal/Business info (unchanged)
-  │    └─ Submit
-  │         ├─ All standard sports → auto-approve → redirect to payment
-  │         └─ Has "Other" → pending review → "We'll be in touch"
-  │
-  └─ "Want to Sell a Few Tickets"
-       └─ Friendly "Coming Soon" message (no form)
+Seller uploads proof
+  → AI verifies → status = confirmed OR disputed
+
+Ticketmaster email arrives at inbound.seats.ca
+  → resolve-transfer-email checks status
+  → disputed? BLOCK forward, log it
+  → confirmed/pending? FORWARD to buyer
+
+Admin reviews disputed transfer
+  → clicks "Confirm" → buyer gets notification
 ```
 
-### Notes
-- The "casual seller" path is a dead end for now — no account creation or fee required. They can navigate back and choose STH if they want.
-- No changes to the existing gate flow (Agreement → Signup Fee → Weekly Billing → Unlocked).
-- The auto-approve for standard-sports-only applicants means they skip the admin review and go straight to agreement signing + payment.
+### Technical Details
+- The `resolve-transfer-email` select query changes from `.select("order_id")` to `.select("order_id, status, verification_result")`
+- No database migration needed — uses existing `status` column
+- Two Edge Functions redeployed: `resolve-transfer-email`
+- One UI file updated: `AdminTransfers.tsx` (confirm action triggers buyer email)
 
