@@ -317,6 +317,9 @@ const SellerTransfers = () => {
                       {t.venue && (
                         <div className="text-xs text-muted-foreground truncate">{t.venue}</div>
                       )}
+                      <div className="text-xs font-mono text-muted-foreground mt-0.5">
+                        Ref: {getOrderRef(t)}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
