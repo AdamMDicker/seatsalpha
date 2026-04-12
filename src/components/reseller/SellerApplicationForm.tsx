@@ -257,14 +257,62 @@ const SellerApplicationForm = () => {
 
   // Casual seller: Coming Soon
   if (sellerPath === "casual") {
+    const handleNotifySignup = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!casualEmail.trim()) return;
+      setCasualSubmitting(true);
+      try {
+        const { error } = await supabase
+          .from("newsletter_subscribers")
+          .insert({ email: casualEmail.trim().toLowerCase() });
+        if (error) {
+          if (error.code === "23505") {
+            toast({ title: "You're already on the list!", description: "We'll notify you when casual selling launches." });
+          } else {
+            throw error;
+          }
+        } else {
+          toast({ title: "You're on the list!", description: "We'll email you as soon as casual selling is available." });
+        }
+        setCasualSigned(true);
+      } catch (err: any) {
+        toast({ title: "Error", description: err.message, variant: "destructive" });
+      } finally {
+        setCasualSubmitting(false);
+      }
+    };
+
     return (
       <div id="apply" className="max-w-lg mx-auto">
         <div className="glass rounded-xl p-8 text-center space-y-4">
           <Clock className="h-12 w-12 text-primary mx-auto" />
           <h2 className="font-display text-2xl font-bold">Coming Soon!</h2>
           <p className="text-muted-foreground">
-            Thanks for your interest! We're building tools for casual sellers so you can list individual tickets quickly and easily. Check back soon.
+            Thanks for your interest! We're building tools for casual sellers so you can list individual tickets quickly and easily.
           </p>
+
+          {casualSigned ? (
+            <div className="bg-primary/10 rounded-lg p-4 space-y-1">
+              <p className="text-sm font-medium text-foreground">🎉 You're on the list!</p>
+              <p className="text-xs text-muted-foreground">We'll send you an email when casual selling launches.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleNotifySignup} className="flex flex-col sm:flex-row gap-3 pt-2">
+              <input
+                type="email"
+                value={casualEmail}
+                onChange={(e) => setCasualEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                maxLength={100}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <Button type="submit" variant="hero" disabled={casualSubmitting}>
+                {casualSubmitting ? "..." : "Notify Me"}
+              </Button>
+            </form>
+          )}
+
           <Button variant="outline" onClick={() => setSellerPath(null)}>
             ← Go Back
           </Button>
