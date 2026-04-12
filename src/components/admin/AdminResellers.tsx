@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Search, ShieldAlert, ShieldOff, CreditCard, DollarSign, Loader2 } from "lucide-react";
+import { Search, ShieldAlert, ShieldOff, CreditCard, DollarSign, Loader2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 import nhlLogo from "@/assets/leagues/nhl.png";
