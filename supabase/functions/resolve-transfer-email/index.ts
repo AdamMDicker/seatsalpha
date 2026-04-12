@@ -120,6 +120,25 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log("=== WEBHOOK RECEIVED ===");
+    console.log("Webhook payload keys:", Object.keys(body.data || {}).join(", "));
+    console.log("Webhook from:", body.data?.from);
+    console.log("Webhook subject:", body.data?.subject);
+    console.log("Webhook to:", JSON.stringify(body.data?.to));
+    console.log("Webhook email_id:", body.data?.email_id);
+
+    // Log the raw webhook HTML content if present (first 500 chars)
+    if (body.data?.html) {
+      console.log("Webhook body.data.html length:", body.data.html.length);
+      console.log("Webhook body.data.html preview:", body.data.html.substring(0, 500));
+    } else {
+      console.log("Webhook body.data.html: NOT PRESENT");
+    }
+    if (body.data?.text) {
+      console.log("Webhook body.data.text length:", body.data.text.length);
+      console.log("Webhook body.data.text preview:", body.data.text.substring(0, 300));
+    }
+
     const { email_id, to: recipients } = body.data;
 
     if (!email_id || !recipients || !Array.isArray(recipients) || recipients.length === 0) {
