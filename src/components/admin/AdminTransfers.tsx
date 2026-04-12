@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight, MailX } from "lucide-react";
+import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight, MailX, Send } from "lucide-react";
 import { format } from "date-fns";
 
 const PAGE_SIZE = 20;
@@ -54,6 +54,7 @@ const AdminTransfers = () => {
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; transfer: AdminTransfer | null; action: "confirm" | "dispute" | "reset" }>({ open: false, transfer: null, action: "confirm" });
   const [actionLoading, setActionLoading] = useState(false);
   const [reverifying, setReverifying] = useState<string | null>(null);
+  const [relaying, setRelaying] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [disputeReason, setDisputeReason] = useState("");
 
@@ -367,6 +368,26 @@ const AdminTransfers = () => {
                               Re-verify
                             </Button>
                           )}
+                          <Button
+                            size="sm" variant="outline" className="h-7 text-xs border-primary/30 text-primary hover:bg-primary/10"
+                            disabled={relaying === t.id}
+                            onClick={async () => {
+                              setRelaying(t.id);
+                              try {
+                                const { data, error } = await supabase.functions.invoke("resolve-transfer-email", { body: { transfer_id: t.id } });
+                                if (error) throw error;
+                                toast({ title: "Relay sent", description: `Buyer notification re-sent to ${t.buyer_email || "buyer"}.` });
+                                fetchTransfers();
+                              } catch {
+                                toast({ title: "Error", description: "Failed to resend relay email.", variant: "destructive" });
+                              } finally {
+                                setRelaying(null);
+                              }
+                            }}
+                          >
+                            {relaying === t.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
+                            Resend Relay
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
