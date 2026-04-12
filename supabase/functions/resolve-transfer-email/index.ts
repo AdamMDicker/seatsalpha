@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_URL = "https://api.resend.com";
+const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -15,13 +16,10 @@ Deno.serve(async (req) => {
 
   try {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      throw new Error("RESEND_API_KEY is not configured");
-    }
+    if (!resendApiKey) throw new Error("RESEND_API_KEY is not configured");
 
     const body = await req.json();
 
-    // Resend sends { type: "email.received", data: { email_id, to, from, subject, ... } }
     if (body.type !== "email.received") {
       return new Response(JSON.stringify({ ignored: true }), {
         status: 200,
@@ -38,7 +36,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Extract the alias from the recipient (e.g., "order-abcdefghij@inbound.seats.ca")
+    // Extract the alias from the recipient
     const aliasRecipient = recipients.find((r: string) =>
       r.includes("order-") && (r.includes("@inbound.seats.ca") || r.includes("@seats.ca"))
     );
@@ -53,7 +51,7 @@ Deno.serve(async (req) => {
 
     const alias = aliasRecipient.trim().toLowerCase();
 
-    // Look up buyer email via database
+    // Look up transfer via database
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -76,13 +74,14 @@ Deno.serve(async (req) => {
 
     // Block forwarding if AI verification found a mismatch
     if (transfer.status === "disputed") {
-      console.log(`BLOCKED forward for alias ${alias} — status is disputed (mismatch detected). Admin must manually confirm before buyer is notified.`);
+      console.log(`BLOCKED forward for alias ${alias} — status is disputed`);
       return new Response(JSON.stringify({ forwarded: false, reason: "mismatch_blocked" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Fetch buyer email
     const { data: order } = await supabase
       .from("orders")
       .select("user_id")
@@ -111,11 +110,121 @@ Deno.serve(async (req) => {
 
     const buyerEmail = profile.email;
 
-    // Instead of forwarding the raw Ticketmaster email (which contains seller PII like their name),
-    // send a clean branded notification telling the buyer to check their platform.
-    const inboundSubject = body.data.subject || "Ticket Transfer";
+    // --- Fetch the full inbound email from Resend to get HTML body ---
+    const acceptLink = await extractAcceptLink(resendApiKey, email_id);
+    console.log(`Extracted accept link for alias ${alias}:`, acceptLink ? "found" : "not found");
 
-    const safeHtml = `<!DOCTYPE html>
+    const inboundSubject = body.data.subject || "Ticket Transfer";
+    const safeHtml = buildBrandedEmail(acceptLink);
+
+    const plainText = acceptLink
+      ? `A ticket transfer has been sent to your account. Accept it here: ${acceptLink}`
+      : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
+
+    await sendEmail(resendApiKey, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
+
+    // Mark that the email was successfully forwarded
+    await supabase
+      .from("order_transfers")
+      .update({ forward_sent_at: new Date().toISOString() })
+      .eq("transfer_email_alias", alias);
+
+    console.log(`Forwarded transfer email for alias ${alias} to buyer (link: ${acceptLink ? "yes" : "no"})`);
+
+    return new Response(JSON.stringify({ forwarded: true, hasLink: !!acceptLink }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error in resolve-transfer-email:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
+
+/**
+ * Fetch the full email content from Resend's Receiving API and extract
+ * the Ticketmaster "Accept" transfer link, stripping seller PII.
+ */
+async function extractAcceptLink(resendApiKey: string, emailId: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${RESEND_API_URL}/emails/${emailId}`, {
+      headers: { Authorization: `Bearer ${resendApiKey}` },
+    });
+
+    if (!res.ok) {
+      console.error("Failed to fetch inbound email from Resend:", res.status, await res.text());
+      return null;
+    }
+
+    const emailData = await res.json();
+    const html: string = emailData.html || emailData.text || "";
+
+    if (!html) {
+      console.log("No HTML body in inbound email");
+      return null;
+    }
+
+    // Ticketmaster accept/transfer links typically match these patterns:
+    // - https://www.ticketmaster.com/transfer/accept?...
+    // - https://am.ticketmaster.com/...
+    // - https://myaccount.ticketmaster.com/...
+    // - Links containing "accept" in Ticketmaster domains
+    const patterns = [
+      // Direct accept transfer URLs
+      /https?:\/\/[a-z.]*ticketmaster\.[a-z.]+\/[^\s"'<>]*(?:accept|transfer)[^\s"'<>]*/gi,
+      // Generic Ticketmaster links with tokens (often the CTA button href)
+      /https?:\/\/[a-z.]*ticketmaster\.[a-z.]+\/[^\s"'<>]*token[^\s"'<>]*/gi,
+      // Broad fallback: any Ticketmaster link that looks like an action URL (has query params)
+      /https?:\/\/[a-z.]*ticketmaster\.[a-z.]+\/[^\s"'<>]*\?[^\s"'<>]+/gi,
+    ];
+
+    for (const pattern of patterns) {
+      const matches = html.match(pattern);
+      if (matches && matches.length > 0) {
+        // Clean up any trailing quotes or HTML artifacts
+        let link = matches[0].replace(/["'>;].*$/, "").replace(/&amp;/g, "&");
+        return link;
+      }
+    }
+
+    console.log("No Ticketmaster accept link found in email body");
+    return null;
+  } catch (err) {
+    console.error("Error extracting accept link:", err);
+    return null;
+  }
+}
+
+/**
+ * Build a branded email that includes the acceptance link (if found)
+ * or falls back to generic instructions.
+ */
+function buildBrandedEmail(acceptLink: string | null): string {
+  const ctaSection = acceptLink
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
+        <tr><td align="center">
+          <a href="${acceptLink}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#059669,#047857);color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:8px;">
+            ✅ Accept Ticket Transfer
+          </a>
+        </td></tr>
+       </table>`
+    : "";
+
+  const stepsSection = acceptLink
+    ? `<ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
+         <li>Click the <strong>"Accept Ticket Transfer"</strong> button above</li>
+         <li>Sign in to your Ticketmaster account when prompted</li>
+         <li>The tickets will be added to your account</li>
+       </ol>`
+    : `<ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
+         <li>Look for an incoming ticket transfer notification from Ticketmaster</li>
+         <li>Accept the transfer to add the tickets to your Ticketmaster account</li>
+       </ol>`;
+
+  return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -124,7 +233,7 @@ Deno.serve(async (req) => {
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 <tr><td style="padding:28px 40px 0;text-align:center;">
-  <img src="https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png" alt="seats.ca" width="300" height="300" style="display:block;margin:0 auto;width:300px;height:300px;" />
+  <img src="${LOGO_URL}" alt="seats.ca" width="300" height="300" style="display:block;margin:0 auto;width:300px;height:300px;" />
 </td></tr>
 <tr><td style="background:linear-gradient(135deg,#059669,#047857);padding:28px 40px;text-align:center;">
   <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">🎟️ Ticket Transfer Received</h1>
@@ -134,13 +243,11 @@ Deno.serve(async (req) => {
   <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
     Good news! A ticket transfer has been initiated for your order.
   </p>
+  ${ctaSection}
   <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
     <tr><td style="padding:16px;">
       <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
-      <ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
-        <li>Look for an incoming ticket transfer notification</li>
-        <li>Accept the transfer to add the tickets to your Ticketmaster account</li>
-      </ol>
+      ${stepsSection}
     </td></tr>
   </table>
   <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
@@ -155,33 +262,9 @@ Deno.serve(async (req) => {
 </td></tr>
 </table></td></tr></table>
 </body></html>`;
+}
 
-    await forwardEmail(resendApiKey, buyerEmail, inboundSubject, safeHtml,
-      "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account."
-    );
-
-    // Mark that the Ticketmaster email was successfully forwarded
-    await supabase
-      .from("order_transfers")
-      .update({ forward_sent_at: new Date().toISOString() })
-      .eq("transfer_email_alias", alias);
-
-    console.log(`Forwarded transfer email for alias ${alias} to buyer`);
-
-    return new Response(JSON.stringify({ forwarded: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Error in resolve-transfer-email:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
-});
-
-async function forwardEmail(
+async function sendEmail(
   resendApiKey: string,
   to: string,
   subject: string,
@@ -197,7 +280,7 @@ async function forwardEmail(
     body: JSON.stringify({
       from: "Seats.ca Transfers <noreply@seats.ca>",
       to: [to],
-      subject: `Fwd: ${subject}`,
+      subject,
       html,
       text,
     }),
@@ -205,7 +288,7 @@ async function forwardEmail(
 
   if (!res.ok) {
     const err = await res.text();
-    console.error("Failed to forward email via Resend:", res.status, err);
-    throw new Error(`Failed to forward email: ${res.status}`);
+    console.error("Failed to send email via Resend:", res.status, err);
+    throw new Error(`Failed to send email: ${res.status}`);
   }
 }
