@@ -8,9 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import {
-  Upload, CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail,
+  CheckCircle, Clock, AlertTriangle, ImageIcon, Copy, Mail,
   Loader2, ShieldCheck, ShieldAlert, ExternalLink, Search, RefreshCw, ChevronLeft, ChevronRight,
 } from "lucide-react";
+import TransferProofUploader from "./TransferProofUploader";
 import { format } from "date-fns";
 
 const PAGE_SIZE = 20;
