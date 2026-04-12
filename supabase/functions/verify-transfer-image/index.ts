@@ -346,7 +346,10 @@ If all the core details (teams, date, section, row, email) refer to the same thi
         .map(([k]) => k)
         .join(", ");
 
-      const orderRef = transfer.order_id.slice(0, 8).toUpperCase();
+      // Use the letters-only alias as order ref
+      const orderRef = transfer.transfer_email_alias
+        ? transfer.transfer_email_alias.replace("order-", "").replace("@inbound.seats.ca", "").toUpperCase()
+        : transfer.order_id.slice(0, 8).toUpperCase();
 
       const bodyContent = `
   <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">Order #${orderRef} — ${eventTitle}</h2>
