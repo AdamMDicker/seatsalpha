@@ -204,7 +204,7 @@ function sellerEmailHtml(meta: {
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;background:#dbeafe;border-radius:6px;">
         <tr><td style="padding:10px 14px;">
           <p style="margin:0 0 4px;color:#1e40af;font-size:12px;font-weight:700;">👤 Recipient Name (for Ticketmaster)</p>
-          <p style="margin:0;color:#1e3a8a;font-size:15px;font-weight:700;">First Name: <span style="font-family:'Courier New',monospace;">Seats</span> &nbsp;|&nbsp; Last Name: <span style="font-family:'Courier New',monospace;">Customer</span></p>
+          <p style="margin:0;color:#1e3a8a;font-size:15px;font-weight:700;">First Name: <span style="font-family:'Courier New',monospace;">Seats</span> &nbsp;|&nbsp; Last Name: <span style="font-family:'Courier New',monospace;">${meta.orderRef}</span></p>
         </td></tr>
       </table>
     </td></tr>
@@ -537,11 +537,20 @@ serve(async (req) => {
         const rowInfo = ticket.row_name || "";
         const salePrice = ticket.price.toFixed(2);
 
-        const orderRefShort = orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
+        // Retrieve the actual transfer email alias from order_transfers (letters-only)
+        const { data: transferRow } = await supabase
+          .from("order_transfers")
+          .select("transfer_email_alias")
+          .eq("order_id", orderId)
+          .eq("ticket_id", meta.ticket_id)
+          .maybeSingle();
 
-        // Retrieve the transfer email alias for this order
-        const aliasRef = orderId ? orderId.replace(/-/g, "").slice(0, 8).toLowerCase() : "";
-        const transferEmailForSeller = aliasRef ? `order-${aliasRef}@inbound.seats.ca` : undefined;
+        const transferEmailForSeller = transferRow?.transfer_email_alias || undefined;
+        // Extract the letters-only alias portion for order ref (e.g. "KXBMTQRWJF" from "order-kxbmtqrwjf@inbound.seats.ca")
+        const aliasLetters = transferEmailForSeller
+          ? transferEmailForSeller.replace("order-", "").replace("@inbound.seats.ca", "").toUpperCase()
+          : orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
+        const orderRefShort = aliasLetters;
 
         const sellerHtml = sellerEmailHtml({
           eventTitle,

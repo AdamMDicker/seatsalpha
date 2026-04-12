@@ -214,7 +214,7 @@ function sellerNotificationHtml(meta: {
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;background:#dbeafe;border-radius:6px;">
         <tr><td style="padding:10px 14px;">
           <p style="margin:0 0 4px;color:#1e40af;font-size:12px;font-weight:700;">👤 Recipient Name (for Ticketmaster)</p>
-          <p style="margin:0;color:#1e3a8a;font-size:15px;font-weight:700;">First Name: <span style="font-family:'Courier New',monospace;">Seats</span> &nbsp;|&nbsp; Last Name: <span style="font-family:'Courier New',monospace;">Customer</span></p>
+          <p style="margin:0;color:#1e3a8a;font-size:15px;font-weight:700;">First Name: <span style="font-family:'Courier New',monospace;">Seats</span> &nbsp;|&nbsp; Last Name: <span style="font-family:'Courier New',monospace;">${meta.orderRef}</span></p>
         </td></tr>
       </table>
     </td></tr>
