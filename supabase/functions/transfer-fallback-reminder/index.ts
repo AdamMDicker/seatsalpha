@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const SENDER_DOMAIN = "seats.ca";
-const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
+const SENDER_DOMAIN = "notify.seats.ca";
+const FROM_EMAIL = "noreply@seats.ca";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png";
 
 Deno.serve(async (req) => {

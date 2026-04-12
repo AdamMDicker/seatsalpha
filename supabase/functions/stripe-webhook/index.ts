@@ -12,8 +12,8 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-const SENDER_DOMAIN = "seats.ca";
-const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
+const SENDER_DOMAIN = "notify.seats.ca";
+const FROM_EMAIL = "noreply@seats.ca";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png";
 
 // --- Date formatting helper ---
