@@ -29,3 +29,7 @@ project_id = "fkcszgrewzhswdtsqpad"
     verify_jwt = false
   [functions.resolve-transfer-email]
     verify_jwt = false
+  [functions.notify-buyer-transfer]
+    verify_jwt = false
+  [functions.verify-transfer-image]
+    verify_jwt = false
