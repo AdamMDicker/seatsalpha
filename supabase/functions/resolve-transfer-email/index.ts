@@ -120,6 +120,25 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log("=== WEBHOOK RECEIVED ===");
+    console.log("Webhook payload keys:", Object.keys(body.data || {}).join(", "));
+    console.log("Webhook from:", body.data?.from);
+    console.log("Webhook subject:", body.data?.subject);
+    console.log("Webhook to:", JSON.stringify(body.data?.to));
+    console.log("Webhook email_id:", body.data?.email_id);
+
+    // Log the raw webhook HTML content if present (first 500 chars)
+    if (body.data?.html) {
+      console.log("Webhook body.data.html length:", body.data.html.length);
+      console.log("Webhook body.data.html preview:", body.data.html.substring(0, 500));
+    } else {
+      console.log("Webhook body.data.html: NOT PRESENT");
+    }
+    if (body.data?.text) {
+      console.log("Webhook body.data.text length:", body.data.text.length);
+      console.log("Webhook body.data.text preview:", body.data.text.substring(0, 300));
+    }
+
     const { email_id, to: recipients } = body.data;
 
     if (!email_id || !recipients || !Array.isArray(recipients) || recipients.length === 0) {
@@ -246,6 +265,24 @@ async function extractAcceptLink(resendApiKey: string, emailId: string): Promise
     }
 
     const emailData = await res.json();
+
+    // Debug: dump raw Resend response structure
+    console.log("=== RESEND INBOUND API RESPONSE ===");
+    console.log("Resend response keys:", Object.keys(emailData).join(", "));
+    console.log("Resend response type:", typeof emailData);
+    // Log each top-level field's type and length
+    for (const [key, val] of Object.entries(emailData)) {
+      if (typeof val === "string") {
+        console.log(`  ${key}: string (${val.length} chars) preview: ${val.substring(0, 200)}`);
+      } else if (Array.isArray(val)) {
+        console.log(`  ${key}: array (${val.length} items)`);
+      } else if (val && typeof val === "object") {
+        console.log(`  ${key}: object keys=[${Object.keys(val as Record<string, unknown>).join(",")}]`);
+      } else {
+        console.log(`  ${key}: ${typeof val} = ${String(val)}`);
+      }
+    }
+
     const contentCandidates = collectContentCandidates(emailData);
 
     console.log(
