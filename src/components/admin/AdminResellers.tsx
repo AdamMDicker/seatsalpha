@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Search, ShieldAlert, ShieldOff, CreditCard, DollarSign, Loader2 } from "lucide-react";
+import { Search, ShieldAlert, ShieldOff, CreditCard, DollarSign, Loader2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 import nhlLogo from "@/assets/leagues/nhl.png";
@@ -26,6 +26,14 @@ interface SubInfo {
   status: string;
   weekly_fee: number;
   discount_code: string | null;
+}
+
+interface AppSeat {
+  league: string;
+  section: string;
+  row_name: string;
+  seat_count: number;
+  lowest_seat: string;
 }
 
 const LEAGUES = [
@@ -56,6 +64,8 @@ const AdminResellers = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [preauthAmounts, setPreauthAmounts] = useState<Record<string, string>>({});
+  const [appSeatsMap, setAppSeatsMap] = useState<Record<string, AppSeat[]>>({});
+  const [expandedApps, setExpandedApps] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
   const fetchResellers = async () => {
@@ -111,11 +121,30 @@ const AdminResellers = () => {
     setStatsMap(map);
   };
 
+  const fetchAppSeats = async () => {
+    const { data } = await supabase.from("reseller_application_seats").select("*");
+    const map: Record<string, AppSeat[]> = {};
+    if (data) {
+      (data as any[]).forEach((row: any) => {
+        if (!map[row.reseller_id]) map[row.reseller_id] = [];
+        map[row.reseller_id].push({
+          league: row.league,
+          section: row.section,
+          row_name: row.row_name,
+          seat_count: row.seat_count,
+          lowest_seat: row.lowest_seat,
+        });
+      });
+    }
+    setAppSeatsMap(map);
+  };
+
   useEffect(() => {
     const init = async () => {
       await fetchResellers();
       await fetchLeagues();
       await fetchSubs();
+      await fetchAppSeats();
     };
     init();
   }, []);
@@ -303,7 +332,11 @@ const AdminResellers = () => {
                     {r.first_name} {r.last_name} {r.email ? `• ${r.email}` : ""} {r.phone ? `• ${r.phone}` : ""}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
+                    {(r as any).seller_type === "sth" ? "Season Ticket Holder" : (r as any).seller_type || "N/A"}
+                    {" • "}
                     {r.ticket_count ? `${r.ticket_count} tickets declared` : "No ticket count"} • Joined {new Date(r.created_at).toLocaleDateString()}
+                    {r.agreement_accepted_at && ` • Agreement signed`}
+                    {(r as any).signup_fee_paid_at && ` • Fee paid`}
                   </p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
@@ -311,9 +344,37 @@ const AdminResellers = () => {
                   {currentStatus !== "pending" && <Button variant="glass" size="sm" onClick={() => setStatus(r, "pending")}>Set Pending</Button>}
                   {currentStatus !== "disabled" && <Button variant="destructive" size="sm" onClick={() => setStatus(r, "disabled")}>Disable</Button>}
                 </div>
-              </div>
+               </div>
 
-              {/* Enforcement actions */}
+              {/* Application Details (expandable) */}
+              {appSeatsMap[r.id] && appSeatsMap[r.id].length > 0 && (
+                <div className="border-t border-border/50 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedApps((prev) => ({ ...prev, [r.id]: !prev[r.id] }))}
+                    className="flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    <MapPin className="h-3 w-3" />
+                    {expandedApps[r.id] ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    Application Seats ({appSeatsMap[r.id].length} location{appSeatsMap[r.id].length > 1 ? "s" : ""})
+                  </button>
+                  {expandedApps[r.id] && (
+                    <div className="mt-2 space-y-1">
+                      {appSeatsMap[r.id].map((seat, idx) => (
+                        <div key={idx} className="flex items-center gap-3 text-xs bg-secondary/50 rounded-lg px-3 py-2">
+                          <Badge variant={seat.league.startsWith("Other") ? "destructive" : "outline"} className="text-[10px]">
+                            {seat.league}
+                          </Badge>
+                          <span className="text-muted-foreground">
+                            Sec {seat.section} • Row {seat.row_name} • {seat.seat_count} seats • Low seat {seat.lowest_seat}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex gap-2 flex-wrap border-t border-border/50 pt-3">
                 {!r.is_suspended ? (
                   <Button
