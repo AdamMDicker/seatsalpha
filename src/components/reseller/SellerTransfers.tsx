@@ -375,34 +375,13 @@ const SellerTransfers = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {(t.status === "pending" || t.status === "disputed") && (
-                        <label className="cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleUpload(t.id, file);
-                            }}
-                          />
-                          <Button
-                            size="sm"
-                            variant="default"
-                            className="h-7 text-xs"
-                            disabled={uploading === t.id || isCurrentlyVerifying}
-                            asChild
-                          >
-                            <span>
-                              {uploading === t.id ? (
-                                <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Uploading</>
-                              ) : (
-                                <><Upload className="h-3 w-3 mr-1" />{t.status === "disputed" ? "Re-upload" : "Upload Proof"}</>
-                              )}
-                            </span>
-                          </Button>
-                        </label>
-                      )}
+                      <TransferProofUploader
+                        transferId={t.id}
+                        status={t.status}
+                        uploading={uploading === t.id}
+                        verifying={isCurrentlyVerifying}
+                        onUpload={handleUpload}
+                      />
                       {t.status === "confirmed" && (
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <CheckCircle className="h-3 w-3 text-green-500" /> Complete
