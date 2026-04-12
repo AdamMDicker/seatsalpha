@@ -18,7 +18,7 @@ import SellerTransfers from "@/components/reseller/SellerTransfers";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 
 const benefits = [
-  { icon: DollarSign, title: "Keep More Profit", description: "No hidden fees eating into your margins." },
+  { icon: DollarSign, title: "Keep More Profit", description: "Low annual membership — no per-ticket commissions or hidden deductions." },
   { icon: Users, title: "Real Buyers, Not Browsers", description: "Higher intent shoppers = faster sales." },
   { icon: Eye, title: "Fair Marketplace", description: "No bots. No games. Just equal visibility." },
   { icon: Settings, title: "You Set the Price", description: "Full control, no forced discounts." },
@@ -138,7 +138,7 @@ const ResellerDashboard = () => {
             </h1>
             {!isFullyUnlocked && (
               <p className="text-muted-foreground max-w-lg mx-auto">
-                Join Canada's fastest-growing ticket marketplace. List your inventory, reach thousands of buyers, and grow your business with zero listing fees.
+                Join Canada's fastest-growing ticket marketplace. List your inventory, reach thousands of buyers, and grow your business with a simple annual membership.
               </p>
             )}
           </div>
