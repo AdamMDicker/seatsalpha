@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
         ? `A ticket transfer has been sent to your account. Accept it here: ${storedLink}`
         : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
 
-      await sendEmail(resendApiKey, profile.email, "Fwd: Ticket Transfer", safeHtml, plainText);
+      await queueEmail(supabase, profile.email, "Fwd: Ticket Transfer", safeHtml, plainText);
 
       await supabase
         .from("order_transfers")
