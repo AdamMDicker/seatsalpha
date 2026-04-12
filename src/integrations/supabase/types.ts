@@ -400,6 +400,8 @@ export type Database = {
         Row: {
           confirmed_at: string | null
           created_at: string
+          fallback_sent_at: string | null
+          forward_sent_at: string | null
           id: string
           order_id: string
           seller_id: string
@@ -413,6 +415,8 @@ export type Database = {
         Insert: {
           confirmed_at?: string | null
           created_at?: string
+          fallback_sent_at?: string | null
+          forward_sent_at?: string | null
           id?: string
           order_id: string
           seller_id: string
@@ -426,6 +430,8 @@ export type Database = {
         Update: {
           confirmed_at?: string | null
           created_at?: string
+          fallback_sent_at?: string | null
+          forward_sent_at?: string | null
           id?: string
           order_id?: string
           seller_id?: string
