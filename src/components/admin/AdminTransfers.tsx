@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight, MailX, Send } from "lucide-react";
+import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight, MailX, Send, Link2, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
 const PAGE_SIZE = 20;
@@ -26,6 +26,8 @@ interface AdminTransfer {
   created_at: string;
   confirmed_at: string | null;
   verification_result: any;
+  accept_link?: string | null;
+  forward_sent_at?: string | null;
   // joined
   event_title?: string;
   venue?: string;
@@ -268,6 +270,7 @@ const AdminTransfers = () => {
                   <TableHead>Status</TableHead>
                   <TableHead>Proof</TableHead>
                   <TableHead>AI Result</TableHead>
+                  <TableHead>Link</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -325,6 +328,19 @@ const AdminTransfers = () => {
                             )}
                             <span className="text-xs">{vr.overall_match ? "Match" : "Mismatch"}</span>
                           </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {t.accept_link ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600" title={t.accept_link}>
+                            <Link2 className="h-4 w-4" /> Captured
+                          </span>
+                        ) : t.forward_sent_at ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-yellow-600" title="Email sent but no link was extracted">
+                            <AlertTriangle className="h-4 w-4" /> Missing
+                          </span>
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
                         )}
