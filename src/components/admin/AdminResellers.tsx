@@ -332,7 +332,11 @@ const AdminResellers = () => {
                     {r.first_name} {r.last_name} {r.email ? `• ${r.email}` : ""} {r.phone ? `• ${r.phone}` : ""}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
+                    {(r as any).seller_type === "sth" ? "Season Ticket Holder" : (r as any).seller_type || "N/A"}
+                    {" • "}
                     {r.ticket_count ? `${r.ticket_count} tickets declared` : "No ticket count"} • Joined {new Date(r.created_at).toLocaleDateString()}
+                    {r.agreement_accepted_at && ` • Agreement signed`}
+                    {(r as any).signup_fee_paid_at && ` • Fee paid`}
                   </p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
