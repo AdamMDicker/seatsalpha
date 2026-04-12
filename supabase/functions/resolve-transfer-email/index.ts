@@ -581,8 +581,8 @@ async function queueEmail(
   text: string
 ) {
   const messageId = crypto.randomUUID();
-  const SENDER_DOMAIN = "seats.ca";
-  const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
+  const SENDER_DOMAIN = "notify.seats.ca";
+  const FROM_EMAIL = "noreply@seats.ca";
 
   await supabase.from("email_send_log").insert({
     message_id: messageId,

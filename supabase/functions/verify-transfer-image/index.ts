@@ -6,8 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const SENDER_DOMAIN = "seats.ca";
-const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
+const SENDER_DOMAIN = "notify.seats.ca";
+const FROM_EMAIL = "noreply@seats.ca";
 const ADMIN_EMAIL = "lmksportsconsulting@gmail.com";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png";
 
