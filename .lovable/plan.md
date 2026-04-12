@@ -1,77 +1,64 @@
 
 
-## Plan: Enhanced Seller Transfer Flow
+## Plan: Brand Emails + Forward Ticketmaster Transfers
 
-This plan adds the transfer email to the seller confirmation email, provides a step-by-step transfer guide, and introduces AI-powered verification of uploaded transfer proof with automatic confirmation/alert emails.
+Three issues to address:
+
+1. **Brand all transactional emails** — add Seats.ca logo, brand colors, and consistent styling
+2. **Add event date + seat location** to the buyer transfer confirmation email
+3. **Fix Ticketmaster email forwarding** — the `resolve-transfer-email` function exists but isn't configured in `config.toml` and has no logs (never deployed or not receiving webhooks)
 
 ---
 
-### 1. Add Transfer Email to Seller Confirmation Email
+### 1. Brand the Transfer Confirmation Emails
 
-**File:** `supabase/functions/stripe-webhook/index.ts`
+**Files:** `supabase/functions/verify-transfer-image/index.ts`, `supabase/functions/notify-buyer-transfer/index.ts`
 
-- Add `transferEmail` parameter to `sellerEmailHtml()` function
-- Display the masked transfer email (e.g., `order-a1b2c3d4@seats.ca`) prominently in the seller email, right after the sale details
-- Add a styled "Transfer Email" row in the details table
-- Pass the `transferEmailAlias` value when calling `sellerEmailHtml()` (it's already generated at that point in the webhook)
+Both the "confirmed" and "disputed" email templates will be updated to match the brand standard already used in `send-transactional-email` and `stripe-webhook`:
 
-Also update the `send-transactional-email` version of `sellerNotificationHtml` to match.
+- Add the Seats.ca wordmark logo (300x300px) at the top of every email, above the gradient header
+- Use the brand red gradient (`#d6193d → #b81535`) header
+- Use Space Grotesk / Helvetica Neue font stack
+- Add the spam/junk warning footer consistent with other emails
 
-### 2. Add Step-by-Step Transfer Guide in Seller Email
+The logo URL is: `https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png`
 
-Replace the generic "upload a copy" reminder with a clear numbered guide:
+### 2. Add Event Date + Ticket Location to Buyer Transfer Email
 
-1. Log in to your Seats.ca Seller Portal
-2. Go to the **Transfers** tab
-3. Locate this sale (Order Ref shown above)
-4. Transfer your tickets to the email shown above via Ticketmaster (or your platform)
-5. Take a screenshot of the completed transfer
-6. Upload the screenshot to confirm delivery
+**File:** `supabase/functions/verify-transfer-image/index.ts`
 
-Include a CTA button: **"View Transfer in Seller Portal"** linking to `https://seats.ca/reseller-dashboard?tab=transfers`
+The confirmed buyer email currently shows event title and venue but not the date or seat details. Update to:
 
-### 3. Add AI Verification of Transfer Proof
+- Fetch `event_date` from the event record (already available via `orderItem.tickets.events`)
+- Fetch `section` and `row_name` from the ticket record
+- Add a details table showing: Date, Venue, Section/Row — matching the layout in buyer confirmation emails
+- Format the date using the same `formatEventDateET` helper
 
-**New edge function:** `supabase/functions/verify-transfer-image/index.ts`
+### 3. Fix Ticketmaster Email Forwarding
 
-When a seller uploads transfer proof, use AI (Lovable AI Gateway with Gemini Vision) to analyze the screenshot and extract:
-- Recipient email address
-- Event name/date
-- Seat details (section, row)
+The `resolve-transfer-email` edge function exists and the code looks correct, but:
 
-Compare extracted data against the order record. Possible outcomes:
-- **Match** → Auto-set status to `confirmed`, send confirmation email to both buyer and seller
-- **Mismatch** → Set status to `disputed`, send alert email to admin with details of what didn't match
+- It's **not in `config.toml`** — needs `verify_jwt = false` since it receives Resend inbound webhooks
+- It may not be deployed — no logs exist
+- Resend inbound webhook needs to be configured to point to this function's URL
 
-### 4. Add New Transfer Statuses & Database Update
+**Actions:**
+- Add `[functions.resolve-transfer-email]` with `verify_jwt = false` to `config.toml`
+- Deploy the function
+- The Resend inbound webhook URL should be: `https://fkcszgrewzhswdtsqpad.supabase.co/functions/v1/resolve-transfer-email`
+- Verify the function works by checking logs after deployment
 
-**Migration:** Add `verification_result` jsonb column to `order_transfers` to store AI extraction results.
+The user mentioned they'll forward a sample Ticketmaster email — once received, we can test the full relay flow.
 
-### 5. Update SellerTransfers UI
+### 4. Deploy
 
-**File:** `src/components/reseller/SellerTransfers.tsx`
-
-- Show verification status after upload (analyzing → confirmed / disputed)
-- Display a "Verified" badge with checkmark when AI confirms the transfer
-- Show alert if details don't match
-
-### 6. Confirmation & Alert Emails
-
-**In `stripe-webhook/index.ts` or `notify-buyer-transfer/index.ts`:**
-
-- **Transfer Confirmed email** (to buyer): "Your tickets have been verified and confirmed for [Event]"
-- **Transfer Alert email** (to admin): "Transfer mismatch detected for Order #XYZ — [details of what didn't match]"
-
-### 7. Redeploy Edge Functions
-
-Deploy: `stripe-webhook`, `send-transactional-email`, `notify-buyer-transfer`, `verify-transfer-image`
+Deploy all updated functions: `verify-transfer-image`, `notify-buyer-transfer`, `resolve-transfer-email`
 
 ---
 
 ### Technical Details
 
-- AI verification uses Gemini 2.5 Flash via the Lovable AI gateway (no API key needed) with a structured prompt asking it to extract email, event name, date, and seats from the screenshot
-- The verification runs asynchronously after upload — the seller sees "Analyzing..." status briefly
-- The `verify-transfer-image` function downloads the image from the public storage URL and sends it to the vision model
-- Verification result is stored as JSON in `order_transfers.verification_result` for audit trail
+- Logo is already hosted in the `email-assets` public storage bucket
+- The `resolve-transfer-email` function uses `from: "Seats.ca Transfers <noreply@seats.ca>"` which sends via Resend directly (not the queue) — this is fine for forwarded emails since they need immediate delivery
+- The Resend inbound webhook must be configured in the Resend dashboard to forward `email.received` events for `*@seats.ca` to the edge function URL
 
