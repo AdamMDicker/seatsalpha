@@ -26,7 +26,7 @@ const benefits = [
   { icon: Zap, title: "More Exposure", description: "Reach both members and non-members." },
   { icon: Upload, title: "Bulk Listing Made Easy", description: "Upload multiple games at once with simple CSV tools — no manual entry." },
   { icon: Mail, title: "Email-Based Transfers", description: "Tickets transfer via email — not barcodes. Your account stays private, and buyers get reliable, trackable delivery." },
-  { icon: CreditCard, title: "Simple, Low Cost", description: "$100/year + $0.50/week to sell smarter." },
+  { icon: CreditCard, title: "Simple, Low Cost", description: "Annual Membership fee* — affordable access to Canada's fastest-growing marketplace." },
 ];
 
 const portalTabs = [
@@ -178,7 +178,7 @@ const ResellerDashboard = () => {
           {!isFullyUnlocked && !isSuspended && (
             <div className="mb-16">
               <h2 className="font-display text-2xl font-bold text-center mb-3">Why Sell on Seats.ca?</h2>
-              <p className="text-muted-foreground text-center mb-10">$100/year + $0.50/week to sell smarter.</p>
+              <p className="text-muted-foreground text-center mb-10">Low annual membership fee* to start selling.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {benefits.map((b) => (
                   <div key={b.title} className="glass rounded-xl p-6 text-center hover:border-primary/30 transition-all">
@@ -188,6 +188,7 @@ const ResellerDashboard = () => {
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground text-center mt-4">*Membership fee applies per sport listing category. See Seller Agreement for full details.</p>
             </div>
           )}
 
