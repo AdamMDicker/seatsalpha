@@ -38,13 +38,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Extract the alias from the recipient (e.g., "order-a1b2c3d4@seats.ca")
+    // Extract the alias from the recipient (e.g., "order-abcdefghij@transfers.seats.ca")
     const aliasRecipient = recipients.find((r: string) =>
-      r.includes("order-") && r.includes("@seats.ca")
+      r.includes("order-") && (r.includes("@transfers.seats.ca") || r.includes("@seats.ca"))
     );
 
     if (!aliasRecipient) {
-      console.log("No order-*@seats.ca recipient found in:", recipients);
+      console.log("No order-*@transfers.seats.ca recipient found in:", recipients);
       return new Response(JSON.stringify({ ignored: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
