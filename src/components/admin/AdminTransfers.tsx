@@ -333,6 +333,19 @@ const AdminTransfers = () => {
                         )}
                       </TableCell>
                       <TableCell>
+                        {t.accept_link ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600" title={t.accept_link}>
+                            <Link2 className="h-4 w-4" /> Captured
+                          </span>
+                        ) : t.forward_sent_at ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-yellow-600" title="Email sent but no link was extracted">
+                            <AlertTriangle className="h-4 w-4" /> Missing
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <div className="flex gap-1 flex-wrap">
                           {t.status !== "confirmed" && (
                             <Button size="sm" variant="default" className="h-7 text-xs" onClick={() => setConfirmDialog({ open: true, transfer: t, action: "confirm" })}>
