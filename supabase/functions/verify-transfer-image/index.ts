@@ -177,7 +177,15 @@ Respond with a JSON object (no markdown, just raw JSON):
   "notes": "any additional observations"
 }
 
-Be lenient with matching - partial matches and similar names should count as matches. For email, check if the key portion matches. For events, check if team names match even if format differs.`;
+IMPORTANT MATCHING RULES — be VERY lenient:
+- EMAIL: Match if the local part (before @) is the same, ignore domain differences.
+- EVENT: Match if the same teams are playing, regardless of format differences like "vs" vs "vs.", city names included or not (e.g. "Blue Jays vs Tigers" matches "Toronto Blue Jays vs. Detroit Tigers"), abbreviations, or word order.
+- DATE: Match if it's the same calendar date. IGNORE time differences caused by timezone offsets (e.g. 19:07 ET vs 23:07 UTC are the same moment). Only flag a date mismatch if the actual calendar date is different.
+- SECTION: Match if the number is the same, ignore prefixes like "Sec" or "Section".
+- ROW: Match if the value is the same, ignore case or prefixes.
+- QUANTITY: Match if the numbers are equal.
+
+If all the core details (teams, date, section, row, email) refer to the same thing despite formatting differences, set overall_match to true with high confidence.`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
