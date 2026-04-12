@@ -44,7 +44,7 @@ const SellerBillingSetup = ({ onSuccess }: SellerBillingSetupProps) => {
         <CreditCard className="h-10 w-10 text-primary mx-auto" />
         <h2 className="font-display text-xl font-bold">Set Up Weekly Billing</h2>
         <p className="text-sm text-muted-foreground">
-          Set up your recurring weekly seller membership ($1.00 CAD/week).
+          Set up your recurring weekly seller membership.
           Your card will be charged automatically each week.
         </p>
 

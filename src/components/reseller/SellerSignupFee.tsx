@@ -36,7 +36,7 @@ const SellerSignupFee = () => {
         <DollarSign className="h-10 w-10 text-primary mx-auto" />
         <h2 className="font-display text-xl font-bold">One-Time Seller Sign-Up Fee</h2>
         <p className="text-sm text-muted-foreground">
-          A one-time $100.00 CAD sign-up fee is required to activate your seller account
+          A one-time sign-up fee is required to activate your seller account
           and gain access to list tickets across all sports and events.
         </p>
 
@@ -53,12 +53,12 @@ const SellerSignupFee = () => {
               Redirecting...
             </>
           ) : (
-            "Pay $100 Sign-Up Fee"
+            "Pay Sign-Up Fee"
           )}
         </Button>
 
         <p className="text-xs text-muted-foreground">
-          This is a one-time payment. After this, you'll set up your $1.00/week recurring membership.
+          This is a one-time payment. After this, you'll set up your recurring weekly membership.
         </p>
       </div>
     </div>

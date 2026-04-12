@@ -16,7 +16,9 @@ const SellerAgreement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [agreed, setAgreed] = useState(false);
+   const [agreed, setAgreed] = useState(false);
+  const [acceptedToS, setAcceptedToS] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [initials, setInitials] = useState("");
   const [sellerName, setSellerName] = useState("");
@@ -27,7 +29,7 @@ const SellerAgreement = () => {
     sellerName.trim().length >= 2 &&
     signature.trim().length >= 2;
 
-  const canSubmit = agreed && keyTermsComplete && !submitting && !!user;
+  const canSubmit = agreed && acceptedToS && acceptedPrivacy && keyTermsComplete && !submitting && !!user;
 
   const handleAccept = async () => {
     if (!user || !canSubmit) return;
@@ -107,6 +109,32 @@ const SellerAgreement = () => {
                 />
                 <label htmlFor="agree" className="text-sm text-foreground cursor-pointer leading-snug">
                   I have read, understood, and agree to be bound by the terms of this Seller Agreement.
+                </label>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="agree-tos"
+                  checked={acceptedToS}
+                  onCheckedChange={(v) => setAcceptedToS(v === true)}
+                  className="mt-0.5"
+                />
+                <label htmlFor="agree-tos" className="text-sm text-foreground cursor-pointer leading-snug">
+                  I have read and agree to the{" "}
+                  <a href="/terms" target="_blank" className="underline text-primary hover:text-primary/80">Terms of Service</a>.
+                </label>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="agree-privacy"
+                  checked={acceptedPrivacy}
+                  onCheckedChange={(v) => setAcceptedPrivacy(v === true)}
+                  className="mt-0.5"
+                />
+                <label htmlFor="agree-privacy" className="text-sm text-foreground cursor-pointer leading-snug">
+                  I have read and agree to the{" "}
+                  <a href="/privacy" target="_blank" className="underline text-primary hover:text-primary/80">Privacy Policy</a>.
                 </label>
               </div>
 
