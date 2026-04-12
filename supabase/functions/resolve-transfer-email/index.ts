@@ -160,6 +160,12 @@ Deno.serve(async (req) => {
       "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account."
     );
 
+    // Mark that the Ticketmaster email was successfully forwarded
+    await supabase
+      .from("order_transfers")
+      .update({ forward_sent_at: new Date().toISOString() })
+      .eq("transfer_email_alias", alias);
+
     console.log(`Forwarded transfer email for alias ${alias} to buyer`);
 
     return new Response(JSON.stringify({ forwarded: true }), {
