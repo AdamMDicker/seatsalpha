@@ -634,9 +634,17 @@ serve(async (req) => {
 
     // Fallback: if no ticket_id or ticket not found, still notify admin
     if (!sellerNotificationSent) {
-      const fallbackOrderRef = orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
-      const fallbackAliasRef = orderId ? orderId.replace(/-/g, "").slice(0, 8).toLowerCase() : "";
-      const fallbackTransferEmail = fallbackAliasRef ? `order-${fallbackAliasRef}@inbound.seats.ca` : undefined;
+      // Try to get the actual alias from order_transfers
+      const { data: fallbackTransferRow } = orderId ? await supabase
+        .from("order_transfers")
+        .select("transfer_email_alias")
+        .eq("order_id", orderId)
+        .maybeSingle() : { data: null };
+      const fallbackTransferEmail = fallbackTransferRow?.transfer_email_alias || undefined;
+      const fallbackAliasLetters = fallbackTransferEmail
+        ? fallbackTransferEmail.replace("order-", "").replace("@inbound.seats.ca", "").toUpperCase()
+        : orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
+      const fallbackOrderRef = fallbackAliasLetters;
       const fallbackHtml = sellerEmailHtml({
         eventTitle,
         venue,
