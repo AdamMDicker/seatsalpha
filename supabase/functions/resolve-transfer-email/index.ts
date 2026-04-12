@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
 
 async function extractAcceptLink(resendApiKey: string, emailId: string): Promise<string | null> {
   try {
-    const res = await fetch(`${RESEND_API_URL}/emails/received/${emailId}`, {
+    const res = await fetch(`${RESEND_API_URL}/emails/receiving/${emailId}`, {
       headers: { Authorization: `Bearer ${resendApiKey}` },
     });
 
