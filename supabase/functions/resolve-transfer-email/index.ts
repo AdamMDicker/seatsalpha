@@ -221,7 +221,7 @@ Deno.serve(async (req) => {
       ? `A ticket transfer has been sent to your account. Accept it here: ${acceptLink}`
       : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
 
-    await sendEmail(resendApiKey, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
+    await queueEmail(supabase, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
 
     // Persist the inbound email ID and extracted link for future admin resends
     const updatePayload: Record<string, unknown> = {
