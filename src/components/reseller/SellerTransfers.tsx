@@ -43,11 +43,11 @@ interface Transfer {
   listing_quantity?: number;
 }
 
-const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "Awaiting Upload", variant: "destructive" },
-  uploaded: { label: "Analyzing...", variant: "secondary" },
-  confirmed: { label: "Verified ✓", variant: "default" },
-  disputed: { label: "Needs Re-upload", variant: "destructive" },
+const statusConfig: Record<string, { label: string; className: string }> = {
+  pending: { label: "Upload Needed", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+  uploaded: { label: "Analyzing...", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+  confirmed: { label: "Verified ✓", className: "bg-green-100 text-green-800 border-green-300" },
+  disputed: { label: "Error — Re-upload", className: "bg-red-100 text-red-800 border-red-300" },
 };
 
 const SellerTransfers = () => {
