@@ -163,9 +163,19 @@ async function extractAcceptLink(resendApiKey: string, emailId: string): Promise
       contentCandidates.map(({ source, value }) => `${source}:${value.length}`).join(", ") || "none"
     );
 
-    const rankedLinks = rankLinkCandidates(
-      contentCandidates.flatMap(({ source, value }) => extractLinkCandidates(value, source))
+    // Debug: dump ALL links found in the email so we can see what domains TM uses
+    const allLinks = contentCandidates.flatMap(({ source, value }) => extractLinkCandidates(value, source));
+    console.log(
+      "ALL links found in inbound email:",
+      JSON.stringify(allLinks.map(l => ({ href: truncate(l.href, 120), text: truncate(l.text, 60), score: l.score, host: safeHostname(l.href) })))
     );
+
+    // Also dump raw URLs from the HTML for complete visibility
+    const firstHtml = contentCandidates.find(c => c.source === "html")?.value || "";
+    const rawUrls = firstHtml.match(/https?:\/\/[^\s"'<>]+/gi) || [];
+    console.log("Raw URLs in inbound HTML:", JSON.stringify(rawUrls.map(u => truncate(u, 150)).slice(0, 20)));
+
+    const rankedLinks = rankLinkCandidates(allLinks);
 
     if (rankedLinks.length > 0) {
       const best = rankedLinks[0];
