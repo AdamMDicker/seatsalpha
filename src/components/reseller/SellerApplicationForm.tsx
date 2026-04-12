@@ -45,6 +45,9 @@ const SellerApplicationForm = () => {
 
   // Step 0: STH vs casual
   const [sellerPath, setSellerPath] = useState<"sth" | "casual" | null>(null);
+  const [casualEmail, setCasualEmail] = useState("");
+  const [casualSubmitting, setCasualSubmitting] = useState(false);
+  const [casualSigned, setCasualSigned] = useState(false);
 
   // Section A
   const [firstName, setFirstName] = useState("");
