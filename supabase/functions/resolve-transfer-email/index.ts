@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
 
       const { data: transfer, error: transferError } = await supabase
         .from("order_transfers")
-        .select("order_id, transfer_email_alias, status")
+        .select("order_id, transfer_email_alias, status, accept_link, inbound_email_id")
         .eq("id", body.transfer_id)
         .single();
 
@@ -76,9 +76,26 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Send branded email without an accept link (fallback instructions)
-      const safeHtml = buildBrandedEmail(null);
-      const plainText = "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
+      // Try stored accept_link first, then re-fetch from Resend if inbound_email_id exists
+      let storedLink: string | null = (transfer as any).accept_link || null;
+
+      if (!storedLink && (transfer as any).inbound_email_id) {
+        console.log(`No stored link — re-extracting from inbound email ${(transfer as any).inbound_email_id}`);
+        storedLink = await extractAcceptLink(resendApiKey, (transfer as any).inbound_email_id);
+        if (storedLink) {
+          await supabase
+            .from("order_transfers")
+            .update({ accept_link: storedLink, accept_link_extracted_at: new Date().toISOString() })
+            .eq("id", body.transfer_id);
+        }
+      }
+
+      console.log(`Manual relay for ${body.transfer_id}: accept_link=${storedLink ? "yes" : "no"}`);
+
+      const safeHtml = buildBrandedEmail(storedLink);
+      const plainText = storedLink
+        ? `A ticket transfer has been sent to your account. Accept it here: ${storedLink}`
+        : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
 
       await sendEmail(resendApiKey, profile.email, "Fwd: Ticket Transfer", safeHtml, plainText);
 
@@ -89,7 +106,7 @@ Deno.serve(async (req) => {
 
       console.log(`Manual relay sent to ${profile.email} for transfer ${body.transfer_id}`);
 
-      return new Response(JSON.stringify({ forwarded: true, manual: true }), {
+      return new Response(JSON.stringify({ forwarded: true, manual: true, hasLink: !!storedLink }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -187,9 +204,19 @@ Deno.serve(async (req) => {
 
     await sendEmail(resendApiKey, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
 
+    // Persist the inbound email ID and extracted link for future admin resends
+    const updatePayload: Record<string, unknown> = {
+      forward_sent_at: new Date().toISOString(),
+      inbound_email_id: email_id,
+    };
+    if (acceptLink) {
+      updatePayload.accept_link = acceptLink;
+      updatePayload.accept_link_extracted_at = new Date().toISOString();
+    }
+
     await supabase
       .from("order_transfers")
-      .update({ forward_sent_at: new Date().toISOString() })
+      .update(updatePayload)
       .eq("transfer_email_alias", alias);
 
     console.log(`Forwarded transfer email for alias ${alias} to buyer (link: ${acceptLink ? "yes" : "no"})`);
