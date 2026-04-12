@@ -8,26 +8,84 @@ const corsHeaders = {
 
 const SENDER_DOMAIN = "seats.ca";
 const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
+const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png";
+
+function formatEventDateET(raw: string): string {
+  if (!raw) return "";
+  try {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw;
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const estOffset = -5 * 60;
+    const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+    const est = new Date(utc + estOffset * 60000);
+    const day = days[est.getDay()];
+    const month = months[est.getMonth()];
+    const date = est.getDate();
+    const year = est.getFullYear();
+    let hours = est.getHours();
+    const minutes = est.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${day}, ${month} ${date}, ${year} · ${hours}:${minutes} ${ampm} ET`;
+  } catch {
+    return raw;
+  }
+}
+
+function brandedEmailWrapper(headerBg: string, headerEmoji: string, headerTitle: string, headerSub: string, bodyContent: string): string {
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<!-- Logo -->
+<tr><td style="padding:28px 40px 0;text-align:center;">
+  <img src="${LOGO_URL}" alt="seats.ca" width="300" height="300" style="display:block;margin:0 auto;width:300px;height:300px;" />
+</td></tr>
+<!-- Gradient header -->
+<tr><td style="background:${headerBg};padding:28px 40px;text-align:center;">
+  <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${headerEmoji} ${headerTitle}</h1>
+  <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">${headerSub}</p>
+</td></tr>
+<!-- Body -->
+<tr><td style="padding:32px 40px;">
+${bodyContent}
+</td></tr>
+<!-- Footer -->
+<tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
+  <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca — Canada's No-Fee Ticket Platform</p>
+</td></tr>
+<!-- Spam warning -->
+<tr><td style="padding:16px 40px;text-align:center;background:#FEF9E7;border-top:1px solid #D4AC0D;">
+  <p style="margin:0;color:#7C6F1B;font-size:11px;line-height:1.5;">⚠️ If you don't see future emails from us, check your <strong>Spam</strong> or <strong>Junk</strong> folder and mark <strong>noreply@seats.ca</strong> as a safe sender.</p>
+</td></tr>
+</table></td></tr></table>
+</body></html>`;
+}
 
 function transferConfirmedHtml(meta: {
   eventTitle: string;
   venue: string;
+  eventDate: string;
+  section: string;
+  rowName: string;
   imageUrl: string;
 }): string {
-  return `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
-<tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="background:linear-gradient(135deg,#d6193d,#b81535);padding:32px 40px;text-align:center;">
-  <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">🎟️ Your Tickets Have Been Transferred!</h1>
-  <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Great news — your tickets are on the way</p>
-</td></tr>
-<tr><td style="padding:32px 40px;">
+  const detailsRows = [
+    meta.eventDate ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.eventDate}</td></tr>` : "",
+    meta.venue ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Venue</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.venue}</td></tr>` : "",
+    meta.section ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Section</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.section}</td></tr>` : "",
+    meta.rowName ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;">Row</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;">${meta.rowName}</td></tr>` : "",
+  ].filter(Boolean).join("");
+
+  const bodyContent = `
   <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
-  ${meta.venue ? `<p style="margin:0 0 24px;color:#71717a;font-size:14px;">${meta.venue}</p>` : ""}
+  ${detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">${detailsRows}</table>` : ""}
   <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
     The seller has completed the ticket transfer and it has been verified by our team. Below is the transfer confirmation:
   </p>
@@ -36,37 +94,35 @@ function transferConfirmedHtml(meta: {
   </div>
   <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
     Please check your Ticketmaster account (or relevant platform) to accept the transfer. If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
-  </p>
-</td></tr>
-<tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
-  <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca — All rights reserved.</p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>`;
+  </p>`;
+
+  return brandedEmailWrapper(
+    "linear-gradient(135deg,#d6193d,#b81535)",
+    "🎟️",
+    "Your Tickets Have Been Transferred!",
+    "Great news — your tickets are on the way",
+    bodyContent
+  );
 }
 
 function transferDisputedSellerHtml(meta: {
   eventTitle: string;
   venue: string;
+  eventDate: string;
+  section: string;
+  rowName: string;
   reason: string;
 }): string {
-  return `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
-<tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="background:linear-gradient(135deg,#d6193d,#b81535);padding:32px 40px;text-align:center;">
-  <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">⚠️ Transfer Disputed</h1>
-  <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Action required — please re-upload your transfer proof</p>
-</td></tr>
-<tr><td style="padding:32px 40px;">
+  const detailsRows = [
+    meta.eventDate ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.eventDate}</td></tr>` : "",
+    meta.venue ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Venue</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.venue}</td></tr>` : "",
+    meta.section ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Section</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.section}</td></tr>` : "",
+    meta.rowName ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;">Row</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;">${meta.rowName}</td></tr>` : "",
+  ].filter(Boolean).join("");
+
+  const bodyContent = `
   <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
-  ${meta.venue ? `<p style="margin:0 0 24px;color:#71717a;font-size:14px;">${meta.venue}</p>` : ""}
+  ${detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">${detailsRows}</table>` : ""}
   <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
     Your transfer proof for the above event has been reviewed and <strong style="color:#d6193d;">disputed</strong> by our team. This means the uploaded screenshot could not be verified as a valid transfer.
   </p>
@@ -84,16 +140,15 @@ function transferDisputedSellerHtml(meta: {
   </div>
   <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
     If you believe this is an error, please contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
-  </p>
-</td></tr>
-<tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
-  <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca — All rights reserved.</p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>`;
+  </p>`;
+
+  return brandedEmailWrapper(
+    "linear-gradient(135deg,#d6193d,#b81535)",
+    "⚠️",
+    "Transfer Disputed",
+    "Action required — please re-upload your transfer proof",
+    bodyContent
+  );
 }
 
 Deno.serve(async (req) => {
@@ -117,13 +172,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Default action is "confirm" for backward compatibility
     const transferAction = action || "confirm";
 
     // Get transfer details
     const { data: transfer, error: transferError } = await supabase
       .from("order_transfers")
-      .select("*, orders!inner(user_id), tickets!inner(event_id)")
+      .select("*, orders!inner(user_id), tickets!inner(event_id, section, row_name)")
       .eq("id", transfer_id)
       .single();
 
@@ -137,12 +191,15 @@ Deno.serve(async (req) => {
     // Get event details
     const { data: event } = await supabase
       .from("events")
-      .select("title, venue")
+      .select("title, venue, event_date")
       .eq("id", transfer.tickets.event_id)
       .single();
 
     const eventTitle = event?.title || "Your Event";
     const venue = event?.venue || "";
+    const eventDate = event?.event_date ? formatEventDateET(event.event_date) : "";
+    const section = (transfer.tickets as any)?.section || "";
+    const rowName = (transfer.tickets as any)?.row_name || "";
 
     if (transferAction === "confirm") {
       // --- CONFIRM: Notify buyer ---
@@ -164,6 +221,9 @@ Deno.serve(async (req) => {
       const html = transferConfirmedHtml({
         eventTitle,
         venue,
+        eventDate,
+        section,
+        rowName,
         imageUrl: transfer.transfer_image_url,
       });
 
@@ -217,7 +277,7 @@ Deno.serve(async (req) => {
       const reason = body.reason || "";
       const messageId = crypto.randomUUID();
       const subject = `Transfer Disputed — ${eventTitle}`;
-      const html = transferDisputedSellerHtml({ eventTitle, venue, reason });
+      const html = transferDisputedSellerHtml({ eventTitle, venue, eventDate, section, rowName, reason });
 
       await supabase.from("email_send_log").insert({
         message_id: messageId,

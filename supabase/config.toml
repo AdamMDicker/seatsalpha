@@ -27,3 +27,5 @@ project_id = "fkcszgrewzhswdtsqpad"
     verify_jwt = false
   [functions.seller-preauth]
     verify_jwt = false
+  [functions.resolve-transfer-email]
+    verify_jwt = false
