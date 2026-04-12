@@ -434,7 +434,12 @@ serve(async (req) => {
           if (orderId) {
             const ADMIN_USER_ID = "8904900d-db33-4f03-bdb1-ca4d5b6dfa8f";
             const effectiveSellerId = ticketForTransfer?.seller_id || ADMIN_USER_ID;
-            const aliasRef = orderId.replace(/-/g, "").slice(0, 8).toLowerCase();
+            // Ticketmaster requires letters only — no digits allowed in email addresses
+            const letters = "abcdefghijklmnopqrstuvwxyz";
+            let aliasRef = "";
+            for (let i = 0; i < 10; i++) {
+              aliasRef += letters[Math.floor(Math.random() * 26)];
+            }
             const transferEmailAlias = `order-${aliasRef}@seats.ca`;
 
             await supabase.from("order_transfers").insert({
