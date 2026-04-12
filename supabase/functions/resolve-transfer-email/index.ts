@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
         ? `A ticket transfer has been sent to your account. Accept it here: ${storedLink}`
         : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
 
-      await sendEmail(resendApiKey, profile.email, "Fwd: Ticket Transfer", safeHtml, plainText);
+      await queueEmail(supabase, profile.email, "Fwd: Ticket Transfer", safeHtml, plainText);
 
       await supabase
         .from("order_transfers")
@@ -221,7 +221,7 @@ Deno.serve(async (req) => {
       ? `A ticket transfer has been sent to your account. Accept it here: ${acceptLink}`
       : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
 
-    await sendEmail(resendApiKey, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
+    await queueEmail(supabase, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
 
     // Persist the inbound email ID and extracted link for future admin resends
     const updatePayload: Record<string, unknown> = {
@@ -573,31 +573,39 @@ function buildBrandedEmail(acceptLink: string | null): string {
 </body></html>`;
 }
 
-async function sendEmail(
-  resendApiKey: string,
+async function queueEmail(
+  supabase: ReturnType<typeof createClient>,
   to: string,
   subject: string,
   html: string,
   text: string
 ) {
-  const res = await fetch(`${RESEND_API_URL}/emails`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Seats.ca Transfers <noreply@seats.ca>",
-      to: [to],
+  const messageId = crypto.randomUUID();
+  const SENDER_DOMAIN = "seats.ca";
+  const FROM_EMAIL = `noreply@${SENDER_DOMAIN}`;
+
+  await supabase.from("email_send_log").insert({
+    message_id: messageId,
+    template_name: "transfer-relay-forward",
+    recipient_email: to,
+    status: "pending",
+  });
+
+  await supabase.rpc("enqueue_email", {
+    queue_name: "transactional_emails",
+    payload: {
+      message_id: messageId,
+      to,
+      from: `Seats.ca Transfers <${FROM_EMAIL}>`,
+      sender_domain: SENDER_DOMAIN,
       subject,
       html,
       text,
-    }),
+      purpose: "transactional",
+      label: "transfer-relay-forward",
+      queued_at: new Date().toISOString(),
+    },
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    console.error("Failed to send email via Resend:", res.status, err);
-    throw new Error(`Failed to send email: ${res.status}`);
-  }
+  console.log(`Queued relay email ${messageId} to ${to}`);
 }
