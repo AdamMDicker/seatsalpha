@@ -74,7 +74,6 @@ function transferConfirmedHtml(meta: {
   eventDate: string;
   section: string;
   rowName: string;
-  imageUrl: string;
 }): string {
   const detailsRows = [
     meta.eventDate ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.eventDate}</td></tr>` : "",
@@ -87,13 +86,20 @@ function transferConfirmedHtml(meta: {
   <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
   ${detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">${detailsRows}</table>` : ""}
   <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
-    The seller has completed the ticket transfer and it has been verified by our team. Below is the transfer confirmation:
+    The seller has completed the ticket transfer and it has been verified by our team. Please check your Ticketmaster account (or relevant platform) to accept the incoming transfer.
   </p>
-  <div style="text-align:center;margin:24px 0;">
-    <img src="${meta.imageUrl}" alt="Transfer Confirmation" style="max-width:100%;border-radius:8px;border:1px solid #e0e0e0;" />
-  </div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
+    <tr><td style="padding:16px;">
+      <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
+      <ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
+        <li>Log in to your Ticketmaster account (or relevant platform)</li>
+        <li>Look for an incoming ticket transfer notification</li>
+        <li>Accept the transfer to add the tickets to your account</li>
+      </ol>
+    </td></tr>
+  </table>
   <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
-    Please check your Ticketmaster account (or relevant platform) to accept the transfer. If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
+    If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
   </p>`;
 
   return brandedEmailWrapper(
@@ -224,7 +230,6 @@ Deno.serve(async (req) => {
         eventDate,
         section,
         rowName,
-        imageUrl: transfer.transfer_image_url,
       });
 
       await supabase.from("email_send_log").insert({

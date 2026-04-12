@@ -274,8 +274,18 @@ Be lenient with matching - partial matches and similar names should count as mat
   <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">${eventTitle}</h2>
   ${detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">${detailsRows}</table>` : ""}
   <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
-    Great news! The seller has transferred your tickets, and our automated verification has confirmed that the transfer details match your order. Please check your Ticketmaster account (or relevant platform) to accept the incoming transfer.
+    Great news! The seller has transferred your tickets, and our team has verified the transfer. Please check your Ticketmaster account (or relevant platform) to accept the incoming transfer.
   </p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
+    <tr><td style="padding:16px;">
+      <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
+      <ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
+        <li>Log in to your Ticketmaster account (or relevant platform)</li>
+        <li>Look for an incoming ticket transfer notification</li>
+        <li>Accept the transfer to add the tickets to your account</li>
+      </ol>
+    </td></tr>
+  </table>
   <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
     If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
   </p>`;
