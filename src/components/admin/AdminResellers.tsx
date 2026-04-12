@@ -121,11 +121,30 @@ const AdminResellers = () => {
     setStatsMap(map);
   };
 
+  const fetchAppSeats = async () => {
+    const { data } = await supabase.from("reseller_application_seats").select("*");
+    const map: Record<string, AppSeat[]> = {};
+    if (data) {
+      (data as any[]).forEach((row: any) => {
+        if (!map[row.reseller_id]) map[row.reseller_id] = [];
+        map[row.reseller_id].push({
+          league: row.league,
+          section: row.section,
+          row_name: row.row_name,
+          seat_count: row.seat_count,
+          lowest_seat: row.lowest_seat,
+        });
+      });
+    }
+    setAppSeatsMap(map);
+  };
+
   useEffect(() => {
     const init = async () => {
       await fetchResellers();
       await fetchLeagues();
       await fetchSubs();
+      await fetchAppSeats();
     };
     init();
   }, []);
