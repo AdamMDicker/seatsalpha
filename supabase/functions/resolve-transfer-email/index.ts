@@ -9,6 +9,13 @@ const corsHeaders = {
 const RESEND_API_URL = "https://api.resend.com";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png";
 
+interface LinkCandidate {
+  href: string;
+  text: string;
+  score: number;
+  source: string;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -36,7 +43,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Extract the alias from the recipient
     const aliasRecipient = recipients.find((r: string) =>
       r.includes("order-") && (r.includes("@inbound.seats.ca") || r.includes("@seats.ca"))
     );
@@ -51,7 +57,6 @@ Deno.serve(async (req) => {
 
     const alias = aliasRecipient.trim().toLowerCase();
 
-    // Look up transfer via database
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -60,7 +65,7 @@ Deno.serve(async (req) => {
 
     const { data: transfer, error: transferError } = await supabase
       .from("order_transfers")
-      .select("order_id, status, verification_result")
+      .select("order_id, status")
       .eq("transfer_email_alias", alias)
       .single();
 
@@ -72,7 +77,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Block forwarding if AI verification found a mismatch
     if (transfer.status === "disputed") {
       console.log(`BLOCKED forward for alias ${alias} — status is disputed`);
       return new Response(JSON.stringify({ forwarded: false, reason: "mismatch_blocked" }), {
@@ -81,7 +85,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch buyer email
     const { data: order } = await supabase
       .from("orders")
       .select("user_id")
@@ -109,21 +112,18 @@ Deno.serve(async (req) => {
     }
 
     const buyerEmail = profile.email;
-
-    // --- Fetch the full inbound email from Resend to get HTML body ---
     const acceptLink = await extractAcceptLink(resendApiKey, email_id);
-    console.log(`Extracted accept link for alias ${alias}:`, acceptLink ? "found" : "not found");
+
+    console.log(`Extracted accept link for alias ${alias}:`, acceptLink ? `found (${safeHostname(acceptLink)})` : "not found");
 
     const inboundSubject = body.data.subject || "Ticket Transfer";
     const safeHtml = buildBrandedEmail(acceptLink);
-
     const plainText = acceptLink
       ? `A ticket transfer has been sent to your account. Accept it here: ${acceptLink}`
       : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
 
     await sendEmail(resendApiKey, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
 
-    // Mark that the email was successfully forwarded
     await supabase
       .from("order_transfers")
       .update({ forward_sent_at: new Date().toISOString() })
@@ -144,10 +144,6 @@ Deno.serve(async (req) => {
   }
 });
 
-/**
- * Fetch the full email content from Resend's Receiving API and extract
- * the Ticketmaster "Accept" transfer link, stripping seller PII.
- */
 async function extractAcceptLink(resendApiKey: string, emailId: string): Promise<string | null> {
   try {
     const res = await fetch(`${RESEND_API_URL}/emails/${emailId}`, {
@@ -160,37 +156,33 @@ async function extractAcceptLink(resendApiKey: string, emailId: string): Promise
     }
 
     const emailData = await res.json();
-    const html: string = emailData.html || emailData.text || "";
+    const contentCandidates = collectContentCandidates(emailData);
 
-    if (!html) {
-      console.log("No HTML body in inbound email");
-      return null;
+    console.log(
+      "Inbound email content sources:",
+      contentCandidates.map(({ source, value }) => `${source}:${value.length}`).join(", ") || "none"
+    );
+
+    const rankedLinks = rankLinkCandidates(
+      contentCandidates.flatMap(({ source, value }) => extractLinkCandidates(value, source))
+    );
+
+    if (rankedLinks.length > 0) {
+      const best = rankedLinks[0];
+      console.log(
+        `Selected inbound link host=${safeHostname(best.href)} score=${best.score} source=${best.source} text=${truncate(best.text, 60)}`
+      );
+      return best.href;
     }
 
-    // Ticketmaster accept/transfer links typically match these patterns:
-    // - https://www.ticketmaster.com/transfer/accept?...
-    // - https://am.ticketmaster.com/...
-    // - https://myaccount.ticketmaster.com/...
-    // - Links containing "accept" in Ticketmaster domains
-    const patterns = [
-      // Direct accept transfer URLs
-      /https?:\/\/[a-z.]*ticketmaster\.[a-z.]+\/[^\s"'<>]*(?:accept|transfer)[^\s"'<>]*/gi,
-      // Generic Ticketmaster links with tokens (often the CTA button href)
-      /https?:\/\/[a-z.]*ticketmaster\.[a-z.]+\/[^\s"'<>]*token[^\s"'<>]*/gi,
-      // Broad fallback: any Ticketmaster link that looks like an action URL (has query params)
-      /https?:\/\/[a-z.]*ticketmaster\.[a-z.]+\/[^\s"'<>]*\?[^\s"'<>]+/gi,
-    ];
+    console.log(
+      "No inbound accept link matched",
+      JSON.stringify({
+        keys: Object.keys(emailData).slice(0, 20),
+        candidateSources: contentCandidates.map(({ source }) => source),
+      })
+    );
 
-    for (const pattern of patterns) {
-      const matches = html.match(pattern);
-      if (matches && matches.length > 0) {
-        // Clean up any trailing quotes or HTML artifacts
-        let link = matches[0].replace(/["'>;].*$/, "").replace(/&amp;/g, "&");
-        return link;
-      }
-    }
-
-    console.log("No Ticketmaster accept link found in email body");
     return null;
   } catch (err) {
     console.error("Error extracting accept link:", err);
@@ -198,10 +190,190 @@ async function extractAcceptLink(resendApiKey: string, emailId: string): Promise
   }
 }
 
-/**
- * Build a branded email that includes the acceptance link (if found)
- * or falls back to generic instructions.
- */
+function collectContentCandidates(emailData: Record<string, unknown>): Array<{ source: string; value: string }> {
+  const candidates = new Map<string, string>();
+  const preferredPaths = [
+    ["html"],
+    ["text"],
+    ["body", "html"],
+    ["body", "text"],
+    ["content", "html"],
+    ["content", "text"],
+    ["email", "html"],
+    ["email", "text"],
+    ["data", "html"],
+    ["data", "text"],
+    ["raw"],
+    ["raw_html"],
+    ["raw_text"],
+    ["message", "html"],
+    ["message", "text"],
+  ];
+
+  for (const path of preferredPaths) {
+    const value = getNestedString(emailData, path);
+    if (value) {
+      candidates.set(path.join("."), normalizeContent(value));
+    }
+  }
+
+  collectRecursiveStrings(emailData, [], candidates, 0);
+
+  return Array.from(candidates.entries()).map(([source, value]) => ({ source, value }));
+}
+
+function getNestedString(obj: unknown, path: string[]): string | null {
+  let current: unknown = obj;
+  for (const key of path) {
+    if (!current || typeof current !== "object" || !(key in current)) return null;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return typeof current === "string" && current.trim() ? current : null;
+}
+
+function collectRecursiveStrings(
+  value: unknown,
+  path: string[],
+  candidates: Map<string, string>,
+  depth: number
+): void {
+  if (depth > 4 || !value) return;
+
+  if (typeof value === "string") {
+    const lastKey = path[path.length - 1]?.toLowerCase() ?? "";
+    if (["html", "text", "body", "raw", "content", "message"].some((part) => lastKey.includes(part))) {
+      const normalized = normalizeContent(value);
+      if (normalized) candidates.set(path.join("."), normalized);
+    }
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => collectRecursiveStrings(item, [...path, String(index)], candidates, depth + 1));
+    return;
+  }
+
+  if (typeof value === "object") {
+    Object.entries(value as Record<string, unknown>).forEach(([key, nested]) => {
+      collectRecursiveStrings(nested, [...path, key], candidates, depth + 1);
+    });
+  }
+}
+
+function normalizeContent(value: string): string {
+  return decodeHtmlEntities(value)
+    .replace(/=\r?\n/g, "")
+    .replace(/\u003d/g, "=")
+    .replace(/\u0026/g, "&")
+    .trim();
+}
+
+function extractLinkCandidates(content: string, source: string): LinkCandidate[] {
+  const candidates = new Map<string, LinkCandidate>();
+  const anchorRegex = /<a\b[^>]*href\s*=\s*(["'])(.*?)\1[^>]*>([\s\S]*?)<\/a>/gi;
+  let anchorMatch: RegExpExecArray | null;
+
+  while ((anchorMatch = anchorRegex.exec(content)) !== null) {
+    const href = cleanUrl(anchorMatch[2]);
+    const text = stripHtml(anchorMatch[3]);
+    const context = anchorMatch[0];
+    maybeAddCandidate(candidates, href, text, source, context);
+  }
+
+  const plainUrlRegex = /https?:\/\/[^\s"'<>]+/gi;
+  const plainMatches = content.match(plainUrlRegex) ?? [];
+  for (const rawUrl of plainMatches) {
+    const href = cleanUrl(rawUrl);
+    maybeAddCandidate(candidates, href, "", source, rawUrl);
+  }
+
+  return Array.from(candidates.values());
+}
+
+function maybeAddCandidate(
+  store: Map<string, LinkCandidate>,
+  rawHref: string,
+  text: string,
+  source: string,
+  context: string
+): void {
+  const href = cleanUrl(rawHref);
+  if (!href || !href.startsWith("http")) return;
+
+  const score = scoreLinkCandidate(href, text, context);
+  if (score < 40) return;
+
+  const existing = store.get(href);
+  const candidate = { href, text, source, score };
+
+  if (!existing || existing.score < score) {
+    store.set(href, candidate);
+  }
+}
+
+function scoreLinkCandidate(href: string, text: string, context: string): number {
+  const link = href.toLowerCase();
+  const label = text.toLowerCase();
+  const nearby = context.toLowerCase();
+
+  if (
+    /(mailto:|unsubscribe|preferences|privacy|facebook|instagram|twitter|linkedin|support@|noreply@)/.test(link)
+  ) {
+    return -1000;
+  }
+
+  let score = 0;
+
+  if (link.includes("ticketmaster")) score += 45;
+  if (/(accept|claim|receive|view\s*tickets|manage\s*tickets|ticket\s*transfer|view\s*transfer)/.test(label)) score += 60;
+  if (/(accept|claim|transfer|tickets?|secure|redeem)/.test(link)) score += 35;
+  if (/(ticket\s*transfer|accept\s*your\s*tickets|accept\s*transfer|mobile\s*tickets|has\s*sent\s*you)/.test(nearby)) score += 20;
+  if (/click\.|links\.|lnk\./.test(link) && /(accept|transfer|ticket)/.test(label + " " + nearby)) score += 25;
+  if (link.startsWith("https://")) score += 5;
+
+  return score;
+}
+
+function rankLinkCandidates(candidates: LinkCandidate[]): LinkCandidate[] {
+  return candidates.sort((a, b) => b.score - a.score || a.href.length - b.href.length);
+}
+
+function cleanUrl(value: string): string {
+  return decodeHtmlEntities(value)
+    .replace(/^href=/i, "")
+    .replace(/["']/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, "")
+    .replace(/[>;]+$/g, "")
+    .trim();
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/=3D/gi, "=");
+}
+
+function stripHtml(value: string): string {
+  return decodeHtmlEntities(value).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function truncate(value: string, max: number): string {
+  return value.length > max ? `${value.slice(0, max)}…` : value;
+}
+
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "invalid-url";
+  }
+}
+
 function buildBrandedEmail(acceptLink: string | null): string {
   const ctaSection = acceptLink
     ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
