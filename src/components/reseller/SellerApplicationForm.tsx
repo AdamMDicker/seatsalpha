@@ -161,10 +161,19 @@ const SellerApplicationForm = () => {
           corporation_number: corporationNumber.trim() || null,
           tax_collection_number: taxCollectionNumber.trim() || null,
           seller_type: "sth",
-          ...(shouldAutoApprove ? { status: "live" } : {}),
         } as any)
         .select("id")
         .single();
+
+      if (error) throw error;
+
+      // Auto-approve standard sports via secure RPC
+      if (shouldAutoApprove) {
+        const { error: approveError } = await supabase.rpc("auto_approve_reseller", {
+          _reseller_id: data.id,
+        });
+        if (approveError) throw approveError;
+      }
 
       if (error) throw error;
 
