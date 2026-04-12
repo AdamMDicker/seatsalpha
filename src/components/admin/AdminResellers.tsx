@@ -64,6 +64,8 @@ const AdminResellers = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [preauthAmounts, setPreauthAmounts] = useState<Record<string, string>>({});
+  const [appSeatsMap, setAppSeatsMap] = useState<Record<string, AppSeat[]>>({});
+  const [expandedApps, setExpandedApps] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
   const fetchResellers = async () => {
