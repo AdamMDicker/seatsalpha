@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight, MailX, Send } from "lucide-react";
+import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight, MailX, Send, Link2, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
 const PAGE_SIZE = 20;
@@ -26,6 +26,8 @@ interface AdminTransfer {
   created_at: string;
   confirmed_at: string | null;
   verification_result: any;
+  accept_link?: string | null;
+  forward_sent_at?: string | null;
   // joined
   event_title?: string;
   venue?: string;
@@ -268,6 +270,7 @@ const AdminTransfers = () => {
                   <TableHead>Status</TableHead>
                   <TableHead>Proof</TableHead>
                   <TableHead>AI Result</TableHead>
+                  <TableHead>Link</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
