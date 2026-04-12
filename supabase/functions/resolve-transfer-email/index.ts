@@ -102,35 +102,54 @@ Deno.serve(async (req) => {
 
     const buyerEmail = profile.email;
 
-    // Fetch the full inbound email from Resend to get body content
-    const emailRes = await fetch(`${RESEND_API_URL}/emails/${email_id}`, {
-      headers: { Authorization: `Bearer ${resendApiKey}` },
-    });
+    // Instead of forwarding the raw Ticketmaster email (which contains seller PII like their name),
+    // send a clean branded notification telling the buyer to check their platform.
+    const inboundSubject = body.data.subject || "Ticket Transfer";
 
-    if (!emailRes.ok) {
-      console.error("Failed to fetch email from Resend:", emailRes.status);
-      // Fall back to forwarding just the subject
-      const subject = body.data.subject || "Ticket Transfer";
-      await forwardEmail(resendApiKey, buyerEmail, subject, 
-        `<p>You have received a ticket transfer. Please check your Ticketmaster account to accept the tickets.</p>`,
-        `You have received a ticket transfer. Please check your Ticketmaster account to accept the tickets.`
-      );
+    const safeHtml = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<tr><td style="padding:28px 40px 0;text-align:center;">
+  <img src="https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png" alt="seats.ca" width="300" height="300" style="display:block;margin:0 auto;width:300px;height:300px;" />
+</td></tr>
+<tr><td style="background:linear-gradient(135deg,#059669,#047857);padding:28px 40px;text-align:center;">
+  <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">🎟️ Ticket Transfer Received</h1>
+  <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">A ticket transfer has been sent to your account</p>
+</td></tr>
+<tr><td style="padding:32px 40px;">
+  <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
+    Good news! A ticket transfer has been initiated for your order. Please log in to your Ticketmaster account (or relevant platform) to accept the incoming tickets.
+  </p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
+    <tr><td style="padding:16px;">
+      <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
+      <ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
+        <li>Log in to your Ticketmaster account (or relevant platform)</li>
+        <li>Look for an incoming ticket transfer notification</li>
+        <li>Accept the transfer to add the tickets to your account</li>
+      </ol>
+    </td></tr>
+  </table>
+  <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
+    If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
+  </p>
+</td></tr>
+<tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
+  <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca — Canada's No-Fee Ticket Platform</p>
+</td></tr>
+<tr><td style="padding:16px 40px;text-align:center;background:#FEF9E7;border-top:1px solid #D4AC0D;">
+  <p style="margin:0;color:#7C6F1B;font-size:11px;line-height:1.5;">⚠️ If you don't see future emails from us, check your <strong>Spam</strong> or <strong>Junk</strong> folder and mark <strong>noreply@seats.ca</strong> as a safe sender.</p>
+</td></tr>
+</table></td></tr></table>
+</body></html>`;
 
-      return new Response(JSON.stringify({ forwarded: true, fallback: true }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const fullEmail = await emailRes.json();
-
-    // Forward the email to the buyer
-    await forwardEmail(
-      resendApiKey,
-      buyerEmail,
-      fullEmail.subject || body.data.subject || "Ticket Transfer",
-      fullEmail.html || `<p>${fullEmail.text || "You have received a ticket transfer."}</p>`,
-      fullEmail.text || "You have received a ticket transfer."
+    await forwardEmail(resendApiKey, buyerEmail, inboundSubject, safeHtml,
+      "A ticket transfer has been sent to your account. Please log in to your Ticketmaster account to accept the incoming tickets."
     );
 
     console.log(`Forwarded transfer email for alias ${alias} to buyer`);
