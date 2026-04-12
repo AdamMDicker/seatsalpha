@@ -27,6 +27,75 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
 
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    // ── Manual admin re-trigger mode ──
+    if (body.transfer_id && !body.type) {
+      console.log(`Manual relay trigger for transfer_id=${body.transfer_id}`);
+
+      const { data: transfer, error: transferError } = await supabase
+        .from("order_transfers")
+        .select("order_id, transfer_email_alias, status")
+        .eq("id", body.transfer_id)
+        .single();
+
+      if (transferError || !transfer) {
+        return new Response(JSON.stringify({ error: "Transfer not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: order } = await supabase
+        .from("orders")
+        .select("user_id")
+        .eq("id", transfer.order_id)
+        .single();
+
+      if (!order) {
+        return new Response(JSON.stringify({ error: "Order not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("user_id", order.user_id)
+        .single();
+
+      if (!profile?.email) {
+        return new Response(JSON.stringify({ error: "Buyer email not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Send branded email without an accept link (fallback instructions)
+      const safeHtml = buildBrandedEmail(null);
+      const plainText = "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
+
+      await sendEmail(resendApiKey, profile.email, "Fwd: Ticket Transfer", safeHtml, plainText);
+
+      await supabase
+        .from("order_transfers")
+        .update({ forward_sent_at: new Date().toISOString() })
+        .eq("id", body.transfer_id);
+
+      console.log(`Manual relay sent to ${profile.email} for transfer ${body.transfer_id}`);
+
+      return new Response(JSON.stringify({ forwarded: true, manual: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── Standard webhook mode ──
     if (body.type !== "email.received") {
       return new Response(JSON.stringify({ ignored: true }), {
         status: 200,
@@ -56,12 +125,6 @@ Deno.serve(async (req) => {
     }
 
     const alias = aliasRecipient.trim().toLowerCase();
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
 
     const { data: transfer, error: transferError } = await supabase
       .from("order_transfers")
