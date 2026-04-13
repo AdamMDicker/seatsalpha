@@ -1,47 +1,41 @@
 
 
-## Plan: Block Buyer Forward on Transfer Mismatch
+## Fix: Transfer Relay Emails Failing (Missing idempotency_key)
 
-### Problem
-Currently, `resolve-transfer-email` forwards the Ticketmaster transfer notification to the buyer immediately, regardless of whether the AI verification found a mismatch. This means a buyer could accept wrong tickets before anyone catches the error.
-
-### Solution
-Modify `resolve-transfer-email` to check the transfer's `status` and `verification_result` before forwarding:
-
-1. **If status is `disputed`** (AI found mismatch) — do NOT forward to buyer. Log the blocked forward and notify admin.
-2. **If status is `confirmed`** (AI verified match) — forward immediately as today.
-3. **If status is `pending`** (proof not yet uploaded / not yet verified) — forward as today (the transfer email often arrives before the seller uploads proof, so we cannot block on pending).
-
-Additionally, when a `disputed` transfer is later manually confirmed by admin (via AdminTransfers "Confirm" action), we should trigger the buyer notification at that point.
-
-### Changes
-
-**File 1: `supabase/functions/resolve-transfer-email/index.ts`**
-- After looking up the transfer, fetch `status` and `verification_result` (currently only fetches `order_id`)
-- If `status === "disputed"`, skip forwarding, log a console message, and return `{ forwarded: false, reason: "mismatch_blocked" }`
-- If `status === "confirmed"` or `pending`, proceed with forward as normal
-
-**File 2: `src/components/admin/AdminTransfers.tsx`**
-- When admin clicks "Confirm" on a disputed transfer, after updating the status, also invoke `notify-buyer-transfer` with `action: "confirm"` to send the buyer their transfer notification (this already exists and sends the branded "Transfer Verified" email)
-
-### Flow After Changes
-
-```text
-Seller uploads proof
-  → AI verifies → status = confirmed OR disputed
-
-Ticketmaster email arrives at inbound.seats.ca
-  → resolve-transfer-email checks status
-  → disputed? BLOCK forward, log it
-  → confirmed/pending? FORWARD to buyer
-
-Admin reviews disputed transfer
-  → clicks "Confirm" → buyer gets notification
+### Problem Found
+All `transfer-relay-forward` emails are failing since today (Apr 13) with this error:
+```
+Missing run_id or idempotency_key — App emails can omit run_id by providing idempotency_key with purpose=transactional.
 ```
 
+The email API now requires an `idempotency_key` for transactional emails. The `process-email-queue` dispatcher correctly passes `payload.idempotency_key` to the email API, but no edge function is including `idempotency_key` in the enqueue payload. Some emails (like buyer-confirmation) were sent successfully on Apr 12 before the enforcement kicked in — but all transfer-relay-forward emails today are hitting the DLQ after 5 retries.
+
+### What's Working
+- Auth emails (signup, recovery, etc.) -- working via auth-email-hook
+- Branding is correct ("Seats.ca" everywhere, no "seatsalpha")
+- Mismatch gate (disputed transfer blocking) -- working correctly
+- Admin transfers dashboard -- working
+
+### What's Broken
+- `transfer-relay-forward` emails (the Ticketmaster relay to buyers) -- all failing
+- Potentially all other transactional emails going forward
+
+### Fix
+Add `idempotency_key: messageId` to every `enqueue_email` payload across all 5 edge functions that queue transactional emails:
+
+1. **`resolve-transfer-email/index.ts`** -- `queueEmail()` function (line ~596)
+2. **`notify-buyer-transfer/index.ts`** -- confirm and dispute enqueue calls (lines ~241, ~293)
+3. **`verify-transfer-image/index.ts`** -- buyer verified and admin mismatch enqueue calls (lines ~315, ~401)
+4. **`transfer-fallback-reminder/index.ts`** -- fallback enqueue call (line ~86)
+5. **`send-transactional-email/index.ts`** -- the main transactional enqueue call (line ~327)
+
+Each function already generates a `messageId` (UUID) before enqueuing. The fix is simply adding `idempotency_key: messageId` to the payload object passed to `supabase.rpc("enqueue_email", ...)`.
+
+After editing, all 5 edge functions must be redeployed.
+
 ### Technical Details
-- The `resolve-transfer-email` select query changes from `.select("order_id")` to `.select("order_id, status, verification_result")`
-- No database migration needed — uses existing `status` column
-- Two Edge Functions redeployed: `resolve-transfer-email`
-- One UI file updated: `AdminTransfers.tsx` (confirm action triggers buyer email)
+- The `idempotency_key` serves as a deduplication key for the email API
+- Using the existing `message_id` UUID is the correct value since it's already unique per email
+- No database changes needed
+- No UI changes needed
 
