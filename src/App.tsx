@@ -30,6 +30,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import NotificationDetail from "./pages/NotificationDetail";
 import MyOrders from "./pages/MyOrders";
 import SellerAgreement from "./pages/SellerAgreement";
+import CheapBlueJaysTickets from "./pages/CheapBlueJaysTickets";
 
 
 const queryClient = new QueryClient();
