@@ -268,8 +268,16 @@ function sellerEmailHtml(meta: {
 // --- Helper to enqueue an email ---
 async function enqueueEmail(to: string, subject: string, html: string, label: string, opts?: { fromName?: string; replyTo?: string }) {
   const messageId = crypto.randomUUID();
+  const unsubToken = crypto.randomUUID();
   const text = subject;
   const displayName = opts?.fromName || "seats.ca";
+
+  // Insert unsubscribe token for compliance
+  await supabase.from("email_unsubscribe_tokens").insert({
+    email: to,
+    token: unsubToken,
+  });
+
   await supabase.from("email_send_log").insert({
     message_id: messageId,
     template_name: label,
@@ -280,6 +288,8 @@ async function enqueueEmail(to: string, subject: string, html: string, label: st
     queue_name: "transactional_emails",
     payload: {
       message_id: messageId,
+      idempotency_key: messageId,
+      unsubscribe_token: unsubToken,
       to,
       from: `${displayName} <${FROM_EMAIL}>`,
       sender_domain: SENDER_DOMAIN,
