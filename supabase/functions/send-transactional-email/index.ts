@@ -335,6 +335,7 @@ Deno.serve(async (req) => {
         html,
         text: subject,
         purpose: "transactional",
+        idempotency_key: messageId,
         label,
         queued_at: new Date().toISOString(),
         ...(isSellerEmail ? { reply_to: "Lmksportsconsulting@gmail.com" } : {}),

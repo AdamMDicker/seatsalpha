@@ -602,6 +602,7 @@ async function queueEmail(
       html,
       text,
       purpose: "transactional",
+      idempotency_key: messageId,
       label: "transfer-relay-forward",
       queued_at: new Date().toISOString(),
     },
