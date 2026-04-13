@@ -104,6 +104,7 @@ Deno.serve(async (req) => {
             html,
             text: `Your tickets for ${eventTitle} have been transferred. Please open your Ticketmaster app or check your email for a transfer notification to accept them.`,
             purpose: "transactional",
+            idempotency_key: messageId,
             label: "buyer-transfer-fallback",
             queued_at: new Date().toISOString(),
           },
