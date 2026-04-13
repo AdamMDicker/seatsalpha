@@ -281,8 +281,11 @@ Deno.serve(async (req) => {
 
       const reason = body.reason || "";
       const messageId = crypto.randomUUID();
+      const unsubToken2 = crypto.randomUUID();
       const subject = `Transfer Disputed — ${eventTitle}`;
       const html = transferDisputedSellerHtml({ eventTitle, venue, eventDate, section, rowName, reason });
+
+      await supabase.from("email_unsubscribe_tokens").insert({ email: reseller.email, token: unsubToken2 });
 
       await supabase.from("email_send_log").insert({
         message_id: messageId,
@@ -303,6 +306,7 @@ Deno.serve(async (req) => {
           text: `Your transfer proof for ${eventTitle} has been disputed. Please re-upload a valid screenshot at https://seats.ca/reseller-dashboard?tab=transfers`,
           purpose: "transactional",
           idempotency_key: messageId,
+          unsubscribe_token: unsubToken2,
           label: "seller-transfer-disputed",
           queued_at: new Date().toISOString(),
         },

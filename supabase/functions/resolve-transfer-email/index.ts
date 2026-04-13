@@ -581,8 +581,11 @@ async function queueEmail(
   text: string
 ) {
   const messageId = crypto.randomUUID();
+  const unsubToken = crypto.randomUUID();
   const SENDER_DOMAIN = "notify.seats.ca";
   const FROM_EMAIL = "noreply@seats.ca";
+
+  await supabase.from("email_unsubscribe_tokens").insert({ email: to, token: unsubToken });
 
   await supabase.from("email_send_log").insert({
     message_id: messageId,
@@ -603,6 +606,7 @@ async function queueEmail(
       text,
       purpose: "transactional",
       idempotency_key: messageId,
+      unsubscribe_token: unsubToken,
       label: "transfer-relay-forward",
       queued_at: new Date().toISOString(),
     },
