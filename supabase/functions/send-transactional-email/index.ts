@@ -321,8 +321,11 @@ Deno.serve(async (req) => {
     }
 
     const messageId = crypto.randomUUID();
+    const unsubToken = crypto.randomUUID();
     const isSellerEmail = type === "seller_notification";
     const displayName = isSellerEmail ? "LMK Sports Consulting" : "seats.ca";
+
+    await supabase.from("email_unsubscribe_tokens").insert({ email: to, token: unsubToken });
 
     const { error: enqueueError } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
@@ -336,6 +339,7 @@ Deno.serve(async (req) => {
         text: subject,
         purpose: "transactional",
         idempotency_key: messageId,
+        unsubscribe_token: unsubToken,
         label,
         queued_at: new Date().toISOString(),
         ...(isSellerEmail ? { reply_to: "Lmksportsconsulting@gmail.com" } : {}),

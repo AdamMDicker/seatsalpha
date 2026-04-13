@@ -306,6 +306,8 @@ If all the core details (teams, date, section, row, email) refer to the same thi
         );
 
         const messageId = crypto.randomUUID();
+        const unsubToken = crypto.randomUUID();
+        await supabase.from("email_unsubscribe_tokens").insert({ email: buyerProfile.email, token: unsubToken });
         await supabase.from("email_send_log").insert({
           message_id: messageId,
           template_name: "transfer-verified-buyer",
@@ -324,6 +326,7 @@ If all the core details (teams, date, section, row, email) refer to the same thi
             text: `Your tickets for ${eventTitle} have been verified and confirmed.`,
             purpose: "transactional",
             idempotency_key: messageId,
+            unsubscribe_token: unsubToken,
             label: "transfer-verified-buyer",
             queued_at: new Date().toISOString(),
           },
@@ -393,6 +396,8 @@ If all the core details (teams, date, section, row, email) refer to the same thi
       );
 
       const alertMsgId = crypto.randomUUID();
+      const adminUnsubToken = crypto.randomUUID();
+      await supabase.from("email_unsubscribe_tokens").insert({ email: ADMIN_EMAIL, token: adminUnsubToken });
       await supabase.from("email_send_log").insert({
         message_id: alertMsgId,
         template_name: "transfer-mismatch-admin",
@@ -411,6 +416,7 @@ If all the core details (teams, date, section, row, email) refer to the same thi
           text: `Transfer mismatch detected for Order #${orderRef}. Mismatched: ${mismatchDetails}`,
            purpose: "transactional",
           idempotency_key: alertMsgId,
+          unsubscribe_token: adminUnsubToken,
           label: "transfer-mismatch-admin",
           queued_at: new Date().toISOString(),
         },

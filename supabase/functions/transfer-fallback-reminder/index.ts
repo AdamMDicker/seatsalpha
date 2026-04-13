@@ -82,10 +82,13 @@ Deno.serve(async (req) => {
 
         // Build fallback email
         const messageId = crypto.randomUUID();
+        const unsubToken = crypto.randomUUID();
         const subject = `Action Needed — Accept Your Ticket Transfer for ${eventTitle}`;
         const html = fallbackReminderHtml(eventTitle);
 
         // Log & enqueue
+        await supabase.from("email_unsubscribe_tokens").insert({ email: profile.email, token: unsubToken });
+
         await supabase.from("email_send_log").insert({
           message_id: messageId,
           template_name: "buyer-transfer-fallback",
@@ -105,6 +108,7 @@ Deno.serve(async (req) => {
             text: `Your tickets for ${eventTitle} have been transferred. Please open your Ticketmaster app or check your email for a transfer notification to accept them.`,
             purpose: "transactional",
             idempotency_key: messageId,
+            unsubscribe_token: unsubToken,
             label: "buyer-transfer-fallback",
             queued_at: new Date().toISOString(),
           },
