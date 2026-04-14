@@ -1,8 +1,9 @@
-import { Ticket, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import logoImage from "@/assets/seats-logo-new-v7.png";
 
 const Footer = () => {
   const [footerEmail, setFooterEmail] = useState("");
@@ -30,11 +31,8 @@ const Footer = () => {
       <div className="container mx-auto px-5 sm:px-6">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 sm:gap-10">
           <div className="col-span-2 sm:col-span-1 space-y-3">
-            <div className="flex items-center gap-2">
-              <Ticket className="h-6 w-6 text-primary" />
-              <span className="font-display text-lg font-bold">
-                seats<span className="text-primary">.ca</span>
-              </span>
+            <div className="flex items-center">
+              <img src={logoImage} alt="seats.ca" className="h-8 w-auto" />
             </div>
             <p className="text-xs uppercase tracking-widest text-primary font-semibold">Canada's No Extra Fees Platform</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
