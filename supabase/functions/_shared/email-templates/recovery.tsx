@@ -33,24 +33,27 @@ export const RecoveryEmail = ({
     <Preview>Reset your password for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={accentBar} />
+        <Section style={header}>
+          <Img src={LOGO_URL} width="120" height="120" alt="seats.ca" style={logo} />
+        </Section>
+        <Section style={accentLine} />
         <Section style={content}>
-          <Img src={LOGO_URL} width="300" height="300" alt="seats.ca" style={logo} />
           <Heading style={h1}>Reset Your Password</Heading>
           <Text style={text}>
             We received a request to reset your password for {siteName}. Click the button below to choose a new password.
           </Text>
-          <Button style={button} href={confirmationUrl}>
-            Reset Password
-          </Button>
-          <Text style={footer}>
+          <Section style={buttonWrap}>
+            <Button style={button} href={confirmationUrl}>
+              Reset Password
+            </Button>
+          </Section>
+          <Text style={muted}>
             If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.
           </Text>
-          <Section style={spamWarning}>
-            <Text style={spamText}>
-              ⚠️ <strong>Important:</strong> If you don't see future emails from us, please check your spam/junk folder and mark us as a safe sender.
-            </Text>
-          </Section>
+        </Section>
+        <Section style={footer}>
+          <Text style={footerText}>© {new Date().getFullYear()} seats.ca · Canada's No-Fee Ticket Platform</Text>
+          <Text style={spamNote}>Tip: Add noreply@seats.ca to your contacts to avoid missing emails.</Text>
         </Section>
       </Container>
     </Body>
@@ -60,13 +63,16 @@ export const RecoveryEmail = ({
 export default RecoveryEmail
 
 const main = { backgroundColor: '#f4f4f5', fontFamily: "'Space Grotesk', Arial, sans-serif" }
-const container = { maxWidth: '560px', margin: '40px auto', borderRadius: '12px', overflow: 'hidden' as const, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }
-const accentBar = { background: 'linear-gradient(135deg, #E11D48, #BE123C)', height: '6px', width: '100%' }
-const content = { backgroundColor: '#ffffff', padding: '32px 40px 40px' }
-const logo = { margin: '0 0 24px' }
-const h1 = { fontSize: '24px', fontWeight: '700' as const, color: '#111827', margin: '0 0 20px', fontFamily: "'Space Grotesk', Arial, sans-serif" }
-const text = { fontSize: '15px', color: '#4b5563', lineHeight: '1.6', margin: '0 0 20px', fontFamily: "'Space Grotesk', Arial, sans-serif" }
-const button = { backgroundColor: '#E11D48', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '8px', padding: '14px 28px', textDecoration: 'none', fontFamily: "'Space Grotesk', Arial, sans-serif", display: 'inline-block' as const }
-const footer = { fontSize: '13px', color: '#9ca3af', margin: '28px 0 0', fontFamily: "'Space Grotesk', Arial, sans-serif" }
-const spamWarning = { marginTop: '24px', padding: '14px 16px', backgroundColor: '#FEF9E7', borderRadius: '8px', borderLeft: '4px solid #D4AC0D' }
-const spamText = { fontSize: '13px', color: '#7D6608', margin: '0', lineHeight: '1.5', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const container = { maxWidth: '560px', margin: '40px auto', borderRadius: '16px', overflow: 'hidden' as const, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }
+const header = { backgroundColor: '#18181b', padding: '28px 40px', textAlign: 'center' as const }
+const logo = { margin: '0 auto', display: 'block' as const }
+const accentLine = { height: '3px', background: 'linear-gradient(90deg, #C41E3A, #d6193d, #C41E3A)', width: '100%' }
+const content = { backgroundColor: '#ffffff', padding: '32px 40px' }
+const h1 = { fontSize: '24px', fontWeight: '700' as const, color: '#18181b', margin: '0 0 16px', fontFamily: "'Space Grotesk', Arial, sans-serif", letterSpacing: '-0.5px' }
+const text = { fontSize: '15px', color: '#52525b', lineHeight: '1.6', margin: '0 0 16px', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const buttonWrap = { textAlign: 'center' as const, margin: '24px 0' }
+const button = { backgroundColor: '#C41E3A', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '50px', padding: '14px 32px', textDecoration: 'none', fontFamily: "'Space Grotesk', Arial, sans-serif", display: 'inline-block' as const, boxShadow: '0 4px 14px rgba(196,30,58,0.3)' }
+const muted = { fontSize: '13px', color: '#a1a1aa', margin: '0', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const footer = { padding: '20px 40px', textAlign: 'center' as const, borderTop: '1px solid #f0f0f0' }
+const footerText = { fontSize: '11px', color: '#a1a1aa', margin: '0', fontFamily: "'Space Grotesk', Arial, sans-serif" }
+const spamNote = { fontSize: '11px', color: '#a1a1aa', margin: '6px 0 0', fontFamily: "'Space Grotesk', Arial, sans-serif" }
