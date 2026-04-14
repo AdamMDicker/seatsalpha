@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Ticket, LogOut, Shield, ChevronDown, Store } from "lucide-react";
+import { Menu, X, LogOut, Shield, ChevronDown, Store } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import logoImage from "@/assets/seats-logo-new-v7.png";
 import { MLB_TEAMS_CONFIG } from "@/data/mlbTeams";
 import { MLB_LOGOS } from "@/data/mlbLogos";
 import { NHL_TEAMS_CONFIG, NHL_DIVISIONS } from "@/data/nhlTeams";
@@ -168,11 +169,8 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-1.5 flex-shrink-0">
-            <Ticket className="h-6 w-6 text-primary" />
-            <span className="font-display text-lg font-bold tracking-tight">
-              seats<span className="text-primary">.ca</span>
-            </span>
+          <Link to="/" className="flex items-center flex-shrink-0">
+            <img src={logoImage} alt="seats.ca" className="h-8 w-auto" />
           </Link>
 
           {/* Desktop nav */}
