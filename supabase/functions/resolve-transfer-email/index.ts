@@ -513,9 +513,9 @@ function safeHostname(url: string): string {
 
 function buildBrandedEmail(acceptLink: string | null): string {
   const ctaSection = acceptLink
-    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;">
         <tr><td align="center">
-          <a href="${acceptLink}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#059669,#047857);color:#ffffff;font-size:17px;font-weight:700;text-decoration:none;padding:16px 40px;border-radius:10px;letter-spacing:0.3px;box-shadow:0 4px 14px rgba(5,150,105,0.35);">
+          <a href="${acceptLink}" target="_blank" style="display:inline-block;background:#059669;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 40px;border-radius:50px;letter-spacing:0.3px;box-shadow:0 4px 14px rgba(5,150,105,0.3);">
             🎟️ Accept Tickets
           </a>
         </td></tr>
@@ -533,41 +533,43 @@ function buildBrandedEmail(acceptLink: string | null): string {
          <li>Accept the transfer to add the tickets to your Ticketmaster account</li>
        </ol>`;
 
-  return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 0;">
-<tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="padding:20px 40px 12px;text-align:center;">
-  <img src="${LOGO_URL}" alt="seats.ca" width="120" height="120" style="display:block;margin:0 auto;width:120px;height:120px;" />
-</td></tr>
-<tr><td style="background:linear-gradient(135deg,#059669,#047857);padding:24px 40px;text-align:center;">
-  <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">🎟️ Ticket Transfer Received</h1>
-  <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">A ticket transfer has been sent to your account</p>
-</td></tr>
-<tr><td style="padding:24px 40px 20px;">
-  <p style="margin:0 0 12px;color:#18181b;font-size:14px;line-height:1.6;">
+  const body = `
+  <p style="margin:0 0 12px;color:#52525b;font-size:14px;line-height:1.6;">
     Good news! A ticket transfer has been initiated for your order.
   </p>
   ${ctaSection}
-  <table width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0;background:#ecfdf5;border-radius:10px;border-left:4px solid #059669;">
     <tr><td style="padding:14px 16px;">
       <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
       ${stepsSection}
     </td></tr>
   </table>
   <p style="margin:16px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
-    If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
-  </p>
+    If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#C41E3A;text-decoration:none;">support@seats.ca</a>.
+  </p>`;
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<tr><td style="background:#18181b;padding:28px 40px;text-align:center;">
+  <img src="${LOGO_URL}" alt="seats.ca" width="120" height="120" style="display:block;margin:0 auto;width:120px;height:120px;" />
 </td></tr>
-<tr><td style="padding:20px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
-  <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca — Canada's No-Fee Ticket Platform</p>
+<tr><td style="height:3px;background:linear-gradient(90deg,#059669,#05966980,#059669);"></td></tr>
+<tr><td style="padding:28px 40px 0;">
+  <h1 style="margin:0;color:#18181b;font-size:24px;font-weight:700;letter-spacing:-0.5px;">🎟️ Ticket Transfer Received</h1>
+  <p style="margin:6px 0 0;color:#71717a;font-size:14px;">A ticket transfer has been sent to your account</p>
 </td></tr>
-<tr><td style="padding:14px 40px;text-align:center;background:#FEF9E7;border-top:1px solid #D4AC0D;">
-  <p style="margin:0;color:#7C6F1B;font-size:11px;line-height:1.5;">⚠️ If you don't see future emails from us, check your <strong>Spam</strong> or <strong>Junk</strong> folder and mark <strong>noreply@seats.ca</strong> as a safe sender.</p>
+<tr><td style="padding:20px 40px 32px;">
+${body}
+</td></tr>
+<tr><td style="padding:20px 40px;border-top:1px solid #f0f0f0;text-align:center;">
+  <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca · Canada's No-Fee Ticket Platform</p>
+  <p style="margin:6px 0 0;color:#a1a1aa;font-size:11px;">Tip: Add noreply@seats.ca to your contacts to avoid missing emails.</p>
 </td></tr>
 </table></td></tr></table>
 </body></html>`;
