@@ -556,7 +556,7 @@ function buildBrandedEmail(acceptLink: string | null): string {
 
 <!-- Header: white bg so logo pops -->
 <tr><td style="background:#ffffff;padding:32px 40px 20px;text-align:center;border-bottom:3px solid #C41E3A;">
-  <img src="${LOGO_URL}" alt="seats.ca" width="160" height="160" style="display:block;margin:0 auto;width:160px;height:160px;" />
+  <img src="${LOGO_URL}" alt="seats.ca" width="180" style="display:block;margin:0 auto;width:180px;height:auto;" />
 </td></tr>
 
 <!-- Green accent bar -->
