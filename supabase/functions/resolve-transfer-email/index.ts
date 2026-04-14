@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_URL = "https://api.resend.com";
-const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png";
+const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
 
 interface LinkCandidate {
   href: string;

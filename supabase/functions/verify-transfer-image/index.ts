@@ -9,7 +9,7 @@ const corsHeaders = {
 const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = "noreply@seats.ca";
 const ADMIN_EMAIL = "lmksportsconsulting@gmail.com";
-const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png";
+const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
 
 function formatEventDateET(raw: string): string {
   if (!raw) return "";
