@@ -35,7 +35,7 @@ function formatEventDateET(raw: string): string {
   }
 }
 
-function brandedEmailWrapper(headerBg: string, headerEmoji: string, headerTitle: string, headerSub: string, bodyContent: string): string {
+function premiumWrapper(accentColor: string, bodyContent: string): string {
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -43,27 +43,21 @@ function brandedEmailWrapper(headerBg: string, headerEmoji: string, headerTitle:
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
 <tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<!-- Logo -->
-<tr><td style="padding:28px 40px 0;text-align:center;">
-  <img src="${LOGO_URL}" alt="seats.ca" width="300" height="300" style="display:block;margin:0 auto;width:300px;height:300px;" />
+<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<!-- Dark header with logo -->
+<tr><td style="background:#18181b;padding:28px 40px;text-align:center;">
+  <img src="${LOGO_URL}" alt="seats.ca" width="120" height="120" style="display:block;margin:0 auto;width:120px;height:120px;" />
 </td></tr>
-<!-- Gradient header -->
-<tr><td style="background:${headerBg};padding:28px 40px;text-align:center;">
-  <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${headerEmoji} ${headerTitle}</h1>
-  <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">${headerSub}</p>
-</td></tr>
+<!-- Accent line -->
+<tr><td style="height:3px;background:${accentColor};"></td></tr>
 <!-- Body -->
 <tr><td style="padding:32px 40px;">
 ${bodyContent}
 </td></tr>
 <!-- Footer -->
-<tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #f0f0f0;text-align:center;">
-  <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca — Canada's No-Fee Ticket Platform</p>
-</td></tr>
-<!-- Spam warning -->
-<tr><td style="padding:16px 40px;text-align:center;background:#FEF9E7;border-top:1px solid #D4AC0D;">
-  <p style="margin:0;color:#7C6F1B;font-size:11px;line-height:1.5;">⚠️ If you don't see future emails from us, check your <strong>Spam</strong> or <strong>Junk</strong> folder and mark <strong>noreply@seats.ca</strong> as a safe sender.</p>
+<tr><td style="padding:20px 40px;text-align:center;border-top:1px solid #f0f0f0;">
+  <p style="margin:0;color:#a1a1aa;font-size:11px;font-family:'Space Grotesk',Arial,sans-serif;">© ${new Date().getFullYear()} seats.ca · Canada's No-Fee Ticket Platform</p>
+  <p style="margin:6px 0 0;color:#a1a1aa;font-size:11px;font-family:'Space Grotesk',Arial,sans-serif;">Tip: Add noreply@seats.ca to your contacts to avoid missing emails.</p>
 </td></tr>
 </table></td></tr></table>
 </body></html>`;
@@ -279,31 +273,38 @@ If all the core details (teams, date, section, row, email) refer to the same thi
         ].filter(Boolean).join("");
 
         const bodyContent = `
-  <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">${eventTitle}</h2>
-  ${detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">${detailsRows}</table>` : ""}
-  <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
+  <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;letter-spacing:-0.5px;">✅ Transfer Verified</h1>
+  <p style="margin:0 0 20px;font-size:14px;color:#059669;font-weight:600;font-family:'Space Grotesk',Arial,sans-serif;">Your tickets have been confirmed</p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
+    <tr><td style="padding:16px;background:#fafafa;">
+      <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${eventTitle}</p>
+      ${eventDate ? `<p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">${eventDate}</p>` : ""}
+    </td></tr>
+    ${venue || section || rowName ? `<tr><td style="padding:12px 16px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${venue ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Venue</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${venue}</td></tr>` : ""}
+        ${section ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Section</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${section}</td></tr>` : ""}
+        ${rowName ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Row</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${rowName}</td></tr>` : ""}
+      </table>
+    </td></tr>` : ""}
+  </table>
+  <p style="margin:0 0 16px;color:#52525b;font-size:15px;line-height:1.6;font-family:'Space Grotesk',Arial,sans-serif;">
     Great news! The seller has transferred your tickets, and our team has verified the transfer.
   </p>
-  <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
-    <tr><td style="padding:16px;">
-      <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
-      <ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border-left:4px solid #059669;background:#f0fdf4;">
+    <tr><td style="padding:16px 20px;">
+      <p style="margin:0 0 8px;color:#047857;font-size:14px;font-weight:700;font-family:'Space Grotesk',Arial,sans-serif;">📋 Next Steps</p>
+      <ol style="margin:0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;font-family:'Space Grotesk',Arial,sans-serif;">
         <li>Look for an incoming ticket transfer notification</li>
         <li>Accept the transfer to add the tickets to your Ticketmaster account</li>
       </ol>
     </td></tr>
   </table>
-  <p style="margin:24px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
-    If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#d6193d;text-decoration:none;">support@seats.ca</a>.
+  <p style="margin:0;color:#a1a1aa;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;">
+    If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#C41E3A;text-decoration:none;font-weight:600;">support@seats.ca</a>.
   </p>`;
 
-        const confirmedHtml = brandedEmailWrapper(
-          "linear-gradient(135deg,#059669,#047857)",
-          "✅",
-          "Transfer Verified & Confirmed!",
-          "Your tickets have been successfully transferred",
-          bodyContent
-        );
+        const confirmedHtml = premiumWrapper("linear-gradient(90deg,#059669,#047857,#059669)", bodyContent);
 
         const messageId = crypto.randomUUID();
         const unsubToken = crypto.randomUUID();
@@ -355,15 +356,16 @@ If all the core details (teams, date, section, row, email) refer to the same thi
         ? transfer.transfer_email_alias.replace("order-", "").replace("@inbound.seats.ca", "").toUpperCase()
         : transfer.order_id.slice(0, 8).toUpperCase();
 
-      const bodyContent = `
-  <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">Order #${orderRef} — ${eventTitle}</h2>
-  <p style="margin:0 0 16px;color:#18181b;font-size:14px;line-height:1.6;">
-    The uploaded transfer proof does not match the expected order details. Mismatched fields: <strong>${mismatchDetails || "unknown"}</strong>.
+      const disputeBody = `
+  <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;letter-spacing:-0.5px;">⚠️ Transfer Mismatch</h1>
+  <p style="margin:0 0 20px;font-size:14px;color:#dc2626;font-weight:600;font-family:'Space Grotesk',Arial,sans-serif;">Order #${orderRef} — ${eventTitle}</p>
+  <p style="margin:0 0 16px;color:#52525b;font-size:15px;line-height:1.6;font-family:'Space Grotesk',Arial,sans-serif;">
+    The uploaded transfer proof does not match expected order details. Mismatched fields: <strong style="color:#dc2626;">${mismatchDetails || "unknown"}</strong>.
   </p>
-  <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#fef2f2;border-radius:8px;border:1px solid #fca5a5;">
-    <tr><td style="padding:16px;">
-      <p style="margin:0 0 8px;color:#991b1b;font-size:13px;font-weight:700;">Expected</p>
-      <p style="margin:0;color:#991b1b;font-size:12px;line-height:1.8;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 12px;border-radius:12px;overflow:hidden;border-left:4px solid #dc2626;background:#fef2f2;">
+    <tr><td style="padding:16px 20px;">
+      <p style="margin:0 0 8px;color:#991b1b;font-size:13px;font-weight:700;font-family:'Space Grotesk',Arial,sans-serif;">Expected</p>
+      <p style="margin:0;color:#991b1b;font-size:12px;line-height:1.8;font-family:'Space Grotesk',Arial,sans-serif;">
         Email: ${expectedData.transferEmail}<br>
         Event: ${expectedData.eventTitle}<br>
         Section: ${expectedData.section} · Row: ${expectedData.rowName}<br>
@@ -371,10 +373,10 @@ If all the core details (teams, date, section, row, email) refer to the same thi
       </p>
     </td></tr>
   </table>
-  <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#eff6ff;border-radius:8px;border:1px solid #93c5fd;">
-    <tr><td style="padding:16px;">
-      <p style="margin:0 0 8px;color:#1e40af;font-size:13px;font-weight:700;">Extracted from Screenshot</p>
-      <p style="margin:0;color:#1e40af;font-size:12px;line-height:1.8;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;border-radius:12px;overflow:hidden;border-left:4px solid #3b82f6;background:#eff6ff;">
+    <tr><td style="padding:16px 20px;">
+      <p style="margin:0 0 8px;color:#1e40af;font-size:13px;font-weight:700;font-family:'Space Grotesk',Arial,sans-serif;">Extracted from Screenshot</p>
+      <p style="margin:0;color:#1e40af;font-size:12px;line-height:1.8;font-family:'Space Grotesk',Arial,sans-serif;">
         Email: ${verificationResult.extracted?.email || "N/A"}<br>
         Event: ${verificationResult.extracted?.event || "N/A"}<br>
         Section: ${verificationResult.extracted?.section || "N/A"} · Row: ${verificationResult.extracted?.row || "N/A"}<br>
@@ -382,18 +384,12 @@ If all the core details (teams, date, section, row, email) refer to the same thi
       </p>
     </td></tr>
   </table>
-  ${verificationResult.notes ? `<p style="margin:16px 0 0;color:#71717a;font-size:13px;"><strong>AI Notes:</strong> ${verificationResult.notes}</p>` : ""}
-  <p style="margin:16px 0 0;color:#71717a;font-size:13px;">
-    <a href="${transfer.transfer_image_url}" style="color:#d6193d;text-decoration:none;">View uploaded proof →</a>
+  ${verificationResult.notes ? `<p style="margin:0 0 12px;color:#71717a;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;"><strong>AI Notes:</strong> ${verificationResult.notes}</p>` : ""}
+  <p style="margin:0;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;">
+    <a href="${transfer.transfer_image_url}" style="color:#C41E3A;text-decoration:none;font-weight:600;">View uploaded proof →</a>
   </p>`;
 
-      const alertHtml = brandedEmailWrapper(
-        "linear-gradient(135deg,#dc2626,#b91c1c)",
-        "⚠️",
-        "Transfer Mismatch Detected",
-        "Automated verification found discrepancies",
-        bodyContent
-      );
+      const alertHtml = premiumWrapper("linear-gradient(90deg,#dc2626,#b91c1c,#dc2626)", disputeBody);
 
       const alertMsgId = crypto.randomUUID();
       const adminUnsubToken = crypto.randomUUID();
