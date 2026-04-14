@@ -18,7 +18,7 @@ interface ReauthenticationEmailProps {
   token: string
 }
 
-const LOGO_URL = 'https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png'
+const LOGO_URL = 'https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png'
 
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
@@ -29,7 +29,7 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
-          <Img src={LOGO_URL} width="120" height="120" alt="seats.ca" style={logo} />
+          <Img src={LOGO_URL} width="180" height="auto" alt="seats.ca" style={logo} />
         </Section>
         <Section style={accentLine} />
         <Section style={content}>

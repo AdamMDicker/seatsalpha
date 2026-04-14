@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = "noreply@seats.ca";
-const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo.png";
+const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
 
 function formatEventDateET(raw: string): string {
   if (!raw) return "";
@@ -44,7 +44,7 @@ function premiumWrapper(opts: { accentColor: string; title: string; subtitle: st
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 <tr><td style="background:#18181b;padding:28px 40px;text-align:center;">
-  <img src="${LOGO_URL}" alt="seats.ca" width="120" height="120" style="display:block;margin:0 auto;width:120px;height:120px;" />
+  <img src="${LOGO_URL}" alt="seats.ca" width="180" style="display:block;margin:0 auto;width:180px;height:auto;" />
 </td></tr>
 <tr><td style="height:3px;background:linear-gradient(90deg,${opts.accentColor},${opts.accentColor}80,${opts.accentColor});"></td></tr>
 <tr><td style="padding:28px 40px 0;">
