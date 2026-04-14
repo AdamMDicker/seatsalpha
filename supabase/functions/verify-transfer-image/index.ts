@@ -46,7 +46,7 @@ function premiumWrapper(accentColor: string, bodyContent: string): string {
 <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 <!-- Dark header with logo -->
 <tr><td style="background:#18181b;padding:28px 40px;text-align:center;">
-  <img src="${LOGO_URL}" alt="seats.ca" width="120" height="120" style="display:block;margin:0 auto;width:120px;height:120px;" />
+  <img src="${LOGO_URL}" alt="seats.ca" width="180" style="display:block;margin:0 auto;width:180px;height:auto;" />
 </td></tr>
 <!-- Accent line -->
 <tr><td style="height:3px;background:${accentColor};"></td></tr>

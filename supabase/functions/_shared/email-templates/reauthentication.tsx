@@ -29,7 +29,7 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
-          <Img src={LOGO_URL} width="120" height="120" alt="seats.ca" style={logo} />
+          <Img src={LOGO_URL} width="180" height="auto" alt="seats.ca" style={logo} />
         </Section>
         <Section style={accentLine} />
         <Section style={content}>
