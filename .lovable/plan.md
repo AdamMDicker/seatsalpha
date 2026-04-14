@@ -1,41 +1,57 @@
 
 
-## Fix: Transfer Relay Emails Failing (Missing idempotency_key)
+# Email Template Redesign Plan
 
-### Problem Found
-All `transfer-relay-forward` emails are failing since today (Apr 13) with this error:
-```
-Missing run_id or idempotency_key — App emails can omit run_id by providing idempotency_key with purpose=transactional.
-```
+## Scope
 
-The email API now requires an `idempotency_key` for transactional emails. The `process-email-queue` dispatcher correctly passes `payload.idempotency_key` to the email API, but no edge function is including `idempotency_key` in the enqueue payload. Some emails (like buyer-confirmation) were sent successfully on Apr 12 before the enforcement kicked in — but all transfer-relay-forward emails today are hitting the DLQ after 5 retries.
+Redesign **all** email templates across the platform to create a unified, premium visual identity. This covers:
 
-### What's Working
-- Auth emails (signup, recovery, etc.) -- working via auth-email-hook
-- Branding is correct ("Seats.ca" everywhere, no "seatsalpha")
-- Mismatch gate (disputed transfer blocking) -- working correctly
-- Admin transfers dashboard -- working
+**6 Auth Email Templates** (React Email components):
+- Confirm signup, Password reset, Magic link, Invite, Email change, Reauthentication
 
-### What's Broken
-- `transfer-relay-forward` emails (the Ticketmaster relay to buyers) -- all failing
-- Potentially all other transactional emails going forward
+**8+ Transactional Email Templates** (inline HTML in Edge Functions):
+- Buyer order confirmation (`stripe-webhook`, `send-transactional-email`)
+- Seller sale notification (`stripe-webhook`, `send-transactional-email`)
+- Transfer relay / "Accept Tickets" (`resolve-transfer-email`)
+- Transfer confirmed - buyer (`notify-buyer-transfer`, `verify-transfer-image`)
+- Transfer disputed - seller (`notify-buyer-transfer`)
+- Transfer mismatch - admin (`verify-transfer-image`)
+- Fallback reminder - buyer (`transfer-fallback-reminder`)
 
-### Fix
-Add `idempotency_key: messageId` to every `enqueue_email` payload across all 5 edge functions that queue transactional emails:
+## Design Direction
 
-1. **`resolve-transfer-email/index.ts`** -- `queueEmail()` function (line ~596)
-2. **`notify-buyer-transfer/index.ts`** -- confirm and dispute enqueue calls (lines ~241, ~293)
-3. **`verify-transfer-image/index.ts`** -- buyer verified and admin mismatch enqueue calls (lines ~315, ~401)
-4. **`transfer-fallback-reminder/index.ts`** -- fallback enqueue call (line ~86)
-5. **`send-transactional-email/index.ts`** -- the main transactional enqueue call (line ~327)
+**Premium ticket platform aesthetic** -- clean, modern, high-contrast with strategic use of brand red (#C41E3A / #d6193d). Key changes:
 
-Each function already generates a `messageId` (UUID) before enqueuing. The fix is simply adding `idempotency_key: messageId` to the payload object passed to `supabase.rpc("enqueue_email", ...)`.
+1. **Logo**: Shrink to 120px wide across all templates (currently 300px in most)
+2. **Header**: Replace gradient bars with a dark charcoal (#18181b) header section featuring white text and a subtle red accent line -- cleaner, more premium feel than the current full-gradient approach
+3. **Typography**: Tighten spacing, increase hierarchy contrast -- larger bold headings, smaller muted labels
+4. **Cards/Sections**: Use subtle border + shadow treatment instead of colored background blocks. Information cards get thin left-border accents (red for buyer, green for seller)
+5. **Buttons**: Larger, bolder CTAs with pill shape, shadow, and hover-ready styling
+6. **Footer**: Slim single-line footer. Move spam warning into a more subtle inline note rather than a full-width yellow banner
+7. **Spacing**: Reduce excessive padding. Tighter vertical rhythm throughout
+8. **Seller emails**: Keep green accent but use same structural layout as buyer emails for consistency
 
-After editing, all 5 edge functions must be redeployed.
+## Technical Approach
 
-### Technical Details
-- The `idempotency_key` serves as a deduplication key for the email API
-- Using the existing `message_id` UUID is the correct value since it's already unique per email
-- No database changes needed
-- No UI changes needed
+### Auth Templates (6 files)
+Update each `.tsx` file in `supabase/functions/_shared/email-templates/`:
+- Apply new shared style constants (logo size, header, footer, typography)
+- Consistent button styling across signup, recovery, magic-link, invite, email-change
+- Reauthentication: style the OTP code block with a modern card treatment
+
+### Transactional Templates (5 Edge Functions)
+Update inline HTML builders in:
+- `stripe-webhook/index.ts` -- `buyerEmailHtml()` and `sellerEmailHtml()`
+- `send-transactional-email/index.ts` -- `buyerConfirmationHtml()` and `sellerNotificationHtml()`
+- `resolve-transfer-email/index.ts` -- `buildBrandedEmail()`
+- `notify-buyer-transfer/index.ts` -- `brandedEmailWrapper()`, `transferConfirmedHtml()`, `transferDisputedSellerHtml()`
+- `verify-transfer-image/index.ts` -- inline confirmed/disputed email HTML and `brandedEmailWrapper()`
+- `transfer-fallback-reminder/index.ts` -- `fallbackReminderHtml()`
+
+### Deployment
+Redeploy all 6 modified Edge Functions:
+`auth-email-hook`, `stripe-webhook`, `send-transactional-email`, `resolve-transfer-email`, `notify-buyer-transfer`, `verify-transfer-image`, `transfer-fallback-reminder`
+
+### Verification
+Send a test email to confirm the new design renders correctly in inbox.
 
