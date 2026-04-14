@@ -56,34 +56,17 @@ function shortDateForSubject(raw: string): string {
   }
 }
 
-// --- Email HTML builders ---
+// --- Premium email wrapper ---
+function premiumWrapper(opts: { accentColor: string; title: string; subtitle: string; body: string }): string {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"></head><body style="margin:0;padding:0;background:#f4f4f5;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);"><tr><td style="background:#18181b;padding:28px 40px;text-align:center;"><img src="${LOGO_URL}" alt="seats.ca" width="120" height="120" style="display:block;margin:0 auto;width:120px;height:120px;" /></td></tr><tr><td style="height:3px;background:linear-gradient(90deg,${opts.accentColor},${opts.accentColor}80,${opts.accentColor});"></td></tr><tr><td style="padding:28px 40px 0;"><h1 style="margin:0;color:#18181b;font-size:24px;font-weight:700;letter-spacing:-0.5px;">${opts.title}</h1><p style="margin:6px 0 0;color:#71717a;font-size:14px;">${opts.subtitle}</p></td></tr><tr><td style="padding:20px 40px 32px;">${opts.body}</td></tr><tr><td style="padding:20px 40px;border-top:1px solid #f0f0f0;text-align:center;"><p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} seats.ca · Canada's No-Fee Ticket Platform</p><p style="margin:6px 0 0;color:#a1a1aa;font-size:11px;">Tip: Add noreply@seats.ca to your contacts to avoid missing emails.</p></td></tr></table></td></tr></table></body></html>`;
+}
 
-function buyerEmailHtml(meta: {
-  eventTitle: string;
-  venue: string;
-  eventDate: string;
-  formattedDate: string;
-  tier: string;
-  quantity: string;
-  ticketSubtotal: string;
-  hstAmount: string;
-  membershipAmount: string;
-  totalAmount: string;
-}): string {
+function buyerEmailHtml(meta: { eventTitle: string; venue: string; eventDate: string; formattedDate: string; tier: string; quantity: string; ticketSubtotal: string; hstAmount: string; membershipAmount: string; totalAmount: string; }): string {
   const hasHst = meta.hstAmount && parseFloat(meta.hstAmount) > 0;
   const hasMembership = meta.membershipAmount && parseFloat(meta.membershipAmount) > 0;
-
-  return `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
-<tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="padding:28px 40px 0;text-align:center;">
-  <img src="${LOGO_URL}" alt="seats.ca" width="300" height="300" style="display:block;margin:0 auto;width:300px;height:300px;" />
+  const body = `<h2 style="margin:0 0 20px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;border:1px solid #e4e4e7;border-radius:10px;overflow:hidden;">${meta.formattedDate ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;width:110px;">Date</td><td style="padding:10px 14px;color:#18181b;font-size:14px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.formattedDate}</td></tr>` : ""}${meta.venue ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Venue</td><td style="padding:10px 14px;color:#18181b;font-size:14px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.venue}</td></tr>` : ""}${meta.tier ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Seats</td><td style="padding:10px 14px;color:#18181b;font-size:14px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.tier}</td></tr>` : ""}<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;">Quantity</td><td style="padding:10px 14px;color:#18181b;font-size:14px;font-weight:600;">${meta.quantity}</td></tr></table><table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f8fa;border-radius:10px;border:1px solid #e4e4e7;"><tr><td style="padding:16px;"><table width="100%"><tr><td style="color:#71717a;font-size:13px;padding:4px 0;">Tickets</td><td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.ticketSubtotal} CAD</td></tr>${hasHst ? `<tr><td style="color:#71717a;font-size:13px;padding:4px 0;">LCC (13%)</td><td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.hstAmount} CAD</td></tr>` : ""}${hasMembership ? `<tr><td style="color:#71717a;font-size:13px;padding:4px 0;">Annual Membership</td><td align="right" style="color:#18181b;font-size:14px;font-weight:600;padding:4px 0;">$${meta.membershipAmount} CAD</td></tr>` : ""}<tr><td style="color:#18181b;font-size:14px;padding:10px 0 0;border-top:1px solid #e0e0e0;font-weight:600;">Total Paid</td><td align="right" style="color:#C41E3A;font-size:22px;font-weight:800;padding:10px 0 0;border-top:1px solid #e0e0e0;">$${meta.totalAmount} CAD</td></tr></table></td></tr></table><p style="margin:20px 0 0;color:#71717a;font-size:13px;line-height:1.6;">Your tickets will be delivered to your email 48 hours before the event. Questions? <a href="mailto:support@seats.ca" style="color:#C41E3A;text-decoration:none;">support@seats.ca</a>.</p><p style="margin:12px 0 0;color:#a1a1aa;font-size:11px;">All sales are final. <a href="https://seats.ca/terms" style="color:#C41E3A;text-decoration:none;">Terms of Service</a>.</p>`;
+  return premiumWrapper({ accentColor: "#C41E3A", title: "🎟️ Order Confirmed", subtitle: "Thank you for your purchase on seats.ca", body });
+}
 </td></tr>
 <tr><td style="background:linear-gradient(135deg,#d6193d,#b81535);padding:28px 40px;text-align:center;">
   <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">🎟️ Order Confirmed</h1>
@@ -137,27 +120,13 @@ function buyerEmailHtml(meta: {
 </html>`;
 }
 
-function sellerEmailHtml(meta: {
-  eventTitle: string;
-  venue: string;
-  eventDate: string;
-  formattedDate: string;
-  section: string;
-  rowName: string;
-  salePrice: string;
-  quantity: string;
-  orderRef: string;
-  transferEmail?: string;
-}): string {
+function sellerEmailHtml(meta: { eventTitle: string; venue: string; eventDate: string; formattedDate: string; section: string; rowName: string; salePrice: string; quantity: string; orderRef: string; transferEmail?: string; }): string {
   const qty = parseInt(meta.quantity) || 1;
   const pricePerTicket = parseFloat(meta.salePrice) || 0;
   const totalSale = (qty * pricePerTicket).toFixed(2);
-
-  return `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
+  const body = `<h2 style="margin:0 0 20px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;border:1px solid #e4e4e7;border-radius:10px;overflow:hidden;">${meta.formattedDate ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;width:110px;">Date</td><td style="padding:10px 14px;color:#18181b;font-size:14px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.formattedDate}</td></tr>` : ""}${meta.venue ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Venue</td><td style="padding:10px 14px;color:#18181b;font-size:14px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.venue}</td></tr>` : ""}<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Section</td><td style="padding:10px 14px;color:#18181b;font-size:14px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.section}${meta.rowName ? ` · Row ${meta.rowName}` : ""}</td></tr><tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Quantity</td><td style="padding:10px 14px;color:#18181b;font-size:14px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.quantity}</td></tr><tr><td style="padding:10px 14px;color:#71717a;font-size:13px;">Order Ref</td><td style="padding:10px 14px;color:#18181b;font-size:14px;font-weight:600;">${meta.orderRef}</td></tr></table><table width="100%" cellpadding="0" cellspacing="0" style="background:#ecfdf5;border-radius:10px;border:1px solid #bbf7d0;"><tr><td style="padding:16px;"><table width="100%"><tr><td style="color:#047857;font-size:13px;padding:4px 0;">Price Per Ticket</td><td align="right" style="color:#047857;font-size:14px;font-weight:600;padding:4px 0;">$${meta.salePrice} CAD</td></tr><tr><td style="color:#047857;font-size:14px;padding:10px 0 0;border-top:1px solid #a7f3d0;font-weight:600;">Total Sale (${meta.quantity} ticket${qty > 1 ? "s" : ""})</td><td align="right" style="color:#047857;font-size:22px;font-weight:800;padding:10px 0 0;border-top:1px solid #a7f3d0;">$${totalSale} CAD</td></tr></table></td></tr></table>${meta.transferEmail ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;background:#eff6ff;border-radius:10px;border-left:4px solid #3b82f6;"><tr><td style="padding:16px;"><p style="margin:0 0 8px;color:#1e40af;font-size:13px;font-weight:700;">📧 Transfer Email Address</p><p style="margin:0;color:#1e3a8a;font-size:15px;font-weight:700;font-family:'Courier New',monospace;background:#dbeafe;padding:10px 14px;border-radius:8px;letter-spacing:0.5px;">${meta.transferEmail}</p><table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;background:#dbeafe;border-radius:8px;"><tr><td style="padding:10px 14px;"><p style="margin:0 0 4px;color:#1e40af;font-size:12px;font-weight:700;">👤 Recipient Name (for Ticketmaster)</p><p style="margin:0;color:#1e3a8a;font-size:14px;font-weight:700;">First Name: <span style="font-family:'Courier New',monospace;">Seats</span> &nbsp;|&nbsp; Last Name: <span style="font-family:'Courier New',monospace;">${meta.orderRef}</span></p></td></tr></table></td></tr></table>` : ""}<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;background:#fef3c7;border-radius:10px;border-left:4px solid #f59e0b;"><tr><td style="padding:16px;"><p style="margin:0 0 10px;color:#92400e;font-size:14px;font-weight:700;">📤 How to Complete Your Transfer</p><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="color:#92400e;font-size:12px;line-height:2;padding:0;"><strong>1.</strong> Log in to your <a href="https://seats.ca/reseller-dashboard?tab=transfers" style="color:#C41E3A;text-decoration:none;font-weight:600;">Seller Portal</a><br><strong>2.</strong> Go to <strong>Transfers</strong> tab<br><strong>3.</strong> Locate sale (Order Ref: ${meta.orderRef})<br><strong>4.</strong> Transfer tickets to the email above<br><strong>5.</strong> Screenshot the completed transfer<br><strong>6.</strong> Upload screenshot to confirm delivery</td></tr></table></td></tr></table><table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td align="center"><a href="https://seats.ca/reseller-dashboard?tab=transfers" style="display:inline-block;background:#059669;color:#ffffff;font-size:15px;font-weight:600;padding:14px 32px;border-radius:50px;text-decoration:none;box-shadow:0 4px 14px rgba(5,150,105,0.3);">View Transfer in Seller Portal →</a></td></tr></table><p style="margin:20px 0 0;color:#18181b;font-size:13px;font-weight:600;">Tickets must be delivered at least 48 hours before the event.</p><table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;background:#fef2f2;border-radius:10px;border-left:4px solid #ef4444;"><tr><td style="padding:14px 16px;"><p style="margin:0 0 8px;color:#991b1b;font-size:12px;line-height:1.5;">⚠️ Transfer errors are subject to Seats.ca Terms and Conditions.</p><p style="margin:0;color:#991b1b;font-size:12px;line-height:1.5;">💳 Payments occur two weeks after the event, contingent on proper delivery.</p></td></tr></table><p style="margin:16px 0 0;color:#71717a;font-size:13px;">Questions? <a href="mailto:support@seats.ca" style="color:#C41E3A;text-decoration:none;">support@seats.ca</a></p>`;
+  return premiumWrapper({ accentColor: "#059669", title: "💰 Ticket Sold!", subtitle: "Great news — one of your listings has been purchased", body });
+}
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
 <tr><td align="center">
