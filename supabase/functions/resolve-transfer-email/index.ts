@@ -33,6 +33,18 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
+    // ── Test preview mode ──
+    if (body.test_preview && body.recipient_email) {
+      console.log(`Test preview mode — sending to ${body.recipient_email}`);
+      const testHtml = buildBrandedEmail("https://www.ticketmaster.ca/transfer/accept?test=preview");
+      const testText = "This is a test transfer relay email. Accept link: https://www.ticketmaster.ca/transfer/accept?test=preview";
+      await queueEmail(supabase, body.recipient_email, "🎟️ Test: Ticket Transfer Received", testHtml, testText);
+      return new Response(JSON.stringify({ test_sent: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // ── Manual admin re-trigger mode ──
     if (body.transfer_id && !body.type) {
       console.log(`Manual relay trigger for transfer_id=${body.transfer_id}`);
