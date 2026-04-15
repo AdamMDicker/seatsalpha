@@ -5,6 +5,7 @@ import ProblemSection from "@/components/ProblemSection";
 import SolutionSection from "@/components/SolutionSection";
 import HowItWorks from "@/components/HowItWorks";
 import FeaturesSection from "@/components/FeaturesSection";
+import SellerSection from "@/components/SellerSection";
 import SocialProof from "@/components/SocialProof";
 import FinalCTA from "@/components/FinalCTA";
 import NewsletterSection from "@/components/NewsletterSection";
@@ -20,6 +21,7 @@ const Index = () => {
       <SolutionSection />
       <HowItWorks />
       <FeaturesSection />
+      <SellerSection />
       <SocialProof />
       <FinalCTA />
       <NewsletterSection />

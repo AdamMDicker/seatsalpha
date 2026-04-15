@@ -22,11 +22,16 @@ const SolutionSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-10 max-w-xl mx-auto mb-8 sm:mb-10">
+        <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-10 max-w-xl mx-auto mb-8 sm:mb-10">
+          {/* VS circle */}
+          <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-primary text-primary-foreground font-bold text-sm items-center justify-center shadow-lg shadow-primary/30">
+            VS
+          </div>
+
           {/* Competitor */}
           <div className="rounded-2xl border border-border bg-card p-8 sm:p-10 text-center">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 sm:mb-6">StubHub / Ticketmaster</p>
-            <p className="font-display text-5xl sm:text-6xl font-bold text-destructive mb-3 sm:mb-4">$132</p>
+            <p className="font-display text-5xl sm:text-6xl font-bold text-destructive mb-3 sm:mb-4 line-through decoration-destructive/40">$132</p>
             <div className="space-y-1.5 text-sm text-muted-foreground">
               <p>$100 ticket</p>
               <p className="text-destructive/70">+ $19 service fee</p>
@@ -35,7 +40,8 @@ const SolutionSection = () => {
           </div>
 
           {/* Seats.ca */}
-          <div className="rounded-2xl border-2 border-primary bg-card p-8 sm:p-10 text-center relative">
+          <div className="rounded-2xl border-2 border-primary bg-card p-8 sm:p-10 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-5 py-1.5 rounded-full shadow-lg shadow-primary/25">
               Seats.ca Member
             </span>

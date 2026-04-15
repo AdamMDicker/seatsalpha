@@ -1,14 +1,19 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import heroArena from "@/assets/hero-arena.jpg";
 
 const FinalCTA = () => {
   return (
-    <section id="final-cta" className="py-20 sm:py-32">
-      <div className="container mx-auto px-5 sm:px-6">
+    <section id="final-cta" className="py-20 sm:py-32 relative overflow-hidden">
+      <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{ backgroundImage: `url(${heroArena})` }} />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/70" />
+
+      <div className="container mx-auto px-5 sm:px-6 relative z-10">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
-            Ready to stop overpaying?
+            Ready to stop{" "}
+            <span className="text-gradient italic">overpaying?</span>
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-md mx-auto mb-10 sm:mb-12 leading-relaxed">
             Browse real prices, compare seats, and pay exactly what's listed.

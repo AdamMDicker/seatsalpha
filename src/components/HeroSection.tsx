@@ -35,8 +35,8 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-cover bg-center transition-all duration-700" style={{ backgroundImage: `url(${heroImage})` }} />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/30" />
 
-      <div className="container mx-auto px-5 sm:px-6 relative z-10 pt-24 sm:pt-28 pb-16 sm:pb-20 flex flex-col items-center text-center">
-        <div className="max-w-2xl w-full flex flex-col items-center">
+      <div className="container mx-auto px-5 sm:px-6 relative z-10 pt-24 sm:pt-28 pb-16 sm:pb-20 flex flex-col items-start text-left">
+        <div className="max-w-2xl w-full flex flex-col items-start">
           {/* Descriptor badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/60 backdrop-blur border border-border/50 mb-6 sm:mb-8 animate-fade-in">
             <Ticket className="h-3.5 w-3.5 text-primary" />
@@ -49,12 +49,12 @@ const HeroSection = () => {
             <span className="text-gradient">Skip Every Fee.</span>
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-foreground/70 max-w-lg mb-8 sm:mb-10 animate-fade-in leading-relaxed px-2" style={{ animationDelay: "0.1s" }}>
+          <p className="text-base sm:text-lg md:text-xl text-foreground/70 max-w-lg mb-8 sm:mb-10 animate-fade-in leading-relaxed" style={{ animationDelay: "0.1s" }}>
             Browse real ticket prices by section and row. Members pay exactly what's listed — no service fees, no LCC on top.
           </p>
 
           {/* CTAs */}
-          <div className="w-full animate-fade-in flex flex-col items-center gap-3 sm:flex-row sm:justify-center" style={{ animationDelay: "0.2s" }}>
+          <div className="w-full animate-fade-in flex flex-col items-start gap-3 sm:flex-row sm:justify-start" style={{ animationDelay: "0.2s" }}>
             <Link to="/teams/blue-jays" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto text-lg px-10 py-5 h-auto rounded-xl shadow-xl shadow-primary/25 min-h-[56px] font-bold">
                 Browse Blue Jays Tickets
@@ -67,12 +67,8 @@ const HeroSection = () => {
               </Button>
             </Link>
           </div>
-          {/* CAD badge */}
-          <div className="inline-flex items-center gap-2 mt-6 px-4 py-2 rounded-full bg-card/50 backdrop-blur border border-border/40 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <span className="text-base leading-none">🇨🇦</span>
-            <span className="text-xs font-semibold text-foreground/80">All prices in <span className="text-primary font-bold">CAD</span></span>
-          </div>
-          <p className="text-xs text-muted-foreground/70 mt-3 animate-fade-in" style={{ animationDelay: "0.35s" }}>
+
+          <p className="text-xs text-muted-foreground/70 mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             Starting with Toronto Blue Jays · More teams launching soon
           </p>
         </div>
