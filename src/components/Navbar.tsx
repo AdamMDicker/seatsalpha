@@ -171,17 +171,17 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center flex-shrink-0 gap-1.5">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-              <rect width="5" height="5" rx="1" fill="hsl(var(--primary))" />
-              <rect x="7" width="5" height="5" rx="1" fill="hsl(var(--primary))" />
-              <rect x="14" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.6" />
-              <rect y="7" width="5" height="5" rx="1" fill="hsl(var(--primary))" />
-              <rect x="7" y="7" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.8" />
-              <rect x="14" y="7" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.4" />
-              <rect y="14" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.6" />
-              <rect x="7" y="14" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.4" />
-              <rect x="14" y="14" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.2" />
+              <rect width="5" height="5" rx="1" fill="#ef4444" />
+              <rect x="7" width="5" height="5" rx="1" fill="#ef4444" />
+              <rect x="14" width="5" height="5" rx="1" fill="#ef4444" opacity="0.6" />
+              <rect y="7" width="5" height="5" rx="1" fill="#ef4444" />
+              <rect x="7" y="7" width="5" height="5" rx="1" fill="#ef4444" opacity="0.8" />
+              <rect x="14" y="7" width="5" height="5" rx="1" fill="#ef4444" opacity="0.4" />
+              <rect y="14" width="5" height="5" rx="1" fill="#ef4444" opacity="0.6" />
+              <rect x="7" y="14" width="5" height="5" rx="1" fill="#ef4444" opacity="0.4" />
+              <rect x="14" y="14" width="5" height="5" rx="1" fill="#ef4444" opacity="0.2" />
             </svg>
-            <span className="font-display text-xl font-bold text-foreground">seats<span className="text-primary">.ca</span></span>
+            <span className="font-display text-xl font-bold text-foreground">seats<span className="text-red-500">.ca</span></span>
           </Link>
 
           {/* Desktop nav */}
