@@ -40,7 +40,7 @@ const HeroSection = () => {
             <span className="text-red-500 italic">Skip Every Fee.</span>
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-foreground/70 max-w-lg mb-8 sm:mb-10 animate-fade-in leading-relaxed" style={{ animationDelay: "0.1s" }}>
+          <p className="text-base sm:text-lg md:text-xl text-green-400 max-w-lg mb-8 sm:mb-10 animate-fade-in leading-relaxed" style={{ animationDelay: "0.1s" }}>
             Browse real ticket prices by section and row. Members pay exactly what's listed — no service fees, no LCC on top.
           </p>
 
