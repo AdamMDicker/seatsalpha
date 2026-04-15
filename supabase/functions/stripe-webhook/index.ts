@@ -140,6 +140,19 @@ serve(async (req) => {
   }
 
   if (event.type === "checkout.session.completed") {
+    // --- IDEMPOTENCY CHECK: prevent duplicate processing of the same Stripe event ---
+    const stripeEventId = event.id;
+    const { data: existingOrder } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("stripe_event_id", stripeEventId)
+      .maybeSingle();
+
+    if (existingOrder) {
+      console.log(`Stripe event ${stripeEventId} already processed (order ${existingOrder.id}), skipping`);
+      return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 });
+    }
+
     const session = event.data.object as Stripe.Checkout.Session;
     const meta = session.metadata || {};
     const customerEmail = session.customer_email || session.customer_details?.email || "";
@@ -214,6 +227,7 @@ serve(async (req) => {
           fees_amount: feesAmount,
           is_fee_waived: isFeeWaived,
           status: "completed",
+          stripe_event_id: stripeEventId,
         })
         .select("id")
         .single();

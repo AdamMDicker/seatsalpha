@@ -484,6 +484,7 @@ export type Database = {
           id: string
           is_fee_waived: boolean
           status: string
+          stripe_event_id: string | null
           total_amount: number
           uber_added: boolean
           user_id: string
@@ -496,6 +497,7 @@ export type Database = {
           id?: string
           is_fee_waived?: boolean
           status?: string
+          stripe_event_id?: string | null
           total_amount: number
           uber_added?: boolean
           user_id: string
@@ -508,6 +510,7 @@ export type Database = {
           id?: string
           is_fee_waived?: boolean
           status?: string
+          stripe_event_id?: string | null
           total_amount?: number
           uber_added?: boolean
           user_id?: string
