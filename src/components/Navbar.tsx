@@ -169,8 +169,9 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center flex-shrink-0">
-            <img src={logoImage} alt="seats.ca" className="h-10 w-auto" />
+          <Link to="/" className="flex items-center flex-shrink-0 gap-2">
+            <span className="text-base leading-none">🇨🇦</span>
+            <span className="font-display text-xl font-bold text-foreground">seats<span className="text-primary">.ca</span></span>
           </Link>
 
           {/* Desktop nav */}

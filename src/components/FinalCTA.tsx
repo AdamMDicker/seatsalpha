@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import heroArena from "@/assets/hero-arena.jpg";
+import ctaStadium from "@/assets/cta-stadium.webp";
 
 const FinalCTA = () => {
   return (
     <section id="final-cta" className="py-20 sm:py-32 relative overflow-hidden">
-      <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{ backgroundImage: `url(${heroArena})` }} />
+      <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{ backgroundImage: `url(${ctaStadium})` }} />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/70" />
 
       <div className="container mx-auto px-5 sm:px-6 relative z-10">
