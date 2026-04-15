@@ -17,7 +17,7 @@ const SolutionSection = () => {
           <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
             What you see is what you pay
           </h2>
-          <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-lg mx-auto leading-relaxed">
+          <p className="text-green-400 text-sm sm:text-base md:text-lg max-w-lg mx-auto leading-relaxed">
             Everyone sees transparent prices. Members get the best deal — no service fees and LCC included in every ticket.
           </p>
         </div>
