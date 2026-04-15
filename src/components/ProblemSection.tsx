@@ -51,7 +51,7 @@ const ProblemSection = () => {
         <div>
           <button
             onClick={() => document.getElementById("solution")?.scrollIntoView({ behavior: "smooth" })}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-red-500 hover:underline underline-offset-4 transition-colors py-3"
+            className="inline-flex items-center gap-2 text-base font-semibold text-green-400 hover:underline underline-offset-4 transition-colors py-3"
           >
             See how we fix this
             <ArrowRight className="h-4 w-4" />
