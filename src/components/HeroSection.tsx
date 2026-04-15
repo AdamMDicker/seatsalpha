@@ -59,7 +59,7 @@ const HeroSection = () => {
             </Link>
           </div>
 
-          <p className="text-xs text-muted-foreground/70 mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <p className="text-xs text-green-400 mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             Starting with Toronto Blue Jays · More teams launching soon
           </p>
         </div>
