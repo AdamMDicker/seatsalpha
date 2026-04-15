@@ -4,28 +4,19 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-import heroCanada from "@/assets/hero-arena.jpg";
-import heroBaseball from "@/assets/hero-baseball.jpg";
-import heroHockey from "@/assets/hero-hockey.jpg";
-import heroBasketball from "@/assets/hero-basketball.jpg";
-import heroFootball from "@/assets/hero-football.jpg";
-import heroSoccer from "@/assets/hero-soccer.jpg";
-import heroConcerts from "@/assets/hero-concerts.jpg";
-import heroStPatricks from "@/assets/hero-stpatricks.jpg";
-
-const HERO_IMAGES: Record<string, string> = {
-  canada: heroCanada, baseball: heroBaseball, hockey: heroHockey,
-  basketball: heroBasketball, football: heroFootball, soccer: heroSoccer,
-  concerts: heroConcerts, stpatricks: heroStPatricks,
-};
+import heroStadium from "@/assets/hero-stadium.webp";
 
 const HeroSection = () => {
-  const [heroImage, setHeroImage] = useState(heroBaseball);
+  const [heroImage, setHeroImage] = useState(heroStadium);
 
   useEffect(() => {
+    // Keep DB override capability but default to the stadium image
     const fetchHero = async () => {
       const { data } = await supabase.from("site_settings").select("value").eq("key", "hero_image").single();
-      if (data && HERO_IMAGES[data.value]) setHeroImage(HERO_IMAGES[data.value]);
+      // Only override if explicitly set — otherwise keep default stadium
+      if (data?.value && data.value !== "default") {
+        // Dynamic imports could be added here for other hero images
+      }
     };
     fetchHero();
   }, []);
@@ -39,7 +30,7 @@ const HeroSection = () => {
         <div className="max-w-2xl w-full flex flex-col items-start">
           {/* Descriptor badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/60 backdrop-blur border border-border/50 mb-6 sm:mb-8 animate-fade-in">
-            <Ticket className="h-3.5 w-3.5 text-primary" />
+            <span className="text-base leading-none">🇨🇦</span>
             <span className="text-xs font-semibold text-foreground/80">Canada's fee-free ticket marketplace</span>
           </div>
 

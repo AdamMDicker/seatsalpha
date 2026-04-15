@@ -31,8 +31,9 @@ const Footer = () => {
       <div className="container mx-auto px-5 sm:px-6">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 sm:gap-10">
           <div className="col-span-2 sm:col-span-1 space-y-3">
-            <div className="flex items-center">
-              <img src={logoImage} alt="seats.ca" className="h-8 w-auto" />
+            <div className="flex items-center gap-2">
+              <span className="text-base leading-none">🇨🇦</span>
+              <span className="font-display text-xl font-bold text-foreground">seats<span className="text-primary">.ca</span></span>
             </div>
             <p className="text-xs uppercase tracking-widest text-primary font-semibold">Canada's No Extra Fees Platform</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
