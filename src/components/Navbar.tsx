@@ -170,7 +170,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center flex-shrink-0">
-            <img src={logoImage} alt="seats.ca" className="h-32 w-auto" />
+            <img src={logoImage} alt="seats.ca" className="h-10 w-auto" />
           </Link>
 
           {/* Desktop nav */}
@@ -284,9 +284,14 @@ const Navbar = () => {
                 </Button>
               </div>
             ) : (
-              <Link to="/auth">
-                <Button variant="hero" size="sm" className="text-sm px-4 h-9">Sign In</Button>
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link to="/auth" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+                  Sign In
+                </Link>
+                <Link to="/teams/blue-jays">
+                  <Button variant="hero" size="sm" className="text-sm px-5 h-9">Browse Tickets</Button>
+                </Link>
+              </div>
             )}
           </div>
 

@@ -50,7 +50,7 @@ const SocialProof = () => {
         {/* Featured testimonial */}
         <div className="max-w-2xl mx-auto mb-10 sm:mb-14">
           <div className="rounded-2xl border-2 border-primary/20 bg-card p-8 sm:p-12 text-center relative">
-            <Quote className="h-8 w-8 text-primary/20 mx-auto mb-4" />
+            <Quote className="h-8 w-8 text-purple-500/40 mx-auto mb-4" />
             <p className="text-base sm:text-lg text-foreground/90 leading-relaxed mb-6 font-medium italic">
               "{testimonials[0].quote}"
             </p>
