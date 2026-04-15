@@ -227,6 +227,7 @@ serve(async (req) => {
           fees_amount: feesAmount,
           is_fee_waived: isFeeWaived,
           status: "completed",
+          stripe_event_id: stripeEventId,
         })
         .select("id")
         .single();
