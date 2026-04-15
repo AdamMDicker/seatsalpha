@@ -22,29 +22,18 @@ const TrustBar = () => {
 
       {/* Stats banner */}
       <div className="border-t border-white/5">
-        <div className="container mx-auto px-5 sm:px-6 py-6 sm:py-8">
-          <div className="flex flex-col gap-6 sm:flex-row items-center justify-center sm:gap-16 md:gap-24">
-            <div className="flex items-center gap-3">
-              <Users className="h-5 w-5 text-green-400 shrink-0" />
-              <div>
-                <p className="font-display text-xl sm:text-2xl font-bold text-foreground">2,400+</p>
-                <p className="text-xs text-muted-foreground">Tickets sold to Canadian fans</p>
+        <div className="container mx-auto px-5 sm:px-6 py-10 sm:py-14">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6 max-w-4xl mx-auto">
+            {[
+              { value: "2,400+", label: "Tickets sold to Canadian fans" },
+              { value: "$32", label: "Avg. saved per ticket vs StubHub" },
+              { value: "100%", label: "Verified ticket guarantee" },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-xl border border-white/10 bg-card p-8 text-center">
+                <p className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-2">{stat.value}</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-green-400">{stat.label}</p>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-green-400 shrink-0" />
-              <div>
-                <p className="font-display text-xl sm:text-2xl font-bold text-foreground">$32</p>
-                <p className="text-xs text-muted-foreground">Avg. saved per ticket vs StubHub</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="h-5 w-5 text-green-400 shrink-0" />
-              <div>
-                <p className="font-display text-xl sm:text-2xl font-bold text-foreground">100%</p>
-                <p className="text-xs text-muted-foreground">Verified ticket guarantee</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
