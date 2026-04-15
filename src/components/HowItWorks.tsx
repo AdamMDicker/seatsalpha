@@ -39,7 +39,7 @@ const HowItWorks = () => {
 
         <div className="max-w-4xl mx-auto mb-12 sm:mb-16">
           <div className="grid grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-0 relative">
-            <div className="hidden sm:block absolute top-12 left-[calc(16.67%+32px)] right-[calc(16.67%+32px)] h-px bg-border/50" />
+            <div className="hidden sm:block absolute top-12 left-[calc(16.67%+32px)] right-[calc(16.67%+32px)] h-px bg-white/5" />
 
             {steps.map((step, i) => (
               <div
@@ -47,8 +47,8 @@ const HowItWorks = () => {
                 className="relative flex flex-col items-center text-center px-4 sm:px-6 animate-fade-in"
                 style={{ animationDelay: `${i * 0.15}s` }}
               >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center mb-6 sm:mb-8 relative z-10">
-                  <step.icon className="h-8 w-8 sm:h-9 sm:w-9 text-primary" />
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-500/15 border border-white/5 flex items-center justify-center mb-6 sm:mb-8 relative z-10">
+                  <step.icon className="h-8 w-8 sm:h-9 sm:w-9 text-green-400" />
                   <span className="absolute -top-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground text-xs sm:text-sm font-bold flex items-center justify-center shadow-lg shadow-primary/25">
                     {step.number}
                   </span>
