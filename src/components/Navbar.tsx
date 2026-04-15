@@ -191,7 +191,7 @@ const Navbar = () => {
               <button
                 key={link.label}
                 onClick={link.action}
-                className="px-3 py-2 text-sm font-medium text-foreground/70 hover:text-foreground transition-colors rounded-md hover:bg-secondary/50"
+                className="px-3 py-2 text-sm font-medium text-foreground/70 hover:text-green-400 transition-colors rounded-md hover:bg-secondary/50"
               >
                 {link.label}
               </button>
