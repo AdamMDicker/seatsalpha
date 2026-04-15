@@ -27,7 +27,7 @@ const ProblemSection = () => {
           <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
             Buying tickets shouldn't feel like a gamble
           </h2>
-          <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-md leading-relaxed">
+          <p className="text-green-400 text-sm sm:text-base md:text-lg max-w-md leading-relaxed">
             Every other platform is designed to make you pay more than you planned.
           </p>
         </div>
