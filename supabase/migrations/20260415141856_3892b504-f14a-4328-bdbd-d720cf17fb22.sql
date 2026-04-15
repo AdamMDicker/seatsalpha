@@ -1,0 +1,1 @@
+ALTER VIEW public.public_tickets SET (security_invoker = on);
