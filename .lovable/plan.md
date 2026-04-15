@@ -1,57 +1,90 @@
 
 
-# Email Template Redesign Plan
+# Plan: Update seats.ca Frontend to Match Manus Reference Design
 
-## Scope
+## Summary
+The Manus reference site uses identical content and section order but has a more polished, spacious visual treatment. The changes are primarily CSS/layout refinements across the existing components plus a new "Become a Seller" section and some navbar updates.
 
-Redesign **all** email templates across the platform to create a unified, premium visual identity. This covers:
+## Key Differences Identified
 
-**6 Auth Email Templates** (React Email components):
-- Confirm signup, Password reset, Magic link, Invite, Email change, Reauthentication
+**Navbar:**
+- Manus: Clean horizontal nav with properly sized logo (~h-8/h-10), "Browse Tickets" red CTA button on the right, "Sign In" text link
+- Current: Logo is oversized at h-32, no "Browse Tickets" CTA button in nav
+- Fix: Reduce logo back to h-10, add "Browse Tickets" red CTA button
 
-**8+ Transactional Email Templates** (inline HTML in Edge Functions):
-- Buyer order confirmation (`stripe-webhook`, `send-transactional-email`)
-- Seller sale notification (`stripe-webhook`, `send-transactional-email`)
-- Transfer relay / "Accept Tickets" (`resolve-transfer-email`)
-- Transfer confirmed - buyer (`notify-buyer-transfer`, `verify-transfer-image`)
-- Transfer disputed - seller (`notify-buyer-transfer`)
-- Transfer mismatch - admin (`verify-transfer-image`)
-- Fallback reminder - buyer (`transfer-fallback-reminder`)
+**Hero Section:**
+- Manus: Left-aligned text (not centered), larger bolder heading, no CAD badge, no ticket icon badge border styling, background image with stadium
+- Current: Center-aligned, has CAD badge, centered CTAs
+- Fix: Left-align hero content, remove CAD badge, adjust text sizing
 
-## Design Direction
+**Trust Bar / Stats:**
+- Manus: Three trust badges (Verified Authentic, No Hidden Fees, Full Refund) as text with red icons, stats below with larger numbers
+- Current: Very similar content, minor styling differences
+- Fix: Minor spacing/sizing adjustments
 
-**Premium ticket platform aesthetic** -- clean, modern, high-contrast with strategic use of brand red (#C41E3A / #d6193d). Key changes:
+**Problem Section:**
+- Manus: Left-aligned section header, cards have dark red/maroon tinted background with subtle gradient, icon backgrounds are rounded squares
+- Current: Center-aligned header, centered card content
+- Fix: Left-align section header, update card styling to match dark red-tinted cards
 
-1. **Logo**: Shrink to 120px wide across all templates (currently 300px in most)
-2. **Header**: Replace gradient bars with a dark charcoal (#18181b) header section featuring white text and a subtle red accent line -- cleaner, more premium feel than the current full-gradient approach
-3. **Typography**: Tighten spacing, increase hierarchy contrast -- larger bold headings, smaller muted labels
-4. **Cards/Sections**: Use subtle border + shadow treatment instead of colored background blocks. Information cards get thin left-border accents (red for buyer, green for seller)
-5. **Buttons**: Larger, bolder CTAs with pill shape, shadow, and hover-ready styling
-6. **Footer**: Slim single-line footer. Move spam warning into a more subtle inline note rather than a full-width yellow banner
-7. **Spacing**: Reduce excessive padding. Tighter vertical rhythm throughout
-8. **Seller emails**: Keep green accent but use same structural layout as buyer emails for consistency
+**Solution Section (Price Comparison):**
+- Manus: Side-by-side cards with "VS" circle between them, strikethrough on $132, red top border on seats.ca card, "$49.95/yr" badge next to header
+- Current: Similar but missing VS circle and some styling details
+- Fix: Add VS circle overlay, strikethrough on competitor price, red accent border on member card
 
-## Technical Approach
+**How It Works:**
+- Manus: Step icons in red circles with number badges, centered layout
+- Current: Very similar
+- Fix: Minor adjustments to match icon circle sizing
 
-### Auth Templates (6 files)
-Update each `.tsx` file in `supabase/functions/_shared/email-templates/`:
-- Apply new shared style constants (logo size, header, footer, typography)
-- Consistent button styling across signup, recovery, magic-link, invite, email-change
-- Reauthentication: style the OTP code block with a modern card treatment
+**Features Section (Why Fans Choose Us):**
+- Manus: 2x2 grid of dark cards with red icon backgrounds, "Browse Available Tickets" CTA
+- Current: Very similar
+- Fix: Minor styling adjustments
 
-### Transactional Templates (5 Edge Functions)
-Update inline HTML builders in:
-- `stripe-webhook/index.ts` -- `buyerEmailHtml()` and `sellerEmailHtml()`
-- `send-transactional-email/index.ts` -- `buyerConfirmationHtml()` and `sellerNotificationHtml()`
-- `resolve-transfer-email/index.ts` -- `buildBrandedEmail()`
-- `notify-buyer-transfer/index.ts` -- `brandedEmailWrapper()`, `transferConfirmedHtml()`, `transferDisputedSellerHtml()`
-- `verify-transfer-image/index.ts` -- inline confirmed/disputed email HTML and `brandedEmailWrapper()`
-- `transfer-fallback-reminder/index.ts` -- `fallbackReminderHtml()`
+**NEW - Become a Seller Section:**
+- Manus: Split layout -- left side has heading "Got tickets? Sell them here." with red gradient text, right side has 3 benefit cards stacked vertically, "Start Selling" CTA
+- Current: No dedicated seller section on homepage
+- Fix: Create new `SellerSection` component
 
-### Deployment
-Redeploy all 6 modified Edge Functions:
-`auth-email-hook`, `stripe-webhook`, `send-transactional-email`, `resolve-transfer-email`, `notify-buyer-transfer`, `verify-transfer-image`, `transfer-fallback-reminder`
+**Social Proof (Testimonials):**
+- Manus: Featured testimonial with purple quote icon, 3-column review cards below with star ratings
+- Current: Very similar structure
+- Fix: Minor color/styling tweaks
 
-### Verification
-Send a test email to confirm the new design renders correctly in inbox.
+**Final CTA:**
+- Manus: Stadium background image behind the CTA, "Ready to stop overpaying?" with red italic gradient text
+- Current: No background image
+- Fix: Add background image, style "overpaying?" in red italic
+
+**Newsletter:**
+- Manus: Simple centered form, "Stay in the loop" heading
+- Current: Very similar
+- Fix: Minor adjustments
+
+**Footer:**
+- Manus: "Events" column (Toronto Blue Jays, More teams coming soon), "Company" column with all links, Newsletter email form with "Go" button
+- Current: Different column structure
+- Fix: Update footer columns to match
+
+## Files to Create/Modify
+
+1. **src/components/Navbar.tsx** -- Reduce logo to h-10, add "Browse Tickets" CTA button
+2. **src/components/HeroSection.tsx** -- Left-align content, remove CAD badge, adjust sizing
+3. **src/components/TrustBar.tsx** -- Minor spacing adjustments
+4. **src/components/ProblemSection.tsx** -- Left-align header, update card backgrounds to dark red tint
+5. **src/components/SolutionSection.tsx** -- Add VS circle, strikethrough competitor price, red top border on member card
+6. **src/components/HowItWorks.tsx** -- Minor icon sizing adjustments
+7. **src/components/FeaturesSection.tsx** -- Minor card styling adjustments
+8. **src/components/SellerSection.tsx** (NEW) -- "Become a Seller" split layout section
+9. **src/components/SocialProof.tsx** -- Purple quote icon styling
+10. **src/components/FinalCTA.tsx** -- Add stadium background image, italic red gradient on "overpaying?"
+11. **src/components/NewsletterSection.tsx** -- Minor adjustments
+12. **src/components/Footer.tsx** -- Update column structure (Events, Company, Newsletter)
+13. **src/pages/Index.tsx** -- Add SellerSection between FeaturesSection and SocialProof
+
+## Technical Notes
+- All changes are CSS/component-level; no database or backend changes needed
+- Existing functionality (Supabase queries, auth, navigation) remains untouched
+- The "Become a Seller" section links to existing `/reseller` route
 
