@@ -82,17 +82,17 @@ const Footer = () => {
               {footerStatus === "done" ? (
                 <p className="text-xs text-primary">Subscribed ✓</p>
               ) : (
-                <form onSubmit={handleFooterSub} className="flex gap-2">
+                <form onSubmit={handleFooterSub} className="flex flex-col gap-2">
                   <input
                     type="email"
                     placeholder="Your email"
                     value={footerEmail}
                     onChange={(e) => setFooterEmail(e.target.value)}
-                    className="flex-1 min-w-0 px-3 py-2.5 rounded-lg bg-card/80 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 text-base sm:text-xs"
+                    className="w-full px-3 py-2.5 rounded-lg bg-card/80 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 text-base sm:text-xs"
                     disabled={footerStatus === "loading"}
                   />
-                  <button type="submit" className="px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors min-h-[44px]" disabled={footerStatus === "loading"}>
-                    Go
+                  <button type="submit" className="w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors min-h-[44px]" disabled={footerStatus === "loading"}>
+                    Subscribe
                   </button>
                 </form>
               )}
