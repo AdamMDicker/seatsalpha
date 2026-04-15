@@ -201,7 +201,7 @@ const Navbar = () => {
             <div className="relative">
               <button
                 onClick={() => { setShowTeams(!showTeams); setOpenDropdown(null); }}
-                className="px-3 py-2 text-sm font-medium text-foreground/70 hover:text-foreground transition-colors rounded-md hover:bg-secondary/50 flex items-center gap-1"
+                className="px-3 py-2 text-sm font-medium text-foreground/70 hover:text-green-400 transition-colors rounded-md hover:bg-secondary/50 flex items-center gap-1"
               >
                 Teams
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showTeams ? "rotate-180" : ""}`} />
