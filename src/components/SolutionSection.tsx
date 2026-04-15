@@ -29,7 +29,7 @@ const SolutionSection = () => {
           </div>
 
           {/* Competitor */}
-          <div className="rounded-2xl border border-border bg-card p-8 sm:p-10 text-center">
+          <div className="rounded-2xl border border-white/5 bg-card p-8 sm:p-10 text-center">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 sm:mb-6">StubHub / Ticketmaster</p>
             <p className="font-display text-5xl sm:text-6xl font-bold text-destructive mb-3 sm:mb-4 line-through decoration-destructive/40">$132</p>
             <div className="space-y-1.5 text-sm text-muted-foreground">
@@ -50,7 +50,7 @@ const SolutionSection = () => {
             <div className="space-y-2 text-sm text-muted-foreground">
               {["No service fees", "LCC included", "What you see = what you pay"].map((text) => (
                 <div key={text} className="flex items-center justify-center gap-2">
-                  <Check className="h-4 w-4 text-primary shrink-0" />
+                  <Check className="h-4 w-4 text-green-400 shrink-0" />
                   <span>{text}</span>
                 </div>
               ))}

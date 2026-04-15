@@ -44,11 +44,11 @@ const FeaturesSection = () => {
           {features.map((feature, i) => (
             <div
               key={i}
-              className="rounded-2xl p-7 sm:p-10 bg-card border border-border hover:border-primary/30 transition-all duration-300 animate-fade-in group"
+              className="rounded-2xl p-7 sm:p-10 bg-card border border-white/5 hover:border-white/10 transition-all duration-300 animate-fade-in group"
               style={{ animationDelay: `${i * 0.1}s` }}
             >
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 sm:mb-6 group-hover:bg-primary/15 transition-colors">
-                <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-green-500/15 flex items-center justify-center mb-5 sm:mb-6 group-hover:bg-green-500/20 transition-colors">
+                <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
               </div>
               <h3 className="font-display font-semibold text-base sm:text-lg mb-2 sm:mb-3 leading-snug">{feature.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>

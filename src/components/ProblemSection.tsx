@@ -36,7 +36,7 @@ const ProblemSection = () => {
           {painPoints.map((point, i) => (
             <div
               key={i}
-              className="flex flex-col items-start text-left rounded-2xl p-7 sm:p-8 bg-destructive/5 border border-destructive/10 animate-fade-in"
+              className="flex flex-col items-start text-left rounded-2xl p-7 sm:p-8 bg-card border border-white/5 animate-fade-in"
               style={{ animationDelay: `${i * 0.1}s` }}
             >
               <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-destructive/10 flex items-center justify-center mb-5 sm:mb-6">

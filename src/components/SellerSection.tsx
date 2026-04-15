@@ -48,11 +48,11 @@ const SellerSection = () => {
             {benefits.map((b, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-border bg-card p-6 sm:p-7 flex items-start gap-4 animate-fade-in"
+                className="rounded-2xl border border-white/5 bg-card p-6 sm:p-7 flex items-start gap-4 animate-fade-in"
                 style={{ animationDelay: `${i * 0.1}s` }}
               >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <b.icon className="h-5 w-5 text-primary" />
+                <div className="w-10 h-10 rounded-xl bg-green-500/15 flex items-center justify-center shrink-0">
+                  <b.icon className="h-5 w-5 text-green-400" />
                 </div>
                 <div>
                   <h3 className="font-display font-semibold text-base mb-1">{b.title}</h3>

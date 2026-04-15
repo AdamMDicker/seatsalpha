@@ -49,13 +49,15 @@ const SocialProof = () => {
 
         {/* Featured testimonial */}
         <div className="max-w-2xl mx-auto mb-10 sm:mb-14">
-          <div className="rounded-2xl border-2 border-primary/20 bg-card p-8 sm:p-12 text-center relative">
-            <Quote className="h-8 w-8 text-purple-500/40 mx-auto mb-4" />
+          <div className="rounded-2xl border border-white/10 bg-card p-8 sm:p-12 text-center relative">
+            <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center mx-auto mb-4">
+              <Quote className="h-5 w-5 text-white" />
+            </div>
             <p className="text-base sm:text-lg text-foreground/90 leading-relaxed mb-6 font-medium italic">
               "{testimonials[0].quote}"
             </p>
             <div className="flex items-center justify-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+              <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-green-400">
                 {testimonials[0].name.charAt(0)}
               </div>
               <div className="text-left">
@@ -71,19 +73,19 @@ const SocialProof = () => {
           {testimonials.slice(1).map((t, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-border bg-card p-7 sm:p-10 flex flex-col animate-fade-in"
+              className="rounded-2xl border border-white/5 bg-card p-7 sm:p-10 flex flex-col animate-fade-in"
               style={{ animationDelay: `${i * 0.1}s` }}
             >
               <div className="flex gap-0.5 mb-4 sm:mb-5">
                 {Array.from({ length: 5 }).map((_, j) => (
-                  <Star key={j} className="h-4 w-4 fill-gold text-gold" />
+                  <Star key={j} className="h-4 w-4 fill-amber-400 text-amber-400" />
                 ))}
               </div>
               <p className="text-sm text-foreground/80 leading-relaxed flex-1 mb-5 sm:mb-6">
                 "{t.quote}"
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-green-400 shrink-0">
                   {t.name.charAt(0)}
                 </div>
                 <div>
@@ -91,9 +93,9 @@ const SocialProof = () => {
                   <p className="text-xs text-muted-foreground">{t.location}</p>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+              <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">{t.event}</span>
-                <span className="text-xs font-bold text-primary">Saved {t.saved}</span>
+                <span className="text-xs font-bold text-green-400">Saved {t.saved}</span>
               </div>
             </div>
           ))}
