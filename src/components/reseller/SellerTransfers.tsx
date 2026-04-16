@@ -394,6 +394,12 @@ const SellerTransfers = () => {
                         uploading={uploading === t.id}
                         verifying={isCurrentlyVerifying}
                         onUpload={handleUpload}
+                        eventTitle={t.event_title}
+                        eventDate={t.event_date}
+                        venue={t.venue}
+                        section={t.section}
+                        rowName={t.row_name}
+                        quantity={t.quantity}
                       />
                       {t.status === "confirmed" && (
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
