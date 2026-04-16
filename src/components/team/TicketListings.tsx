@@ -137,7 +137,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       // Restore quantity filter if it was preserved
       const buyQty = searchParams.get("buyQty");
       const buyQtyNum = buyQty ? Number(buyQty) : NaN;
-      if (buyQty && Number.isFinite(buyQtyNum) && buyQtyNum >= 2 && buyQtyNum <= 40 && (buyQtyNum === 3 || buyQtyNum % 2 === 0)) {
+      if (buyQty && Number.isFinite(buyQtyNum) && buyQtyNum >= 2 && buyQtyNum <= 40) {
         setDesiredSeats(buyQty);
       }
       checkMembership().finally(() => {
@@ -234,32 +234,29 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const canFulfillSeatCount = (ticket: TicketInfo, seatCount: number | null) => {
     if (!seatCount) return true;
-
     const remaining = ticket.quantity - ticket.quantity_sold;
-    // 3-packs must be sold as full set
-    if (remaining === 3) return seatCount === 3;
-    // Otherwise only even quantities (2, 4, 6, 8, ...) are valid purchase sizes
+    // Odd remaining → must buy the full set
+    if (remaining % 2 !== 0) return seatCount === remaining;
+    // Even remaining → only even purchase sizes, up to remaining (never leave 1)
     if (seatCount % 2 !== 0) return false;
     return seatCount <= remaining;
   };
 
   // Derive available group sizes from current inventory.
-  // Allow any even quantity (2, 4, 6, 8, ...) up to the largest remaining listing,
-  // plus the special 3-pack option when an exact 3-remaining listing exists.
-  const seatCountOptions: number[] = [];
-  const hasThreePack = tickets.some((t) => (t.quantity - t.quantity_sold) === 3);
-  const maxRemainingEven = tickets.reduce((max, t) => {
+  // Even remainings contribute even options (2, 4, 6, ...). Odd remainings contribute their exact full-set size.
+  const seatCountSet = new Set<number>();
+  let maxEvenRemaining = 0;
+  tickets.forEach((t) => {
     const rem = t.quantity - t.quantity_sold;
-    if (rem === 3) return max; // 3-packs handled separately
-    return Math.max(max, rem);
-  }, 0);
-  for (let n = 2; n <= maxRemainingEven; n += 2) {
-    seatCountOptions.push(n);
-  }
-  if (hasThreePack) {
-    const insertAt = seatCountOptions.indexOf(2) + 1;
-    seatCountOptions.splice(insertAt, 0, 3);
-  }
+    if (rem < 2) return;
+    if (rem % 2 === 0) {
+      maxEvenRemaining = Math.max(maxEvenRemaining, rem);
+    } else {
+      seatCountSet.add(rem); // odd full-set option
+    }
+  });
+  for (let n = 2; n <= maxEvenRemaining; n += 2) seatCountSet.add(n);
+  const seatCountOptions = Array.from(seatCountSet).sort((a, b) => a - b);
 
   // Check if aisle / row1 / accessible perks exist in current inventory
   const hasAisleTickets = tickets.some((t) => t.perks?.includes("aisle"));

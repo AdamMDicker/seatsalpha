@@ -100,10 +100,13 @@ const FeeGateDialog = ({
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
-  const isThreePack = availableQuantity === 3;
+  const isOddFullSet = availableQuantity % 2 !== 0;
+  const isThreePack = availableQuantity === 3; // kept for copy compatibility
 
   const getValidQuantities = (): number[] => {
-    if (isThreePack) return [3];
+    // Odd remaining → must buy as a full set
+    if (isOddFullSet) return [availableQuantity];
+    // Even remaining → any even quantity up to available
     const valid: number[] = [];
     for (let n = 2; n <= availableQuantity; n += 2) {
       valid.push(n);
@@ -244,7 +247,7 @@ const FeeGateDialog = ({
             </div>
 
             <p className="text-[10px] text-muted-foreground italic text-center">
-              {isThreePack ? "This listing must be purchased as a full set of 3." : "Tickets are sold in groups of 2 or 4."}
+              {isOddFullSet ? `This listing must be purchased as a full set of ${availableQuantity}.` : "Tickets are sold in pairs (2, 4, 6, ...)."}
             </p>
 
             <span className="text-[9px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded block text-center">No fees — Member pricing applied</span>
@@ -332,7 +335,7 @@ const FeeGateDialog = ({
 
           <div className="text-center space-y-0.5">
             <p className="text-[10px] text-muted-foreground italic">
-              {isThreePack ? "This listing must be purchased as a full set of 3." : "Tickets are sold in groups of 2 or 4."}
+              {isOddFullSet ? `This listing must be purchased as a full set of ${availableQuantity}.` : "Tickets are sold in pairs (2, 4, 6, ...)."}
             </p>
             <p className="text-[11px] font-bold text-foreground uppercase tracking-wide">Please Choose:</p>
           </div>
