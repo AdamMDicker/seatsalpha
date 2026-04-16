@@ -158,8 +158,63 @@ const AdminCsvImport = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<any>(null);
+
+  const handleSyncInventory = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) {
+        toast({ title: "Not authenticated", variant: "destructive" });
+        setSyncing(false);
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke("sync-inventory", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+      setSyncResult(data);
+      toast({
+        title: "Inventory synced!",
+        description: `${data?.newEvents ?? 0} new events, ${data?.newTickets ?? 0} new tickets, ${data?.updatedTickets ?? 0} updated, ${data?.deactivateTickets ?? 0} deactivated`,
+      });
+    } catch (err: any) {
+      toast({ title: "Sync failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <div>
+      {/* Sync from Google Sheets */}
+      <div className="bg-card border border-primary/30 rounded-xl p-5 mb-6">
+        <div className="flex items-start gap-4">
+          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/15 text-primary flex-shrink-0">
+            <RefreshCw className="h-5 w-5" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground mb-1">Sync Inventory from Google Sheets</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              Pull the latest ticket data from the master spreadsheet. This will create new events, update prices/quantities, and deactivate stale tickets.
+            </p>
+            <Button variant="hero" size="sm" onClick={handleSyncInventory} disabled={syncing}>
+              <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+              {syncing ? "Syncing..." : "Sync Inventory"}
+            </Button>
+            {syncResult && (
+              <div className="mt-3 text-xs text-muted-foreground space-y-0.5">
+                <p>Games: {syncResult.games} | New Events: {syncResult.newEvents} | Updated Events: {syncResult.updatedEvents}</p>
+                <p>New Tickets: {syncResult.newTickets} | Updated: {syncResult.updatedTickets} | Deactivated: {syncResult.deactivateTickets}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-between items-start mb-4">
         <div>
           <h2 className="font-display text-xl font-semibold">CSV Import</h2>
