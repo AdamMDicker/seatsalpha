@@ -62,7 +62,15 @@ const TransferProofUploader = ({ transferId, status, uploading, verifying, onUpl
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="default" className="h-7 text-xs" disabled={disabled}>
+        <Button
+          size="sm"
+          variant={status === "disputed" ? "destructive" : "default"}
+          className={cn(
+            "h-7 text-xs",
+            status === "disputed" && "bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold shadow-md shadow-destructive/30 animate-pulse"
+          )}
+          disabled={disabled}
+        >
           {uploading ? (
             <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Uploading</>
           ) : (
