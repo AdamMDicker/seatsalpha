@@ -400,6 +400,7 @@ export type Database = {
         Row: {
           accept_link: string | null
           accept_link_extracted_at: string | null
+          admin_escalation_sent_at: string | null
           confirmed_at: string | null
           created_at: string
           fallback_sent_at: string | null
@@ -408,6 +409,7 @@ export type Database = {
           inbound_email_id: string | null
           order_id: string
           seller_id: string
+          seller_reminder_sent_at: string | null
           status: string
           ticket_id: string
           transfer_email_alias: string | null
@@ -418,6 +420,7 @@ export type Database = {
         Insert: {
           accept_link?: string | null
           accept_link_extracted_at?: string | null
+          admin_escalation_sent_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           fallback_sent_at?: string | null
@@ -426,6 +429,7 @@ export type Database = {
           inbound_email_id?: string | null
           order_id: string
           seller_id: string
+          seller_reminder_sent_at?: string | null
           status?: string
           ticket_id: string
           transfer_email_alias?: string | null
@@ -436,6 +440,7 @@ export type Database = {
         Update: {
           accept_link?: string | null
           accept_link_extracted_at?: string | null
+          admin_escalation_sent_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           fallback_sent_at?: string | null
@@ -444,6 +449,7 @@ export type Database = {
           inbound_email_id?: string | null
           order_id?: string
           seller_id?: string
+          seller_reminder_sent_at?: string | null
           status?: string
           ticket_id?: string
           transfer_email_alias?: string | null
