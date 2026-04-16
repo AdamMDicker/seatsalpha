@@ -242,6 +242,17 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     return seatCount <= remaining;
   };
 
+  const getQuantityHint = (ticket: TicketInfo): string => {
+    const remaining = ticket.quantity - ticket.quantity_sold;
+    if (remaining < 1) return "";
+    if (remaining === 1) return "Sold as a single";
+    if (remaining % 2 !== 0) return `Must buy all ${remaining} (no singles left behind)`;
+    if (remaining === 2) return "Buy as a pair (2)";
+    const evens: number[] = [];
+    for (let n = 2; n <= remaining; n += 2) evens.push(n);
+    return `Buy in pairs: ${evens.join(", ")}`;
+  };
+
   // Derive available group sizes from current inventory.
   // Even remainings contribute even options (2, 4, 6, ...). Odd remainings contribute their exact full-set size.
   const seatCountSet = new Set<number>();
@@ -297,6 +308,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               {!ticket.hide_seat_numbers && ticket.seat_number && ` · Seats ${ticket.seat_number}`}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
+            <p className="text-[10px] text-primary/80 mt-0.5 font-medium">{getQuantityHint(ticket)}</p>
             {perks.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {perks.filter((p) => p !== "giveaway_guaranteed").map((p) => {
@@ -391,6 +403,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               </div>
             </div>
             <span className="text-xs text-muted-foreground">{ticket.quantity - ticket.quantity_sold} avail</span>
+            <span className="text-[10px] text-primary/80 font-medium hidden sm:inline">· {getQuantityHint(ticket)}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
