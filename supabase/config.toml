@@ -33,3 +33,5 @@ project_id = "fkcszgrewzhswdtsqpad"
     verify_jwt = false
   [functions.verify-transfer-image]
     verify_jwt = false
+  [functions.seller-proof-reminder]
+    verify_jwt = false
