@@ -1,30 +1,46 @@
 
 
-# Fix: Make Tickets Visible to All Users (Including Anonymous)
+## Investigation Results
 
-## Root Cause
-The `public_tickets` view uses `security_invoker=on`, meaning it respects the caller's RLS permissions on the `tickets` table. The `tickets` table has a SELECT policy for `authenticated` users only — there is **no policy for the `anon` role**. Anonymous visitors get zero tickets back, causing "Tickets coming soon" on every game card.
+### What the system thinks you bought
 
-## Fix
+**Order ID:** `c3992864-5137-4a0a-818b-e6e97a326979` (April 16, 2026 at 16:59 UTC)
+- **Event:** Toronto Blue Jays vs Orioles — Sept 11, 2026 @ Rogers Centre
+- **Section:** GA (General Admission)
+- **Row / Seat:** None (null)
+- **Quantity:** 2
+- **Unit Price:** $1.00 CAD (total $2.00)
+- **Face Value:** Not set (null)
+- **Perks / Notes:** None
 
-### 1. Add an RLS policy for anonymous ticket reads (database migration)
+### Which account it's associated with
 
-```sql
-CREATE POLICY "Anyone can read active tickets"
-  ON public.tickets
-  FOR SELECT
-  TO anon
-  USING (is_active = true);
-```
+**Buyer:**
+- Michael Kurtz (michaelkurtz66@hotmail.com)
 
-This allows unauthenticated visitors to see active tickets through the `public_tickets` view, just like authenticated users already can. The view already filters to `is_active = true AND quantity > quantity_sold`, so this is safe — no sensitive data (seller_id is visible but that's a UUID, and seat numbers are masked by the view's CASE expression when `hide_seat_numbers` is true).
+**Seller assignment (the ticket itself has NO seller — `seller_id` is NULL):**
+- Because the ticket has no seller, the system applied the **admin fulfillment standardization rule** and assigned the transfer to:
+  - **LMK / Metro Tickets Inc.** (lmkconsulting@gmail.com)
+  - Transfer alias: `order-wmkvnotxkk@inbound.seats.ca`
+  - Transfer status: `pending`
 
-### 2. No code changes needed
-The GameCard and TicketListings components already handle tickets correctly — they just weren't receiving any data for anonymous users. Once the RLS policy is added, everything will work for all user types.
+That's why it's not in LMK's seller dashboard as a *sale* — the ticket was an admin-created listing (no `seller_id`), so revenue isn't attributed to LMK as a seller. LMK is only the **fulfillment recipient** for the transfer.
 
-## What Changes
-- **Not logged in**: Will see all active tickets (currently sees none)
-- **Logged in (customer)**: No change (already works)
-- **Reseller**: No change (already works)
-- **Admin**: No change (already works)
+### How the GA ticket got into the database
+
+Looking at the ticket record:
+- **Ticket ID:** `5d2f2efc-a7f4-4bde-b5c1-12c86ba40245`
+- **Created:** April 16, 2026 at 03:14 UTC (about 14 hours before the purchase)
+- **seller_id:** `NULL` → admin-created (not from a reseller upload)
+- **is_reseller_ticket:** `false`
+- **Quantity:** 20 available, 2 sold
+- **Section:** "GA" with no row/seat
+
+This was manually added via the admin Tickets panel (or imported via CSV) with the section literally typed as "GA". The schema doesn't restrict section names, so "GA" was accepted. There are still **18 more** of these GA tickets active and purchasable right now.
+
+### Recommended next step
+
+Deactivate or delete this ticket so no more accidental GA orders come through. Want me to:
+1. Set `is_active = false` on this ticket (soft-delete, keeps the existing order intact), or
+2. Investigate the admin Tickets / CSV import flow to add a section validation guard against non-existent sections like "GA" for Rogers Centre?
 
