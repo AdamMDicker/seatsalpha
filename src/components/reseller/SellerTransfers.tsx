@@ -309,13 +309,15 @@ const SellerTransfers = () => {
 
                 return (
                   <TableRow key={t.id}>
-                    <TableCell className="max-w-[200px]">
-                      <div className="font-medium text-sm truncate">{t.event_title || "—"}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {t.event_date ? format(new Date(t.event_date), "MMM d, yyyy") : ""}
-                      </div>
+                    <TableCell className="max-w-[240px]">
+                      <div className="font-semibold text-sm truncate text-foreground">{t.event_title || "—"}</div>
+                      {t.event_date && (
+                        <div className="text-sm font-bold text-primary mt-0.5">
+                          {format(new Date(t.event_date), "EEE, MMM d, yyyy")}
+                        </div>
+                      )}
                       {t.venue && (
-                        <div className="text-xs text-muted-foreground truncate">{t.venue}</div>
+                        <div className="text-xs text-muted-foreground truncate mt-0.5">{t.venue}</div>
                       )}
                       <div className="text-xs font-mono text-muted-foreground mt-0.5">
                         Ref: {getOrderRef(t)}
