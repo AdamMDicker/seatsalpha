@@ -297,6 +297,97 @@ Deno.serve(async (req) => {
         metadata: { event_title: eventTitle, venue, transfer_id },
       });
 
+      // --- SELLER CONFIRMATION EMAIL: notify seller that transfer was accepted ---
+      const ADMIN_EMAIL = "lmksportsconsulting@gmail.com";
+      const transferAlias = transfer.transfer_email_alias || "";
+      const orderRefLetters = transferAlias
+        ? transferAlias.replace("order-", "").replace("@inbound.seats.ca", "").toUpperCase()
+        : transfer.order_id?.slice(0, 8).toUpperCase() || "N/A";
+
+      // Always send to admin
+      const sellerConfirmMsgId = crypto.randomUUID();
+      const sellerConfirmUnsub = crypto.randomUUID();
+      const sellerConfirmSubject = `Transfer Complete — ${eventTitle}`;
+      const sellerConfirmHtml = transferConfirmedSellerHtml({
+        eventTitle, venue, eventDate, section, rowName, orderRef: orderRefLetters,
+      });
+
+      await supabase.from("email_unsubscribe_tokens").insert({ email: ADMIN_EMAIL, token: sellerConfirmUnsub });
+      await supabase.from("email_send_log").insert({
+        message_id: sellerConfirmMsgId,
+        template_name: "seller-transfer-confirmed",
+        recipient_email: ADMIN_EMAIL,
+        status: "pending",
+      });
+      await supabase.rpc("enqueue_email", {
+        queue_name: "transactional_emails",
+        payload: {
+          message_id: sellerConfirmMsgId,
+          to: ADMIN_EMAIL,
+          from: `LMK Sports Consulting <${FROM_EMAIL}>`,
+          sender_domain: SENDER_DOMAIN,
+          subject: sellerConfirmSubject,
+          html: sellerConfirmHtml,
+          text: sellerConfirmSubject,
+          purpose: "transactional",
+          idempotency_key: sellerConfirmMsgId,
+          unsubscribe_token: sellerConfirmUnsub,
+          label: "seller-transfer-confirmed",
+          queued_at: new Date().toISOString(),
+          reply_to: "Lmksportsconsulting@gmail.com",
+        },
+      });
+
+      // Also email the actual reseller if different from admin
+      if (transfer.seller_id) {
+        const { data: confirmReseller } = await supabase
+          .from("resellers")
+          .select("email, user_id")
+          .eq("user_id", transfer.seller_id)
+          .maybeSingle();
+
+        if (confirmReseller?.email && confirmReseller.email !== ADMIN_EMAIL) {
+          const resellerMsgId = crypto.randomUUID();
+          const resellerUnsub = crypto.randomUUID();
+          await supabase.from("email_unsubscribe_tokens").insert({ email: confirmReseller.email, token: resellerUnsub });
+          await supabase.from("email_send_log").insert({
+            message_id: resellerMsgId,
+            template_name: "seller-transfer-confirmed",
+            recipient_email: confirmReseller.email,
+            status: "pending",
+          });
+          await supabase.rpc("enqueue_email", {
+            queue_name: "transactional_emails",
+            payload: {
+              message_id: resellerMsgId,
+              to: confirmReseller.email,
+              from: `LMK Sports Consulting <${FROM_EMAIL}>`,
+              sender_domain: SENDER_DOMAIN,
+              subject: sellerConfirmSubject,
+              html: sellerConfirmHtml,
+              text: sellerConfirmSubject,
+              purpose: "transactional",
+              idempotency_key: resellerMsgId,
+              unsubscribe_token: resellerUnsub,
+              label: "seller-transfer-confirmed",
+              queued_at: new Date().toISOString(),
+              reply_to: "Lmksportsconsulting@gmail.com",
+            },
+          });
+        }
+
+        // In-app notification to seller
+        if (confirmReseller) {
+          await supabase.from("notifications").insert({
+            user_id: confirmReseller.user_id,
+            type: "transfer_confirmed_seller",
+            title: `Transfer Complete — ${eventTitle}`,
+            body: `The buyer has accepted the ticket transfer for ${eventTitle} (Order Ref: ${orderRefLetters}). Your delivery is complete.`,
+            metadata: { event_title: eventTitle, venue, transfer_id, order_ref: orderRefLetters },
+          });
+        }
+      }
+
     } else if (transferAction === "dispute") {
       const { data: reseller } = await supabase
         .from("resellers")
