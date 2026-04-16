@@ -258,6 +258,19 @@ If all the core details (teams, date, section, row, email) refer to the same thi
     const rowName = ticket?.row_name || "";
 
     if (isMatch) {
+      // ── Auto-release the buyer accept link if Ticketmaster already sent it ──
+      // (Inbound webhook stores accept_link without forwarding when proof isn't uploaded yet.)
+      if (transfer.accept_link && !transfer.forward_sent_at) {
+        try {
+          console.log(`Auto-releasing accept link to buyer for transfer ${transfer_id}`);
+          await supabase.functions.invoke("resolve-transfer-email", {
+            body: { transfer_id },
+          });
+        } catch (relayErr) {
+          console.error("Failed to auto-release accept link:", relayErr);
+        }
+      }
+
       // CONFIRMED - notify buyer
       if (buyerProfile?.email) {
         const detailsRows = [

@@ -684,6 +684,42 @@ function buildBrandedEmail(acceptLink: string | null): string {
 </body></html>`;
 }
 
+function buildSellerAlertEmail(): string {
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f0f0f0;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f0;padding:40px 0;"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.10);">
+<tr><td style="padding:0;"><img src="${HERO_BANNER_URL}" alt="Seats.ca" width="600" style="display:block;width:100%;height:auto;" /></td></tr>
+<tr><td style="height:4px;background:#dc2626;"></td></tr>
+<tr><td style="background:#18181b;padding:22px 40px;text-align:center;">
+  <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">⚠️ Action Required: Upload Transfer Proof</h1>
+</td></tr>
+<tr><td style="padding:28px 40px;">
+  <p style="margin:0 0 16px;color:#52525b;font-size:15px;line-height:1.7;">
+    Ticketmaster has sent the transfer email for one of your sales. <strong style="color:#dc2626;">However, the buyer will NOT receive the accept link</strong> until you upload your transfer proof.
+  </p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;background:#fef2f2;border-radius:12px;border-left:4px solid #dc2626;">
+    <tr><td style="padding:18px 20px;">
+      <p style="margin:0 0 8px;color:#991b1b;font-size:14px;font-weight:700;">📋 What to do</p>
+      <ol style="margin:0;padding-left:20px;color:#991b1b;font-size:13px;line-height:1.9;">
+        <li>Log in to your Seats.ca seller dashboard</li>
+        <li>Open the <strong>Transfers</strong> tab</li>
+        <li>Find this order and upload your transfer screenshot</li>
+        <li>Once verified, the buyer will automatically receive the accept link</li>
+      </ol>
+    </td></tr>
+  </table>
+  <p style="margin:0;color:#71717a;font-size:13px;line-height:1.6;">
+    Questions? Contact <a href="mailto:support@seats.ca" style="color:#C41E3A;font-weight:600;text-decoration:none;">support@seats.ca</a>
+  </p>
+</td></tr>
+<tr><td style="padding:20px 40px;background:#fafafa;border-top:1px solid #e5e5e5;text-align:center;">
+  <p style="margin:0;color:#a1a1aa;font-size:11px;">© ${new Date().getFullYear()} Seats.ca · Canada's No-Fee Ticket Platform</p>
+</td></tr>
+</table></td></tr></table></body></html>`;
+}
+
 async function queueEmail(
   supabase: ReturnType<typeof createClient>,
   to: string,
