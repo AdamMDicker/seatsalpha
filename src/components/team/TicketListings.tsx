@@ -403,6 +403,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               </div>
             </div>
             <span className="text-xs text-muted-foreground">{ticket.quantity - ticket.quantity_sold} avail</span>
+            <span className="text-[10px] text-primary/80 font-medium hidden sm:inline">· {getQuantityHint(ticket)}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
