@@ -116,6 +116,12 @@ const FeeGateDialog = ({
 
   const validQuantities = getValidQuantities();
 
+  const quantityHint = isOddFullSet
+    ? `This listing must be purchased as a full set of ${availableQuantity} (no singles left behind).`
+    : availableQuantity === 2
+      ? "Sold as a pair (2 tickets)."
+      : `Sold in pairs — choose ${validQuantities.join(", ")}.`;
+
   const getInitialQuantity = () => {
     if (preferredQuantity && validQuantities.includes(preferredQuantity)) return preferredQuantity;
     // Default to 2 when no preference (lower commitment = less friction)
