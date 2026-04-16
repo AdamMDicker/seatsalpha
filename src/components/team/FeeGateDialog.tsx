@@ -100,10 +100,13 @@ const FeeGateDialog = ({
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
-  const isThreePack = availableQuantity === 3;
+  const isOddFullSet = availableQuantity % 2 !== 0;
+  const isThreePack = availableQuantity === 3; // kept for copy compatibility
 
   const getValidQuantities = (): number[] => {
-    if (isThreePack) return [3];
+    // Odd remaining → must buy as a full set
+    if (isOddFullSet) return [availableQuantity];
+    // Even remaining → any even quantity up to available
     const valid: number[] = [];
     for (let n = 2; n <= availableQuantity; n += 2) {
       valid.push(n);
