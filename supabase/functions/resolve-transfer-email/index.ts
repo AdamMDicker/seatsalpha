@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
 
     const { data: transfer, error: transferError } = await supabase
       .from("order_transfers")
-      .select("order_id, status")
+      .select("id, order_id, status, transfer_image_url, inbound_email_id, seller_id")
       .eq("transfer_email_alias", alias)
       .single();
 
@@ -185,6 +185,15 @@ Deno.serve(async (req) => {
       console.error("Alias not found:", alias, transferError);
       return new Response(JSON.stringify({ error: "Alias not found" }), {
         status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── IDEMPOTENCY: skip if we've already processed this exact inbound email ──
+    if (transfer.inbound_email_id && transfer.inbound_email_id === email_id) {
+      console.log(`IGNORED duplicate webhook — inbound_email_id ${email_id} already processed for alias ${alias}`);
+      return new Response(JSON.stringify({ ignored: true, reason: "duplicate_webhook" }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -197,6 +206,82 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Always extract the accept link from the inbound email so we can store it
+    const acceptLink = await extractAcceptLink(resendApiKey, email_id);
+    console.log(`Extracted accept link for alias ${alias}:`, acceptLink ? `found (${safeHostname(acceptLink)})` : "not found");
+
+    // ── PROOF GATE: only forward to buyer if seller has uploaded proof AND it's confirmed ──
+    const proofUploaded = !!transfer.transfer_image_url;
+    const isConfirmed = transfer.status === "confirmed";
+    const shouldForwardNow = proofUploaded && isConfirmed;
+
+    // Always persist the inbound email ID and accept link so they survive for later release
+    const persistPayload: Record<string, unknown> = {
+      inbound_email_id: email_id,
+    };
+    if (acceptLink) {
+      persistPayload.accept_link = acceptLink;
+      persistPayload.accept_link_extracted_at = new Date().toISOString();
+    }
+
+    if (!shouldForwardNow) {
+      // Store link but DO NOT forward. Alert the seller (or admin for orphan tickets) to upload proof.
+      await supabase
+        .from("order_transfers")
+        .update(persistPayload)
+        .eq("id", transfer.id);
+
+      const reason = !proofUploaded ? "awaiting_seller_proof" : `awaiting_verification (status=${transfer.status})`;
+      console.log(`HOLDING forward for alias ${alias} — ${reason}. Link stored for later release.`);
+
+      // Notify seller (or admin if orphan ticket) that TM email arrived but proof is missing
+      try {
+        const ADMIN_EMAIL = "lmksportsconsulting@gmail.com";
+        let notifyEmail: string | null = null;
+        let notifyUserId: string | null = transfer.seller_id;
+
+        if (transfer.seller_id) {
+          const { data: sellerProfile } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("user_id", transfer.seller_id)
+            .single();
+          notifyEmail = sellerProfile?.email ?? null;
+        } else {
+          notifyEmail = ADMIN_EMAIL;
+        }
+
+        if (notifyEmail) {
+          const alertHtml = buildSellerAlertEmail();
+          await queueEmail(
+            supabase,
+            notifyEmail,
+            "⚠️ Action Required: Upload Transfer Proof",
+            alertHtml,
+            "Ticketmaster sent the transfer email for one of your sales, but you haven't uploaded proof yet. The buyer will NOT receive the accept link until you upload proof in your seller dashboard."
+          );
+        }
+
+        if (notifyUserId) {
+          await supabase.from("notifications").insert({
+            user_id: notifyUserId,
+            type: "transfer_proof_required",
+            title: "⚠️ Upload Transfer Proof",
+            body: "Ticketmaster sent the transfer email, but the buyer won't receive the accept link until you upload proof in your seller dashboard.",
+            metadata: { transfer_id: transfer.id },
+          });
+        }
+      } catch (notifyErr) {
+        console.error("Failed to send proof-required alert:", notifyErr);
+      }
+
+      return new Response(JSON.stringify({ forwarded: false, reason, link_stored: !!acceptLink }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── Proof verified — forward to buyer ──
     const { data: order } = await supabase
       .from("orders")
       .select("user_id")
@@ -224,10 +309,6 @@ Deno.serve(async (req) => {
     }
 
     const buyerEmail = profile.email;
-    const acceptLink = await extractAcceptLink(resendApiKey, email_id);
-
-    console.log(`Extracted accept link for alias ${alias}:`, acceptLink ? `found (${safeHostname(acceptLink)})` : "not found");
-
     const inboundSubject = body.data.subject || "Ticket Transfer";
     const safeHtml = buildBrandedEmail(acceptLink);
     const plainText = acceptLink
@@ -236,20 +317,11 @@ Deno.serve(async (req) => {
 
     await queueEmail(supabase, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
 
-    // Persist the inbound email ID and extracted link for future admin resends
-    const updatePayload: Record<string, unknown> = {
-      forward_sent_at: new Date().toISOString(),
-      inbound_email_id: email_id,
-    };
-    if (acceptLink) {
-      updatePayload.accept_link = acceptLink;
-      updatePayload.accept_link_extracted_at = new Date().toISOString();
-    }
-
+    persistPayload.forward_sent_at = new Date().toISOString();
     await supabase
       .from("order_transfers")
-      .update(updatePayload)
-      .eq("transfer_email_alias", alias);
+      .update(persistPayload)
+      .eq("id", transfer.id);
 
     console.log(`Forwarded transfer email for alias ${alias} to buyer (link: ${acceptLink ? "yes" : "no"})`);
 
@@ -525,12 +597,23 @@ function safeHostname(url: string): string {
 }
 
 function buildBrandedEmail(acceptLink: string | null): string {
+  // Outlook-bulletproof button: VML fallback + solid color (no gradient)
   const ctaSection = acceptLink
-    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 8px;">
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 12px;">
         <tr><td align="center">
-          <a href="${acceptLink}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#059669,#047857);color:#ffffff;font-size:17px;font-weight:700;text-decoration:none;padding:18px 48px;border-radius:50px;letter-spacing:0.3px;box-shadow:0 6px 20px rgba(5,150,105,0.35);mso-padding-alt:0;">
-            🎟️&nbsp;&nbsp;Accept Tickets
-          </a>
+          <!--[if mso]>
+          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${acceptLink}" style="height:56px;v-text-anchor:middle;width:280px;" arcsize="50%" stroke="f" fillcolor="#059669">
+            <w:anchorlock/>
+            <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:17px;font-weight:bold;">Accept Tickets</center>
+          </v:roundrect>
+          <![endif]-->
+          <!--[if !mso]><!-- -->
+          <a href="${acceptLink}" target="_blank" style="display:inline-block;background-color:#059669;color:#ffffff;font-size:17px;font-weight:700;text-decoration:none;padding:18px 48px;border-radius:50px;letter-spacing:0.3px;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;mso-hide:all;">Accept Tickets</a>
+          <!--<![endif]-->
+        </td></tr>
+        <tr><td align="center" style="padding-top:14px;">
+          <p style="margin:0;color:#71717a;font-size:12px;font-family:'Space Grotesk',Arial,sans-serif;">Button not working? Copy this link:</p>
+          <p style="margin:4px 0 0;font-size:12px;font-family:Arial,sans-serif;word-break:break-all;"><a href="${acceptLink}" style="color:#059669;text-decoration:underline;">${acceptLink}</a></p>
         </td></tr>
        </table>`
     : "";
