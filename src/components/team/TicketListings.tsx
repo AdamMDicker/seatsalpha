@@ -242,6 +242,17 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     return seatCount <= remaining;
   };
 
+  const getQuantityHint = (ticket: TicketInfo): string => {
+    const remaining = ticket.quantity - ticket.quantity_sold;
+    if (remaining < 1) return "";
+    if (remaining === 1) return "Sold as a single";
+    if (remaining % 2 !== 0) return `Must buy all ${remaining} (no singles left behind)`;
+    if (remaining === 2) return "Buy as a pair (2)";
+    const evens: number[] = [];
+    for (let n = 2; n <= remaining; n += 2) evens.push(n);
+    return `Buy in pairs: ${evens.join(", ")}`;
+  };
+
   // Derive available group sizes from current inventory.
   // Even remainings contribute even options (2, 4, 6, ...). Odd remainings contribute their exact full-set size.
   const seatCountSet = new Set<number>();
