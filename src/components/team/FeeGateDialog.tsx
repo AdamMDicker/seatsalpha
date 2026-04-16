@@ -340,8 +340,8 @@ const FeeGateDialog = ({
           </div>
 
           <div className="text-center space-y-0.5">
-            <p className="text-[10px] text-muted-foreground italic">
-              {isOddFullSet ? `This listing must be purchased as a full set of ${availableQuantity}.` : "Tickets are sold in pairs (2, 4, 6, ...)."}
+            <p className="text-[10px] text-primary font-medium italic">
+              {quantityHint}
             </p>
             <p className="text-[11px] font-bold text-foreground uppercase tracking-wide">Please Choose:</p>
           </div>
