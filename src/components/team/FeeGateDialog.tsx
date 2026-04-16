@@ -116,6 +116,12 @@ const FeeGateDialog = ({
 
   const validQuantities = getValidQuantities();
 
+  const quantityHint = isOddFullSet
+    ? `This listing must be purchased as a full set of ${availableQuantity} (no singles left behind).`
+    : availableQuantity === 2
+      ? "Sold as a pair (2 tickets)."
+      : `Sold in pairs — choose ${validQuantities.join(", ")}.`;
+
   const getInitialQuantity = () => {
     if (preferredQuantity && validQuantities.includes(preferredQuantity)) return preferredQuantity;
     // Default to 2 when no preference (lower commitment = less friction)
@@ -246,8 +252,8 @@ const FeeGateDialog = ({
               </div>
             </div>
 
-            <p className="text-[10px] text-muted-foreground italic text-center">
-              {isOddFullSet ? `This listing must be purchased as a full set of ${availableQuantity}.` : "Tickets are sold in pairs (2, 4, 6, ...)."}
+            <p className="text-[10px] text-primary font-medium italic text-center">
+              {quantityHint}
             </p>
 
             <span className="text-[9px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded block text-center">No fees — Member pricing applied</span>
@@ -334,8 +340,8 @@ const FeeGateDialog = ({
           </div>
 
           <div className="text-center space-y-0.5">
-            <p className="text-[10px] text-muted-foreground italic">
-              {isOddFullSet ? `This listing must be purchased as a full set of ${availableQuantity}.` : "Tickets are sold in pairs (2, 4, 6, ...)."}
+            <p className="text-[10px] text-primary font-medium italic">
+              {quantityHint}
             </p>
             <p className="text-[11px] font-bold text-foreground uppercase tracking-wide">Please Choose:</p>
           </div>
