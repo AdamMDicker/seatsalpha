@@ -68,6 +68,7 @@ function transferConfirmedHtml(meta: {
   eventDate: string;
   section: string;
   rowName: string;
+  acceptLink?: string;
 }): string {
   const detailsRows = [
     meta.eventDate ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:10px 14px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.eventDate}</td></tr>` : "",
@@ -76,18 +77,28 @@ function transferConfirmedHtml(meta: {
     meta.rowName ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;">Row</td><td style="padding:10px 14px;color:#18181b;font-size:13px;font-weight:600;">${meta.rowName}</td></tr>` : "",
   ].filter(Boolean).join("");
 
+  const acceptButton = meta.acceptLink
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;">
+        <tr><td align="center">
+          <a href="${meta.acceptLink}" style="display:inline-block;background:#C41E3A;color:#ffffff;font-size:16px;font-weight:700;padding:16px 40px;border-radius:50px;text-decoration:none;box-shadow:0 4px 14px rgba(196,30,58,0.3);">Accept Your Tickets →</a>
+        </td></tr>
+      </table>`
+    : "";
+
   const body = `
   <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
   ${detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border:1px solid #e4e4e7;border-radius:10px;overflow:hidden;">${detailsRows}</table>` : ""}
   <p style="margin:0 0 16px;color:#52525b;font-size:14px;line-height:1.6;">
     The seller has completed the ticket transfer and it has been verified by our team.
   </p>
+  ${acceptButton}
   <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#ecfdf5;border-radius:10px;border-left:4px solid #059669;">
     <tr><td style="padding:16px;">
       <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">📋 Next Steps</p>
       <ol style="margin:8px 0 0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;">
-        <li>Look for an incoming ticket transfer notification</li>
+        ${meta.acceptLink ? `<li>Click the <strong>"Accept Your Tickets"</strong> button above</li>` : `<li>Look for an incoming ticket transfer notification from Ticketmaster</li>`}
         <li>Accept the transfer to add the tickets to your Ticketmaster account</li>
+        <li>Open the Ticketmaster app to view your tickets on game day</li>
       </ol>
     </td></tr>
   </table>
