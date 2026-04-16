@@ -1,14 +1,18 @@
 
-The user wants to verify the test ticket (Sept 11, Section 207, Row 1, qty 20, $1) is purchasable. I already inserted this earlier (id `c297f26e-2dc6-4d62-a609-1b3da9fac603`). Let me check its current state and ensure it's active and not sold out.
+## Plan: Sync April 2026 inventory from Google Sheet
 
-I'll query the DB to confirm, then if needed: set `is_active=true`, ensure `quantity_sold < quantity`, confirm event is in the future and visible.
+The existing `sync-inventory` edge function already pulls the full "All Tickets" tab from the hardcoded public Google Sheet URL and:
+- Inserts new events
+- Updates existing event metadata
+- Inserts new tickets
+- Updates price/quantity on existing tickets
+- Deactivates stale (removed) tickets
 
-## Plan
+It processes **every** game in the sheet — not just one date — so running it once will refresh April 2026 along with everything else.
 
-1. Verify ticket `c297f26e-2dc6-4d62-a609-1b3da9fac603` state: `is_active`, `quantity`, `quantity_sold`, `price`.
-2. If `is_active=false` → reactivate.
-3. If `quantity_sold >= quantity` → reset `quantity_sold=0` (or bump quantity) so it shows as available.
-4. Confirm event date (Sept 11, 2026) is future and event is visible.
-5. Confirm it appears in `public_tickets` view for the buyer flow.
+### Steps
+1. Invoke the `sync-inventory` edge function (admin-authenticated).
+2. Report the result counts: new events, updated events, new tickets, updated tickets, deactivated tickets.
+3. Spot-check April 2026 events in the DB to confirm the sync landed (count of active tickets per April game).
 
-No code changes needed — data-only operation via the insert/update tool.
+No code changes. Pure data sync via existing infrastructure.
