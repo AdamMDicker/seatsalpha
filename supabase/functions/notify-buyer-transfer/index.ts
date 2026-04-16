@@ -103,6 +103,53 @@ function transferConfirmedHtml(meta: {
   });
 }
 
+function transferConfirmedSellerHtml(meta: {
+  eventTitle: string;
+  venue: string;
+  eventDate: string;
+  section: string;
+  rowName: string;
+  orderRef: string;
+}): string {
+  const detailsRows = [
+    meta.eventDate ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:10px 14px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.eventDate}</td></tr>` : "",
+    meta.venue ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Venue</td><td style="padding:10px 14px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.venue}</td></tr>` : "",
+    meta.section ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Section</td><td style="padding:10px 14px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.section}</td></tr>` : "",
+    meta.rowName ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Row</td><td style="padding:10px 14px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${meta.rowName}</td></tr>` : "",
+    meta.orderRef ? `<tr><td style="padding:10px 14px;color:#71717a;font-size:13px;">Order Ref</td><td style="padding:10px 14px;color:#18181b;font-size:13px;font-weight:600;">${meta.orderRef}</td></tr>` : "",
+  ].filter(Boolean).join("");
+
+  const body = `
+  <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:700;">${meta.eventTitle}</h2>
+  ${detailsRows ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border:1px solid #e4e4e7;border-radius:10px;overflow:hidden;">${detailsRows}</table>` : ""}
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;background:#ecfdf5;border-radius:10px;border-left:4px solid #059669;">
+    <tr><td style="padding:16px;">
+      <p style="margin:0;color:#047857;font-size:14px;font-weight:700;">✅ Transfer Verified & Accepted</p>
+      <p style="margin:8px 0 0;color:#047857;font-size:13px;line-height:1.6;">
+        The buyer has received and accepted the ticket transfer. Your delivery obligation for this order is now complete.
+      </p>
+    </td></tr>
+  </table>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f8f8fa;border-radius:10px;border:1px solid #e4e4e7;">
+    <tr><td style="padding:16px;">
+      <p style="margin:0 0 8px;color:#18181b;font-size:14px;font-weight:700;">💳 Payout Reminder</p>
+      <p style="margin:0;color:#52525b;font-size:13px;line-height:1.6;">
+        Your payout will be processed two weeks after the event date, contingent on no disputes being filed.
+      </p>
+    </td></tr>
+  </table>
+  <p style="margin:20px 0 0;color:#71717a;font-size:13px;line-height:1.6;">
+    Questions? <a href="mailto:support@seats.ca" style="color:#C41E3A;text-decoration:none;">support@seats.ca</a>
+  </p>`;
+
+  return premiumWrapper({
+    accentColor: "#059669",
+    title: "✅ Transfer Complete",
+    subtitle: "The buyer has accepted your tickets",
+    body,
+  });
+}
+
 function transferDisputedSellerHtml(meta: {
   eventTitle: string;
   venue: string;
