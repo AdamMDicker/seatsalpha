@@ -10,6 +10,7 @@ const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = "noreply@seats.ca";
 const ADMIN_EMAIL = "lmksportsconsulting@gmail.com";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
+const HERO_BANNER_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/email-hero-banner.png";
 
 function formatEventDateET(raw: string): string {
   if (!raw) return "";
@@ -44,17 +45,14 @@ function premiumWrapper(accentColor: string, bodyContent: string): string {
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
 <tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<!-- Dark header with logo -->
 <tr><td style="background:#18181b;padding:28px 40px;text-align:center;">
   <img src="${LOGO_URL}" alt="seats.ca" width="180" style="display:block;margin:0 auto;width:180px;height:auto;" />
 </td></tr>
-<!-- Accent line -->
+<tr><td style="padding:0;"><img src="${HERO_BANNER_URL}" alt="Compare Every Seat. Skip Every Fee." width="560" style="display:block;width:100%;height:auto;" /></td></tr>
 <tr><td style="height:3px;background:${accentColor};"></td></tr>
-<!-- Body -->
 <tr><td style="padding:32px 40px;">
 ${bodyContent}
 </td></tr>
-<!-- Footer -->
 <tr><td style="padding:20px 40px;text-align:center;border-top:1px solid #f0f0f0;">
   <p style="margin:0;color:#a1a1aa;font-size:11px;font-family:'Space Grotesk',Arial,sans-serif;">© ${new Date().getFullYear()} seats.ca · Canada's No-Fee Ticket Platform</p>
   <p style="margin:6px 0 0;color:#a1a1aa;font-size:11px;font-family:'Space Grotesk',Arial,sans-serif;">Tip: Add noreply@seats.ca to your contacts to avoid missing emails.</p>

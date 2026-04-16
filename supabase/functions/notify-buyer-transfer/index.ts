@@ -9,6 +9,7 @@ const corsHeaders = {
 const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = "noreply@seats.ca";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
+const HERO_BANNER_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/email-hero-banner.png";
 
 function formatEventDateET(raw: string): string {
   if (!raw) return "";
@@ -46,6 +47,7 @@ function premiumWrapper(opts: { accentColor: string; title: string; subtitle: st
 <tr><td style="background:#18181b;padding:28px 40px;text-align:center;">
   <img src="${LOGO_URL}" alt="seats.ca" width="180" style="display:block;margin:0 auto;width:180px;height:auto;" />
 </td></tr>
+<tr><td style="padding:0;"><img src="${HERO_BANNER_URL}" alt="Compare Every Seat. Skip Every Fee." width="600" style="display:block;width:100%;height:auto;" /></td></tr>
 <tr><td style="height:3px;background:linear-gradient(90deg,${opts.accentColor},${opts.accentColor}80,${opts.accentColor});"></td></tr>
 <tr><td style="padding:28px 40px 0;">
   <h1 style="margin:0;color:#18181b;font-size:24px;font-weight:700;letter-spacing:-0.5px;">${opts.title}</h1>

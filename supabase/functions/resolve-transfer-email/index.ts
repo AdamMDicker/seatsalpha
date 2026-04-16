@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const RESEND_API_URL = "https://api.resend.com";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
+const HERO_BANNER_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/email-hero-banner.png";
 
 interface LinkCandidate {
   href: string;
@@ -558,6 +559,7 @@ function buildBrandedEmail(acceptLink: string | null): string {
 <tr><td style="background:#ffffff;padding:32px 40px 20px;text-align:center;border-bottom:3px solid #C41E3A;">
   <img src="${LOGO_URL}" alt="seats.ca" width="180" style="display:block;margin:0 auto;width:180px;height:auto;" />
 </td></tr>
+<tr><td style="padding:0;"><img src="${HERO_BANNER_URL}" alt="Compare Every Seat. Skip Every Fee." width="600" style="display:block;width:100%;height:auto;" /></td></tr>
 
 <!-- Green accent bar -->
 <tr><td style="height:4px;background:linear-gradient(90deg,#059669,#10b981,#059669);"></td></tr>
