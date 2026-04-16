@@ -71,6 +71,13 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   };
 
+  const clearAll = async () => {
+    if (notifications.length === 0) return;
+    const ids = notifications.map((n) => n.id);
+    await supabase.from("notifications").delete().in("id", ids);
+    setNotifications([]);
+  };
+
   if (!user) return null;
 
   return (
@@ -92,11 +99,18 @@ const NotificationBell = () => {
         <div className="absolute right-0 top-full mt-2 w-80 max-h-[420px] overflow-y-auto rounded-xl bg-card border border-border shadow-xl z-50 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
-            {unreadCount > 0 && (
-              <button onClick={markAllRead} className="text-[10px] text-primary hover:underline">
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {unreadCount > 0 && (
+                <button onClick={markAllRead} className="text-[10px] text-primary hover:underline">
+                  Mark all read
+                </button>
+              )}
+              {notifications.length > 0 && (
+                <button onClick={clearAll} className="text-[10px] text-destructive hover:underline">
+                  Clear all
+                </button>
+              )}
+            </div>
           </div>
 
           {notifications.length === 0 ? (
