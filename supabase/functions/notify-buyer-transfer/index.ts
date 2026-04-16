@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
       const messageId = crypto.randomUUID();
       const unsubToken = crypto.randomUUID();
       const subject = `Your Tickets Have Been Transferred — ${eventTitle}`;
-      const html = transferConfirmedHtml({ eventTitle, venue, eventDate, section, rowName });
+      const html = transferConfirmedHtml({ eventTitle, venue, eventDate, section, rowName, acceptLink: transfer.accept_link || undefined });
 
       await supabase.from("email_unsubscribe_tokens").insert({ email: buyerProfile.email, token: unsubToken });
       await supabase.from("email_send_log").insert({
