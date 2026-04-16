@@ -46,31 +46,44 @@ const EventsSection = () => {
         .limit(20);
 
       if (dbEvents && dbEvents.length > 0) {
-        const eventsWithInfo: Event[] = [];
-        for (const ev of dbEvents) {
-          const { data: tickets } = await (supabase
-            .from("public_tickets" as any)
-            .select("is_reseller_ticket, price")
-            .eq("event_id", ev.id)
-            .limit(50) as any);
+        const eventsWithInfo = (await Promise.all(
+          dbEvents.map(async (ev) => {
+            const { data: tickets } = await (supabase
+              .from("public_tickets" as any)
+              .select("is_reseller_ticket, price, quantity, quantity_sold")
+              .eq("event_id", ev.id)
+              .limit(200) as any);
 
-          const hasInternalTickets = tickets?.some(t => !t.is_reseller_ticket) ?? false;
-          const minPrice = tickets && tickets.length > 0 ? Math.min(...tickets.map(t => t.price)) : 0;
-          const opponentLogo = getOpponentLogo(ev.title);
+            const availableTickets = (tickets ?? []).filter(
+              (ticket) =>
+                typeof ticket.price === "number" &&
+                ticket.price > 0 &&
+                typeof ticket.quantity === "number" &&
+                typeof ticket.quantity_sold === "number" &&
+                ticket.quantity > ticket.quantity_sold
+            );
 
-          eventsWithInfo.push({
-            id: ev.id,
-            title: expandTeamNames(ev.title),
-            venue: ev.venue,
-            city: `${ev.city}, ${ev.province}`,
-            date: new Date(ev.event_date).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
-            time: new Date(ev.event_date).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit", hour12: true }),
-            category: (ev.category as Event["category"]) || "sports",
-            priceFrom: minPrice,
-            image: opponentLogo || ev.image_url || "https://images.unsplash.com/photo-1529768167801-9173d94c2a42?w=600&h=400&fit=crop",
-            isOwn: hasInternalTickets,
-          });
-        }
+            if (availableTickets.length === 0) return null;
+
+            const hasInternalTickets = availableTickets.some((ticket) => !ticket.is_reseller_ticket);
+            const minPrice = Math.min(...availableTickets.map((ticket) => ticket.price));
+            const opponentLogo = getOpponentLogo(ev.title);
+
+            return {
+              id: ev.id,
+              title: expandTeamNames(ev.title),
+              venue: ev.venue,
+              city: `${ev.city}, ${ev.province}`,
+              date: new Date(ev.event_date).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
+              time: new Date(ev.event_date).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit", hour12: true }),
+              category: (ev.category as Event["category"]) || "sports",
+              priceFrom: minPrice,
+              image: opponentLogo || ev.image_url || "https://images.unsplash.com/photo-1529768167801-9173d94c2a42?w=600&h=400&fit=crop",
+              isOwn: hasInternalTickets,
+            } satisfies Event;
+          })
+        )).filter((event): event is Event => event !== null);
+
         eventsWithInfo.sort((a, b) => (b.isOwn ? 1 : 0) - (a.isOwn ? 1 : 0));
         setEvents(eventsWithInfo);
       }
