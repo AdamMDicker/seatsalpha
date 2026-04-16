@@ -40,7 +40,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
   const isSunday = new Date(game.event_date).getDay() === 0;
   const isBlueJaysHome = isHome && game.title.toLowerCase().includes("blue jays");
   const isJrJaysSunday = isSunday && isBlueJaysHome;
-  const isSoldOut = game.tickets.length === 0;
+  const hasTickets = game.tickets.length > 0;
 
   // --- MOBILE: compact single-row card ---
   if (isMobile) {
