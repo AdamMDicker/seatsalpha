@@ -71,6 +71,13 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   };
 
+  const clearAll = async () => {
+    if (notifications.length === 0) return;
+    const ids = notifications.map((n) => n.id);
+    await supabase.from("notifications").delete().in("id", ids);
+    setNotifications([]);
+  };
+
   if (!user) return null;
 
   return (
