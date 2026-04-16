@@ -137,7 +137,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       // Restore quantity filter if it was preserved
       const buyQty = searchParams.get("buyQty");
       const buyQtyNum = buyQty ? Number(buyQty) : NaN;
-      if (buyQty && Number.isFinite(buyQtyNum) && buyQtyNum >= 2 && buyQtyNum <= 40 && (buyQtyNum === 3 || buyQtyNum % 2 === 0)) {
+      if (buyQty && Number.isFinite(buyQtyNum) && buyQtyNum >= 2 && buyQtyNum <= 40) {
         setDesiredSeats(buyQty);
       }
       checkMembership().finally(() => {
