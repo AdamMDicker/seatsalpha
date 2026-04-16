@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileSpreadsheet, Check, AlertCircle, Download, HelpCircle, X } from "lucide-react";
+import { Upload, FileSpreadsheet, Check, AlertCircle, Download, HelpCircle, X, RefreshCw } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CsvRow {
