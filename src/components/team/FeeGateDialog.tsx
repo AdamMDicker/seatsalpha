@@ -105,8 +105,9 @@ const FeeGateDialog = ({
   const getValidQuantities = (): number[] => {
     if (isThreePack) return [3];
     const valid: number[] = [];
-    if (availableQuantity >= 2) valid.push(2);
-    if (availableQuantity >= 4) valid.push(4);
+    for (let n = 2; n <= availableQuantity; n += 2) {
+      valid.push(n);
+    }
     return valid;
   };
 
