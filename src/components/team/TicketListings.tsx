@@ -308,6 +308,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
               {!ticket.hide_seat_numbers && ticket.seat_number && ` · Seats ${ticket.seat_number}`}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
+            <p className="text-[10px] text-primary/80 mt-0.5 font-medium">{getQuantityHint(ticket)}</p>
             {perks.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {perks.filter((p) => p !== "giveaway_guaranteed").map((p) => {
