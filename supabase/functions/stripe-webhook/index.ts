@@ -271,8 +271,13 @@ serve(async (req) => {
             .single();
 
           if (orderId) {
-            // LMK Sports Consulting handles fulfillment for admin-listed tickets
-            const ADMIN_USER_ID = "c0768913-3e54-476a-b4b2-8a0051b087ed";
+            // Admin fulfillment user (LMK Sports Consulting) — stored in site_settings to avoid hardcoding
+            const { data: adminSetting } = await supabase
+              .from("site_settings")
+              .select("value")
+              .eq("key", "admin_fulfillment_user_id")
+              .single();
+            const ADMIN_USER_ID = adminSetting?.value || "c0768913-3e54-476a-b4b2-8a0051b087ed";
             const effectiveSellerId = ticketForTransfer?.seller_id || ADMIN_USER_ID;
             // Ticketmaster requires letters only — no digits allowed in email addresses
             const letters = "abcdefghijklmnopqrstuvwxyz";
