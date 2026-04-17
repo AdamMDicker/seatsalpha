@@ -410,6 +410,7 @@ export type Database = {
           inbound_email_id: string | null
           order_id: string
           seller_id: string
+          seller_relay_reminder_sent_at: string | null
           seller_reminder_sent_at: string | null
           status: string
           ticket_id: string
@@ -431,6 +432,7 @@ export type Database = {
           inbound_email_id?: string | null
           order_id: string
           seller_id: string
+          seller_relay_reminder_sent_at?: string | null
           seller_reminder_sent_at?: string | null
           status?: string
           ticket_id: string
@@ -452,6 +454,7 @@ export type Database = {
           inbound_email_id?: string | null
           order_id?: string
           seller_id?: string
+          seller_relay_reminder_sent_at?: string | null
           seller_reminder_sent_at?: string | null
           status?: string
           ticket_id?: string

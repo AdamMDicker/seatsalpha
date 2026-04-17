@@ -1,0 +1,1 @@
+ALTER TABLE public.order_transfers ADD COLUMN IF NOT EXISTS seller_relay_reminder_sent_at timestamptz;
