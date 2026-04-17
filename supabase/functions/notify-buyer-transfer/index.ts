@@ -182,7 +182,7 @@ function transferDisputedSellerHtml(meta: {
     Your transfer proof for the above event has been reviewed and <strong style="color:#C41E3A;">disputed</strong> by our team. This means the uploaded screenshot could not be verified as a valid transfer.
   </p>
   ${meta.reason ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#fef2f2;border-radius:10px;border-left:4px solid #ef4444;">
-    <tr><td style="padding:14px 16px;"><p style="margin:0;color:#991b1b;font-size:13px;"><strong>Reason:</strong> ${meta.reason}</p></td></tr>
+    <tr><td style="padding:14px 16px;"><p style="margin:0;color:#991b1b;font-size:13px;"><strong>Seats.ca Customer Service Note:</strong> ${meta.reason}</p></td></tr>
   </table>` : ""}
   <p style="margin:16px 0 8px;color:#18181b;font-size:14px;line-height:1.6;font-weight:600;">What to do next:</p>
   <ol style="margin:0 0 16px;padding-left:20px;color:#52525b;font-size:14px;line-height:1.8;">
