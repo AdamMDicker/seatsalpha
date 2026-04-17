@@ -318,13 +318,14 @@ Deno.serve(async (req) => {
     }
 
     const buyerEmail = profile.email;
-    const inboundSubject = body.data.subject || "Ticket Transfer";
+    // Use a generic, branded subject — never echo the inbound TM subject
+    // (it often contains the buyer's name or other PII).
     const safeHtml = buildBrandedEmail(acceptLink);
     const plainText = acceptLink
       ? `A ticket transfer has been sent to your account. Accept it here: ${acceptLink}`
       : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
 
-    await queueEmail(supabase, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
+    await queueEmail(supabase, buyerEmail, "🎟️ Your Ticket Transfer Is Ready", safeHtml, plainText);
 
     persistPayload.forward_sent_at = new Date().toISOString();
     await supabase
