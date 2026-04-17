@@ -406,7 +406,7 @@ If all the core details (teams, date, section, row, email, quantity) refer to th
       </p>
     </td></tr>
   </table>
-  ${verificationResult.notes ? `<p style="margin:0 0 12px;color:#71717a;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;"><strong>AI Notes:</strong> ${verificationResult.notes}</p>` : ""}
+  ${verificationResult.notes ? `<p style="margin:0 0 12px;color:#71717a;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;"><strong>Seats.ca Customer Service Note:</strong> ${verificationResult.notes}</p>` : ""}
   <p style="margin:0;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;">
     <a href="${transfer.transfer_image_url}" style="color:#C41E3A;text-decoration:none;font-weight:600;">View uploaded proof →</a>
   </p>`;

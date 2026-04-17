@@ -167,7 +167,8 @@ const SellerTransfers = () => {
 
     try {
       const ext = file.name.split(".").pop() || "png";
-      const path = `${user.id}/transfers/${transferId}.${ext}`;
+      const uploadVersion = Date.now();
+      const path = `${user.id}/transfers/${transferId}-${uploadVersion}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("seat-images")
@@ -187,6 +188,8 @@ const SellerTransfers = () => {
           transfer_image_url: imageUrl,
           status: "uploaded",
           uploaded_at: new Date().toISOString(),
+          verification_result: null,
+          confirmed_at: null,
         })
         .eq("id", transferId)
         .eq("seller_id", user.id);
