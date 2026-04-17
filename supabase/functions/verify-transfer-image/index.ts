@@ -159,22 +159,25 @@ Respond with a JSON object (no markdown, just raw JSON):
     "email": true/false,
     "event": true/false,
     "section": true/false,
-    "row": true/false
+    "row": true/false,
+    "quantity": true/false
   },
   "overall_match": true/false,
   "confidence": "high/medium/low",
   "notes": "any additional observations"
 }
 
-IMPORTANT MATCHING RULES — be VERY lenient:
+IMPORTANT MATCHING RULES — be lenient on formatting, STRICT on quantity:
 - EMAIL: Match if the local part (before @) is the same, ignore domain differences.
 - EVENT: Match if the same teams are playing, regardless of format differences like "vs" vs "vs.", city names included or not (e.g. "Blue Jays vs Tigers" matches "Toronto Blue Jays vs. Detroit Tigers"), abbreviations, or word order.
 - DATE: Match if it's the same calendar date. IGNORE time differences caused by timezone offsets (e.g. 19:07 ET vs 23:07 UTC are the same moment). Only flag a date mismatch if the actual calendar date is different.
 - SECTION: Match if the number is the same, ignore prefixes like "Sec" or "Section".
 - ROW: Match if the value is the same, ignore case or prefixes.
-- QUANTITY: Match if the numbers are equal.
+- QUANTITY: HARD MATCH — the extracted number of tickets transferred MUST exactly equal the expected quantity (${expectedData.quantity}). If extracted is greater OR less than expected, set quantity match to false.
 
-If all the core details (teams, date, section, row, email) refer to the same thing despite formatting differences, set overall_match to true with high confidence.`;
+CRITICAL: If quantity does NOT match exactly, set overall_match to false regardless of other fields. Quantity mismatch is always a dispute.
+
+If all the core details (teams, date, section, row, email, quantity) refer to the same thing, set overall_match to true with high confidence.`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -225,6 +228,15 @@ If all the core details (teams, date, section, row, email) refer to the same thi
     } catch {
       console.error("Failed to parse AI response:", content);
       verificationResult = { overall_match: false, notes: "Could not parse AI response", raw: content };
+    }
+
+    // Server-side hard enforcement: quantity mismatch is ALWAYS a dispute
+    const extractedQty = parseInt(String(verificationResult?.extracted?.quantity ?? ""), 10);
+    const expectedQty = expectedData.quantity;
+    if (Number.isFinite(extractedQty) && extractedQty !== expectedQty) {
+      verificationResult.overall_match = false;
+      verificationResult.matches = { ...(verificationResult.matches || {}), quantity: false };
+      verificationResult.notes = `Quantity mismatch: seller transferred ${extractedQty} ticket(s), buyer purchased ${expectedQty}. ${verificationResult.notes || ""}`.trim();
     }
 
     // Update transfer with verification result

@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
         ? `A ticket transfer has been sent to your account. Accept it here: ${storedLink}`
         : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
 
-      await queueEmail(supabase, profile.email, "Fwd: Ticket Transfer", safeHtml, plainText);
+      await queueEmail(supabase, profile.email, "🎟️ Your Ticket Transfer Is Ready", safeHtml, plainText);
 
       await supabase
         .from("order_transfers")
@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
 
     const { data: transfer, error: transferError } = await supabase
       .from("order_transfers")
-      .select("id, order_id, status, transfer_image_url, inbound_email_id, seller_id")
+      .select("id, order_id, status, transfer_image_url, inbound_email_id, seller_id, forward_sent_at")
       .eq("transfer_email_alias", alias)
       .single();
 
@@ -193,6 +193,15 @@ Deno.serve(async (req) => {
     if (transfer.inbound_email_id && transfer.inbound_email_id === email_id) {
       console.log(`IGNORED duplicate webhook — inbound_email_id ${email_id} already processed for alias ${alias}`);
       return new Response(JSON.stringify({ ignored: true, reason: "duplicate_webhook" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── IDEMPOTENCY: skip if we've already forwarded a transfer email to the buyer ──
+    if ((transfer as any).forward_sent_at) {
+      console.log(`IGNORED webhook — buyer already received forward for alias ${alias} at ${(transfer as any).forward_sent_at}`);
+      return new Response(JSON.stringify({ ignored: true, reason: "already_forwarded" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -309,13 +318,14 @@ Deno.serve(async (req) => {
     }
 
     const buyerEmail = profile.email;
-    const inboundSubject = body.data.subject || "Ticket Transfer";
+    // Use a generic, branded subject — never echo the inbound TM subject
+    // (it often contains the buyer's name or other PII).
     const safeHtml = buildBrandedEmail(acceptLink);
     const plainText = acceptLink
       ? `A ticket transfer has been sent to your account. Accept it here: ${acceptLink}`
       : "A ticket transfer has been sent to your account. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.";
 
-    await queueEmail(supabase, buyerEmail, `Fwd: ${inboundSubject}`, safeHtml, plainText);
+    await queueEmail(supabase, buyerEmail, "🎟️ Your Ticket Transfer Is Ready", safeHtml, plainText);
 
     persistPayload.forward_sent_at = new Date().toISOString();
     await supabase
