@@ -403,6 +403,7 @@ export type Database = {
           admin_escalation_sent_at: string | null
           confirmed_at: string | null
           created_at: string
+          expected_quantity: number
           fallback_sent_at: string | null
           forward_sent_at: string | null
           id: string
@@ -423,6 +424,7 @@ export type Database = {
           admin_escalation_sent_at?: string | null
           confirmed_at?: string | null
           created_at?: string
+          expected_quantity?: number
           fallback_sent_at?: string | null
           forward_sent_at?: string | null
           id?: string
@@ -443,6 +445,7 @@ export type Database = {
           admin_escalation_sent_at?: string | null
           confirmed_at?: string | null
           created_at?: string
+          expected_quantity?: number
           fallback_sent_at?: string | null
           forward_sent_at?: string | null
           id?: string
