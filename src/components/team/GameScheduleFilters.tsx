@@ -153,7 +153,16 @@ const GameScheduleFilters = ({
               selected={selectedDate || undefined}
               onSelect={(d) => {
                 setSelectedDate(d || null);
-                if (d) setSelectedMonth("all");
+                if (d) {
+                  setSelectedMonth("all");
+                  // Auto-scroll to ticket listings after date pick
+                  setTimeout(() => {
+                    document.getElementById("ticket-listings")?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }, 250);
+                }
               }}
               className={cn("p-3 pointer-events-auto")}
             />
