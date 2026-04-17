@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
 
     const { data: transfer, error: transferError } = await supabase
       .from("order_transfers")
-      .select("id, order_id, status, transfer_image_url, inbound_email_id, seller_id")
+      .select("id, order_id, status, transfer_image_url, inbound_email_id, seller_id, forward_sent_at")
       .eq("transfer_email_alias", alias)
       .single();
 
@@ -193,6 +193,15 @@ Deno.serve(async (req) => {
     if (transfer.inbound_email_id && transfer.inbound_email_id === email_id) {
       console.log(`IGNORED duplicate webhook — inbound_email_id ${email_id} already processed for alias ${alias}`);
       return new Response(JSON.stringify({ ignored: true, reason: "duplicate_webhook" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── IDEMPOTENCY: skip if we've already forwarded a transfer email to the buyer ──
+    if ((transfer as any).forward_sent_at) {
+      console.log(`IGNORED webhook — buyer already received forward for alias ${alias} at ${(transfer as any).forward_sent_at}`);
+      return new Response(JSON.stringify({ ignored: true, reason: "already_forwarded" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
