@@ -33,6 +33,7 @@ interface Transfer {
   status: string;
   uploaded_at: string | null;
   created_at: string;
+  forward_sent_at?: string | null;
   verification_result?: any;
   event_title?: string;
   venue?: string;
@@ -47,7 +48,14 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   pending: { label: "Upload Needed", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
   uploaded: { label: "Analyzing...", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
   confirmed: { label: "Verified ✓", className: "bg-green-100 text-green-800 border-green-300" },
+  delivered: { label: "Delivered ✓", className: "bg-green-100 text-green-800 border-green-300" },
   disputed: { label: "Error — Re-upload", className: "bg-red-100 text-red-800 border-red-300" },
+};
+
+// A confirmed transfer becomes "Delivered" once the accept link has been forwarded to the buyer.
+const getDisplayStatus = (t: Transfer): string => {
+  if (t.status === "confirmed" && t.forward_sent_at) return "delivered";
+  return t.status;
 };
 
 const SellerTransfers = () => {
@@ -303,7 +311,8 @@ const SellerTransfers = () => {
             </TableHeader>
             <TableBody>
               {paged.map((t) => {
-                const cfg = statusConfig[t.status] || statusConfig.pending;
+                const displayStatus = getDisplayStatus(t);
+                const cfg = statusConfig[displayStatus] || statusConfig.pending;
                 const vr = t.verification_result as any;
                 const isCurrentlyVerifying = verifying === t.id;
 
