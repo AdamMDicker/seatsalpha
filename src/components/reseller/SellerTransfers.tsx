@@ -173,6 +173,8 @@ const SellerTransfers = () => {
 
       const imageUrl = urlData.publicUrl;
 
+      // Reset all downstream state so a fresh TM inbound can be captured
+      // (the previous accept link may have been clicked or expired).
       const { error: updateError } = await supabase
         .from("order_transfers")
         .update({
@@ -181,6 +183,10 @@ const SellerTransfers = () => {
           uploaded_at: new Date().toISOString(),
           verification_result: null,
           confirmed_at: null,
+          forward_sent_at: null,
+          accept_link: null,
+          accept_link_extracted_at: null,
+          inbound_email_id: null,
         })
         .eq("id", transferId)
         .eq("seller_id", user.id);
