@@ -525,7 +525,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
   );
 
   return (
-    <div>
+    <div id="ticket-listings">
       {selectedSection && (
         <button onClick={() => setSelectedSection(null)} className="text-sm text-primary hover:underline mb-4 flex items-center gap-1">← All Sections</button>
       )}
