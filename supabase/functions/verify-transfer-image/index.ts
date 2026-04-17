@@ -12,6 +12,26 @@ const ADMIN_EMAIL = "lmksportsconsulting@gmail.com";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
 const HERO_BANNER_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/email-hero-banner.png";
 
+function isValidAcceptLink(value: string | null | undefined): value is string {
+  if (!value) return false;
+
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.toLowerCase();
+    const pathname = url.pathname.toLowerCase();
+    const combined = `${pathname}${url.search}`.toLowerCase();
+
+    if (!/^https?:$/.test(url.protocol)) return false;
+    if (/(^|\.)em-static-prod\.ticketmaster\.com$/.test(hostname)) return false;
+    if (/\.(png|jpg|jpeg|gif|webp|svg)$/i.test(pathname)) return false;
+    if (/(\/images?\/|logo|banner|pixel|tracking)/.test(pathname)) return false;
+
+    return hostname.includes("ticketmaster") && /(accept|invite|invites|transfer|claim|secure|tickets?)/.test(combined);
+  } catch {
+    return false;
+  }
+}
+
 function formatEventDateET(raw: string): string {
   if (!raw) return "";
   try {
@@ -275,7 +295,7 @@ If all the core details (teams, date, section, row, email, quantity) refer to th
     if (isMatch) {
       // ── Auto-release the buyer accept link if Ticketmaster already sent it ──
       // (Inbound webhook stores accept_link without forwarding when proof isn't uploaded yet.)
-      if (transfer.accept_link && !transfer.forward_sent_at) {
+      if (isValidAcceptLink(transfer.accept_link) && !transfer.forward_sent_at) {
         try {
           console.log(`Auto-releasing accept link to buyer for transfer ${transfer_id}`);
           await supabase.functions.invoke("resolve-transfer-email", {
