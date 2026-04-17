@@ -117,13 +117,15 @@ Deno.serve(async (req) => {
     const ticket = orderItem?.tickets as any;
     const event = ticket?.events as any;
 
+    const expectedQuantity = transfer.expected_quantity || orderItem?.quantity || 1;
+
     const expectedData = {
       transferEmail: transfer.transfer_email_alias || "",
       eventTitle: event?.title || "",
       eventDate: event?.event_date || "",
       section: ticket?.section || "",
       rowName: ticket?.row_name || "",
-      quantity: orderItem?.quantity || 1,
+      quantity: expectedQuantity,
     };
 
     // Call AI to analyze the screenshot
@@ -268,7 +270,7 @@ If all the core details (teams, date, section, row, email, quantity) refer to th
     const eventDate = event?.event_date ? formatEventDateET(event.event_date) : "";
     const section = ticket?.section || "";
     const rowName = ticket?.row_name || "";
-    const quantity = orderItem?.quantity || 1;
+    const quantity = expectedQuantity;
 
     if (isMatch) {
       // ── Auto-release the buyer accept link if Ticketmaster already sent it ──

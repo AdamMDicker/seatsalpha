@@ -292,6 +292,7 @@ serve(async (req) => {
               ticket_id: meta.ticket_id,
               seller_id: effectiveSellerId,
               status: "pending",
+              expected_quantity: parseInt(quantity) || 1,
               transfer_email_alias: transferEmailAlias,
             });
             console.log(`Created pending order_transfer for order ${orderId}, seller: ${effectiveSellerId}, alias: ${transferEmailAlias}`);

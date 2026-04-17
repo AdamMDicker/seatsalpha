@@ -42,6 +42,7 @@ interface Transfer {
   row_name?: string;
   quantity?: number;
   listing_quantity?: number;
+  expected_quantity?: number;
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -86,20 +87,12 @@ const SellerTransfers = () => {
     }
 
     const transfersData = data || [];
-    const orderIds = [...new Set(transfersData.map((transfer) => transfer.order_id))];
     const ticketIds = [...new Set(transfersData.map((transfer) => transfer.ticket_id))];
 
-    const [{ data: orderItems }, { data: tickets, error: ticketsError }] = await Promise.all([
-      supabase
-        .from("order_items")
-        .select("order_id, ticket_id, quantity")
-        .in("order_id", orderIds)
-        .in("ticket_id", ticketIds),
-      supabase
+    const { data: tickets, error: ticketsError } = await supabase
         .from("tickets")
         .select("id, section, row_name, quantity, event_id")
-        .in("id", ticketIds),
-    ]);
+        .in("id", ticketIds);
 
     if (ticketsError) {
       console.error("Failed to fetch transfer ticket details:", ticketsError);
@@ -117,16 +110,13 @@ const SellerTransfers = () => {
       console.error("Failed to fetch transfer event details:", eventsError);
     }
 
-    const orderItemsByKey = new Map(
-      (orderItems || []).map((item) => [`${item.order_id}:${item.ticket_id}`, item])
-    );
     const ticketsById = new Map((tickets || []).map((ticket) => [ticket.id, ticket]));
     const eventsById = new Map((events || []).map((event) => [event.id, event]));
 
     const enriched: Transfer[] = transfersData.map((transfer) => {
-      const orderItem = orderItemsByKey.get(`${transfer.order_id}:${transfer.ticket_id}`);
       const ticket = ticketsById.get(transfer.ticket_id);
       const event = ticket ? eventsById.get(ticket.event_id) : null;
+      const expectedQuantity = (transfer as any).expected_quantity || 1;
 
       return {
         ...transfer,
@@ -136,8 +126,9 @@ const SellerTransfers = () => {
         event_date: event?.event_date || "",
         section: ticket?.section || "",
         row_name: ticket?.row_name || "",
-        quantity: orderItem?.quantity || 1,
-        listing_quantity: ticket?.quantity || orderItem?.quantity || 1,
+        quantity: expectedQuantity,
+        expected_quantity: expectedQuantity,
+        listing_quantity: ticket?.quantity || expectedQuantity,
       };
     });
 
