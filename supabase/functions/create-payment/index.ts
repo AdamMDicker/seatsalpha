@@ -102,7 +102,7 @@ serve(async (req) => {
 
     // Build a short statement descriptor suffix (max 22 chars)
     const city = venue ? venue.split(",").pop()?.trim()?.slice(0, 10) : "";
-    const stmtSuffix = city ? `${city} Tickets` : "Tickets";
+    const stmtSuffix = city ? `${city} Tickets` : "SEATS.CA TICKETS";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

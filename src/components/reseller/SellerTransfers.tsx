@@ -401,11 +401,6 @@ const SellerTransfers = () => {
                         rowName={t.row_name}
                         quantity={t.quantity}
                       />
-                      {t.status === "confirmed" && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3 text-green-500" /> Complete
-                        </span>
-                      )}
                     </TableCell>
                   </TableRow>
                 );
