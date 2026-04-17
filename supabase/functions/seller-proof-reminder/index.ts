@@ -326,7 +326,7 @@ async function sendAdminEscalation(
 <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
   <tr><td style="padding:16px;background:#fafafa;">
     <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${ctx.eventTitle}</p>
-    <p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Section ${ctx.section} · Row ${ctx.rowName}</p>
+    <p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Section ${ctx.section} · Row ${ctx.rowName} · Qty ${ctx.quantity}</p>
   </td></tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border-radius:12px;overflow:hidden;border-left:4px solid #C41E3A;background:#fef2f2;">
