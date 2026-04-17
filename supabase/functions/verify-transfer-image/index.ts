@@ -256,6 +256,7 @@ If all the core details (teams, date, section, row, email) refer to the same thi
     const eventDate = event?.event_date ? formatEventDateET(event.event_date) : "";
     const section = ticket?.section || "";
     const rowName = ticket?.row_name || "";
+    const quantity = orderItem?.quantity || 1;
 
     if (isMatch) {
       // ── Auto-release the buyer accept link if Ticketmaster already sent it ──
@@ -288,11 +289,12 @@ If all the core details (teams, date, section, row, email) refer to the same thi
       <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${eventTitle}</p>
       ${eventDate ? `<p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">${eventDate}</p>` : ""}
     </td></tr>
-    ${venue || section || rowName ? `<tr><td style="padding:12px 16px;">
+    ${venue || section || rowName || quantity ? `<tr><td style="padding:12px 16px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         ${venue ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Venue</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${venue}</td></tr>` : ""}
         ${section ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Section</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${section}</td></tr>` : ""}
         ${rowName ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Row</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${rowName}</td></tr>` : ""}
+        <tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Quantity</td><td style="padding:4px 0;font-size:13px;font-weight:700;color:#059669;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${quantity} ticket${quantity === 1 ? "" : "s"}</td></tr>
       </table>
     </td></tr>` : ""}
   </table>

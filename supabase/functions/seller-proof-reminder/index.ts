@@ -130,10 +130,12 @@ async function loadContext(supabase: ReturnType<typeof createClient>, t: Transfe
     sellerName = "LMK";
   }
 
-  // Event title + section
+  // Event title + section + venue + date
   let eventTitle = "an event";
   let section = "—";
   let rowName = "—";
+  let venue = "";
+  let eventDate = "";
   const { data: ticket } = await supabase
     .from("tickets")
     .select("event_id, section, row_name")
@@ -145,12 +147,24 @@ async function loadContext(supabase: ReturnType<typeof createClient>, t: Transfe
     if (ticket.event_id) {
       const { data: event } = await supabase
         .from("events")
-        .select("title")
+        .select("title, venue, event_date")
         .eq("id", ticket.event_id)
         .maybeSingle();
       if (event?.title) eventTitle = event.title;
+      if (event?.venue) venue = event.venue;
+      if (event?.event_date) eventDate = formatEventDateET(event.event_date);
     }
   }
+
+  // Quantity sold for this transfer
+  let quantity = 1;
+  const { data: orderItem } = await supabase
+    .from("order_items")
+    .select("quantity")
+    .eq("order_id", t.order_id)
+    .eq("ticket_id", t.ticket_id)
+    .maybeSingle();
+  if (orderItem?.quantity) quantity = orderItem.quantity;
 
   // Buyer email (for admin context only)
   let buyerEmail: string | null = null;
@@ -168,7 +182,27 @@ async function loadContext(supabase: ReturnType<typeof createClient>, t: Transfe
     buyerEmail = profile?.email ?? null;
   }
 
-  return { sellerEmail, sellerName, eventTitle, section, rowName, buyerEmail, sellerUserId: t.seller_id };
+  return { sellerEmail, sellerName, eventTitle, section, rowName, venue, eventDate, quantity, buyerEmail, sellerUserId: t.seller_id };
+}
+
+function formatEventDateET(raw: string): string {
+  if (!raw) return "";
+  try {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw;
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const estOffset = -5 * 60;
+    const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+    const est = new Date(utc + estOffset * 60000);
+    let hours = est.getHours();
+    const minutes = est.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${days[est.getDay()]}, ${months[est.getMonth()]} ${est.getDate()}, ${est.getFullYear()} · ${hours}:${minutes} ${ampm} ET`;
+  } catch {
+    return raw;
+  }
 }
 
 async function enqueueEmail(
@@ -223,7 +257,15 @@ async function sendSellerReminder(
 <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
   <tr><td style="padding:16px;background:#fafafa;">
     <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${ctx.eventTitle}</p>
-    <p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Section ${ctx.section} · Row ${ctx.rowName}</p>
+    ${ctx.eventDate ? `<p style="margin:0 0 4px;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">${ctx.eventDate}</p>` : ""}
+    ${ctx.venue ? `<p style="margin:0 0 4px;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">${ctx.venue}</p>` : ""}
+  </td></tr>
+  <tr><td style="padding:12px 16px;border-top:1px solid #e4e4e7;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Section</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${ctx.section}</td></tr>
+      <tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Row</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${ctx.rowName}</td></tr>
+      <tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Quantity</td><td style="padding:4px 0;font-size:13px;font-weight:700;color:#C41E3A;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${ctx.quantity} ticket${ctx.quantity === 1 ? "" : "s"}</td></tr>
+    </table>
   </td></tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border-radius:12px;overflow:hidden;border-left:4px solid #f59e0b;background:#fef3c7;">
@@ -284,7 +326,7 @@ async function sendAdminEscalation(
 <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
   <tr><td style="padding:16px;background:#fafafa;">
     <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${ctx.eventTitle}</p>
-    <p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Section ${ctx.section} · Row ${ctx.rowName}</p>
+    <p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Section ${ctx.section} · Row ${ctx.rowName} · Qty ${ctx.quantity}</p>
   </td></tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border-radius:12px;overflow:hidden;border-left:4px solid #C41E3A;background:#fef2f2;">
