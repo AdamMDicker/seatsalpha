@@ -1,0 +1,1 @@
+DELETE FROM order_transfers WHERE id = '0443134e-e337-4e59-b005-0c10375cdb84';
