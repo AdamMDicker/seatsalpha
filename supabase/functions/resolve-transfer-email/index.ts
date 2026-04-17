@@ -89,8 +89,11 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Try stored accept_link first, then re-fetch from Resend if inbound_email_id exists
-      let storedLink: string | null = (transfer as any).accept_link || null;
+      // Try stored accept_link first, then re-fetch from Resend if inbound_email_id exists.
+      // Old bad extractions could store TM asset/image URLs, so treat those as invalid.
+      let storedLink: string | null = isValidAcceptLink((transfer as any).accept_link)
+        ? (transfer as any).accept_link
+        : null;
 
       if (!storedLink && (transfer as any).inbound_email_id) {
         console.log(`No stored link — re-extracting from inbound email ${(transfer as any).inbound_email_id}`);
@@ -530,7 +533,7 @@ function maybeAddCandidate(
   context: string
 ): void {
   const href = cleanUrl(rawHref);
-  if (!href || !href.startsWith("http")) return;
+  if (!href || !href.startsWith("http") || !isValidAcceptLink(href)) return;
 
   const score = scoreLinkCandidate(href, text, context);
   if (score < 40) return;
@@ -549,7 +552,7 @@ function scoreLinkCandidate(href: string, text: string, context: string): number
   const nearby = context.toLowerCase();
 
   if (
-    /(mailto:|unsubscribe|preferences|privacy|facebook|instagram|twitter|linkedin|support@|noreply@)/.test(link)
+    /(mailto:|unsubscribe|preferences|privacy|facebook|instagram|twitter|linkedin|support@|noreply@|\.png\b|\.jpg\b|\.jpeg\b|\.gif\b|\.webp\b|\/images\/|\/image\/|logo|banner|pixel|tracking)/.test(link)
   ) {
     return -1000;
   }
@@ -568,6 +571,30 @@ function scoreLinkCandidate(href: string, text: string, context: string): number
 
 function rankLinkCandidates(candidates: LinkCandidate[]): LinkCandidate[] {
   return candidates.sort((a, b) => b.score - a.score || a.href.length - b.href.length);
+}
+
+function isValidAcceptLink(value: string | null | undefined): value is string {
+  if (!value) return false;
+
+  try {
+    const url = new URL(value);
+    const href = value.toLowerCase();
+    const hostname = url.hostname.toLowerCase();
+    const pathname = url.pathname.toLowerCase();
+
+    if (!/^https?:$/.test(url.protocol)) return false;
+    if (/(^|\.)em-static-prod\.ticketmaster\.com$/.test(hostname)) return false;
+    if (/\.(png|jpg|jpeg|gif|webp|svg)$/i.test(pathname)) return false;
+    if (/(\/images?\/|logo|banner|pixel|tracking)/.test(pathname)) return false;
+
+    const looksLikeTmInvite =
+      hostname.includes("ticketmaster") && /(accept|invite|invites|transfer|claim|secure|tickets?)/.test(`${pathname}${url.search}`);
+    const looksLikeShortLink = /(^|\.)(click\.|links\.|lnk\.)/.test(hostname) && /(accept|transfer|ticket|invite|claim)/.test(href);
+
+    return looksLikeTmInvite || looksLikeShortLink;
+  } catch {
+    return false;
+  }
 }
 
 function cleanUrl(value: string): string {
