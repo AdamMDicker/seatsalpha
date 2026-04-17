@@ -28,17 +28,20 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Re-nudge sellers every 6 hours until the TM email actually arrives.
+    // First reminder: confirmed >= 6h ago and never reminded.
+    // Subsequent reminders: last reminder was >= 6h ago.
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
 
     const { data: transfers, error } = await supabase
       .from("order_transfers")
-      .select("id, order_id, ticket_id, seller_id, transfer_email_alias, confirmed_at")
+      .select("id, order_id, ticket_id, seller_id, transfer_email_alias, confirmed_at, seller_relay_reminder_sent_at")
       .eq("status", "confirmed")
       .is("inbound_email_id", null)
       .is("accept_link", null)
-      .is("seller_relay_reminder_sent_at", null)
       .not("confirmed_at", "is", null)
-      .lt("confirmed_at", twentyFourHoursAgo);
+      .lt("confirmed_at", sixHoursAgo)
+      .or(`seller_relay_reminder_sent_at.is.null,seller_relay_reminder_sent_at.lt.${sixHoursAgo}`);
 
     if (error) {
       console.error("Query error:", error);
