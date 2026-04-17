@@ -230,6 +230,15 @@ If all the core details (teams, date, section, row, email, quantity) refer to th
       verificationResult = { overall_match: false, notes: "Could not parse AI response", raw: content };
     }
 
+    // Server-side hard enforcement: quantity mismatch is ALWAYS a dispute
+    const extractedQty = parseInt(String(verificationResult?.extracted?.quantity ?? ""), 10);
+    const expectedQty = expectedData.quantity;
+    if (Number.isFinite(extractedQty) && extractedQty !== expectedQty) {
+      verificationResult.overall_match = false;
+      verificationResult.matches = { ...(verificationResult.matches || {}), quantity: false };
+      verificationResult.notes = `Quantity mismatch: seller transferred ${extractedQty} ticket(s), buyer purchased ${expectedQty}. ${verificationResult.notes || ""}`.trim();
+    }
+
     // Update transfer with verification result
     const isMatch = verificationResult.overall_match === true;
     const newStatus = isMatch ? "confirmed" : "disputed";
