@@ -165,6 +165,9 @@ serve(async (req) => {
         user_id: user.id,
         discount_code: discountCode || "",
       },
+      subscription_data: {
+        description: "Seats.ca Seller Weekly Membership",
+      },
     };
 
     if (stripeCouponId) {
