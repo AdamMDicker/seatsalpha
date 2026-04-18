@@ -3,8 +3,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Search, ShieldAlert, ShieldOff, CreditCard, DollarSign, Loader2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
+import { Search, ShieldAlert, ShieldOff, CreditCard, DollarSign, Loader2, ChevronDown, ChevronUp, MapPin, Trash2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import nhlLogo from "@/assets/leagues/nhl.png";
 import nbaLogo from "@/assets/leagues/nba.png";
@@ -66,7 +77,33 @@ const AdminResellers = () => {
   const [preauthAmounts, setPreauthAmounts] = useState<Record<string, string>>({});
   const [appSeatsMap, setAppSeatsMap] = useState<Record<string, AppSeat[]>>({});
   const [expandedApps, setExpandedApps] = useState<Record<string, boolean>>({});
+  const [deleteTarget, setDeleteTarget] = useState<Reseller | null>(null);
+  const [alsoDeleteUser, setAlsoDeleteUser] = useState(false);
   const { toast } = useToast();
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setActionLoading(`delete-${target.id}`);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-reseller", {
+        body: { reseller_id: target.id, delete_user: alsoDeleteUser },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({
+        title: "Reseller deleted",
+        description: `${target.business_name} removed${data?.user_deleted ? " (auth user also deleted)" : ""}.`,
+      });
+      setDeleteTarget(null);
+      setAlsoDeleteUser(false);
+      fetchResellers();
+      fetchSubs();
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    }
+    setActionLoading(null);
+  };
 
   const fetchResellers = async () => {
     const { data } = await supabase.from("resellers").select("*");
@@ -343,6 +380,16 @@ const AdminResellers = () => {
                   {currentStatus !== "live" && <Button variant="hero" size="sm" onClick={() => setStatus(r, "live")}>Set Live</Button>}
                   {currentStatus !== "pending" && <Button variant="glass" size="sm" onClick={() => setStatus(r, "pending")}>Set Pending</Button>}
                   {currentStatus !== "disabled" && <Button variant="destructive" size="sm" onClick={() => setStatus(r, "disabled")}>Disable</Button>}
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => { setAlsoDeleteUser(false); setDeleteTarget(r); }}
+                    disabled={actionLoading === `delete-${r.id}`}
+                    title="Permanently delete this reseller"
+                  >
+                    {actionLoading === `delete-${r.id}` ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
+                    Delete
+                  </Button>
                 </div>
                </div>
 
@@ -467,6 +514,44 @@ const AdminResellers = () => {
         })}
         {filteredResellers.length === 0 && <p className="text-muted-foreground text-center py-8">No resellers found.</p>}
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setAlsoDeleteUser(false); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete reseller?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{deleteTarget?.business_name}</strong> and:
+              <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+                <li>Delete all unsold reseller listings</li>
+                <li>Deactivate any sold listings (preserved for order history)</li>
+                <li>Delete subscription, league access, and application seats</li>
+              </ul>
+              <p className="mt-3 text-destructive font-medium">This cannot be undone.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex items-center gap-2 px-1">
+            <Checkbox
+              id="delete-auth-user"
+              checked={alsoDeleteUser}
+              onCheckedChange={(v) => setAlsoDeleteUser(v === true)}
+            />
+            <label htmlFor="delete-auth-user" className="text-sm cursor-pointer">
+              Also delete login account (only if user has no orders)
+            </label>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmDelete(); }}
+              disabled={!!actionLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {actionLoading?.startsWith("delete-") ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Delete reseller
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
