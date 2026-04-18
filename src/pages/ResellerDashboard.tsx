@@ -15,6 +15,7 @@ import SellerSignupFee from "@/components/reseller/SellerSignupFee";
 import SellerSalesDashboard from "@/components/reseller/SellerSalesDashboard";
 import SellerBillingTab from "@/components/reseller/SellerBillingTab";
 import SellerTransfers from "@/components/reseller/SellerTransfers";
+import SellerPayoutSetup from "@/components/reseller/SellerPayoutSetup";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 
 const benefits = [
