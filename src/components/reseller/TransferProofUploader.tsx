@@ -34,7 +34,10 @@ const TransferProofUploader = ({
   section,
   rowName,
   quantity,
+  transferEmailAlias,
+  forwardSentAt,
 }: TransferProofUploaderProps) => {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
