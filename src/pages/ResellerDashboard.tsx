@@ -160,8 +160,8 @@ const ResellerDashboard = () => {
             </div>
           )}
 
-          {/* Benefits (show when not fully unlocked) */}
-          {!isFullyUnlocked && !isSuspended && (
+          {/* Benefits (show only for users who haven't been approved yet) */}
+          {!canAccessPortal && !isSuspended && (
             <div className="mb-16">
               <h2 className="font-display text-2xl font-bold text-center mb-3">Why Sell on Seats.ca?</h2>
               <p className="text-muted-foreground text-center mb-10">Low annual membership fee* to start selling.</p>
