@@ -110,6 +110,9 @@ serve(async (req) => {
       mode: "subscription",
       success_url: successUrl,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
+      subscription_data: {
+        description: ticketInfo ? "Seats.ca Membership + Ticket" : "Seats.ca Annual Membership",
+      },
       ...(ticketInfo ? {
         metadata: {
           event_title: ticketInfo.eventTitle || "",

@@ -114,6 +114,9 @@ serve(async (req) => {
         user_id: user.id,
         type: "seller_signup_fee",
       },
+      payment_intent_data: {
+        statement_descriptor_suffix: "SELLER SIGNUP",
+      },
     });
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
