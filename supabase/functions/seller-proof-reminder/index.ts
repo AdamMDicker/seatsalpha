@@ -280,7 +280,7 @@ async function sendSellerReminder(
 </table>
 <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;">
   <tr><td bgcolor="#059669" style="border-radius:8px;">
-    <a href="https://seats.ca/reseller-dashboard?tab=transfers" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;font-family:'Space Grotesk',Arial,sans-serif;">Open Seller Dashboard</a>
+    <a href="https://seats.ca/reseller?tab=transfers" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;font-family:'Space Grotesk',Arial,sans-serif;">Open Seller Dashboard</a>
   </td></tr>
 </table>
 <p style="margin:0;color:#a1a1aa;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;">
