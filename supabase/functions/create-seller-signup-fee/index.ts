@@ -63,26 +63,16 @@ serve(async (req) => {
       .single();
 
     if (setting?.value) {
-      try {
-        const existingPrice = await stripe.prices.retrieve(setting.value);
-        if (!("deleted" in existingPrice)) {
-          priceId = existingPrice.id;
-          logStep("Using cached signup fee price ID", { priceId });
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        logStep("Cached signup fee price invalid, recreating", { priceId: setting.value, message });
-      }
-    }
-
-    if (!priceId) {
+      priceId = setting.value;
+      logStep("Using cached signup fee price ID", { priceId });
+    } else {
       const product = await stripe.products.create({
         name: "Seller Sign-Up Fee",
         description: "One-time sign-up fee for seats.ca seller marketplace access",
       });
       const price = await stripe.prices.create({
         product: product.id,
-        unit_amount: 10000,
+        unit_amount: 10000, // $100.00 CAD
         currency: "cad",
       });
       priceId = price.id;
