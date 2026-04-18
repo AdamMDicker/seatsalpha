@@ -380,6 +380,16 @@ const AdminResellers = () => {
                   {currentStatus !== "live" && <Button variant="hero" size="sm" onClick={() => setStatus(r, "live")}>Set Live</Button>}
                   {currentStatus !== "pending" && <Button variant="glass" size="sm" onClick={() => setStatus(r, "pending")}>Set Pending</Button>}
                   {currentStatus !== "disabled" && <Button variant="destructive" size="sm" onClick={() => setStatus(r, "disabled")}>Disable</Button>}
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => { setAlsoDeleteUser(false); setDeleteTarget(r); }}
+                    disabled={actionLoading === `delete-${r.id}`}
+                    title="Permanently delete this reseller"
+                  >
+                    {actionLoading === `delete-${r.id}` ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
+                    Delete
+                  </Button>
                 </div>
                </div>
 
@@ -504,6 +514,44 @@ const AdminResellers = () => {
         })}
         {filteredResellers.length === 0 && <p className="text-muted-foreground text-center py-8">No resellers found.</p>}
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setAlsoDeleteUser(false); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete reseller?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{deleteTarget?.business_name}</strong> and:
+              <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+                <li>Delete all unsold reseller listings</li>
+                <li>Deactivate any sold listings (preserved for order history)</li>
+                <li>Delete subscription, league access, and application seats</li>
+              </ul>
+              <p className="mt-3 text-destructive font-medium">This cannot be undone.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex items-center gap-2 px-1">
+            <Checkbox
+              id="delete-auth-user"
+              checked={alsoDeleteUser}
+              onCheckedChange={(v) => setAlsoDeleteUser(v === true)}
+            />
+            <label htmlFor="delete-auth-user" className="text-sm cursor-pointer">
+              Also delete login account (only if user has no orders)
+            </label>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmDelete(); }}
+              disabled={!!actionLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {actionLoading?.startsWith("delete-") ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Delete reseller
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
