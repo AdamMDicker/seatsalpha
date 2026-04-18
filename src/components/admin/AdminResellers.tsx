@@ -3,8 +3,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Search, ShieldAlert, ShieldOff, CreditCard, DollarSign, Loader2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
+import { Search, ShieldAlert, ShieldOff, CreditCard, DollarSign, Loader2, ChevronDown, ChevronUp, MapPin, Trash2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import nhlLogo from "@/assets/leagues/nhl.png";
 import nbaLogo from "@/assets/leagues/nba.png";
@@ -66,7 +77,33 @@ const AdminResellers = () => {
   const [preauthAmounts, setPreauthAmounts] = useState<Record<string, string>>({});
   const [appSeatsMap, setAppSeatsMap] = useState<Record<string, AppSeat[]>>({});
   const [expandedApps, setExpandedApps] = useState<Record<string, boolean>>({});
+  const [deleteTarget, setDeleteTarget] = useState<Reseller | null>(null);
+  const [alsoDeleteUser, setAlsoDeleteUser] = useState(false);
   const { toast } = useToast();
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setActionLoading(`delete-${target.id}`);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-reseller", {
+        body: { reseller_id: target.id, delete_user: alsoDeleteUser },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({
+        title: "Reseller deleted",
+        description: `${target.business_name} removed${data?.user_deleted ? " (auth user also deleted)" : ""}.`,
+      });
+      setDeleteTarget(null);
+      setAlsoDeleteUser(false);
+      fetchResellers();
+      fetchSubs();
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    }
+    setActionLoading(null);
+  };
 
   const fetchResellers = async () => {
     const { data } = await supabase.from("resellers").select("*");
