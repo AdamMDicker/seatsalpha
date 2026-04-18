@@ -119,7 +119,11 @@ const NotificationBell = () => {
             notifications.map((n) => (
               <Link
                 key={n.id}
-                to={`/notifications/${n.id}`}
+                to={
+                  n.type === "transfer_proof_reminder" || n.type === "transfer_proof_required"
+                    ? "/reseller?tab=transfers"
+                    : `/notifications/${n.id}`
+                }
                 onClick={() => { markRead(n.id); setOpen(false); }}
                 className={`block px-4 py-3 border-b border-border/50 hover:bg-secondary/50 transition-colors ${!n.is_read ? "bg-primary/5" : ""}`}
               >
