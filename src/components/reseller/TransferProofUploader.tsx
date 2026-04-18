@@ -104,35 +104,95 @@ const TransferProofUploader = ({
     }
   }, [open, previewUrl]);
 
-  if (status !== "pending" && status !== "disputed") return null;
+  // Allow upload for: pending, disputed, OR confirmed-but-not-yet-forwarded
+  // (false-positive case where AI verified the screenshot but the actual
+  // Ticketmaster transfer never reached our inbound alias).
+  const canReupload =
+    status === "pending" ||
+    status === "disputed" ||
+    (status === "confirmed" && !forwardSentAt) ||
+    (status === "uploaded" && !forwardSentAt);
+
+  if (!canReupload) return null;
 
   const disabled = uploading || verifying;
   const isDisputed = status === "disputed";
-  const label = isDisputed ? "Re-upload" : "Upload Proof";
+  const isStuck = (status === "confirmed" || status === "uploaded") && !forwardSentAt;
+  const label = isDisputed
+    ? "Re-upload"
+    : isStuck
+      ? "Re-send Transfer"
+      : "Upload Proof";
+
+  const copyAlias = () => {
+    if (!transferEmailAlias) return;
+    navigator.clipboard.writeText(transferEmailAlias);
+    toast({ title: "Copied!", description: "Inbound email copied to clipboard." });
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           size="sm"
-          variant={isDisputed ? "destructive" : "default"}
+          variant={isDisputed || isStuck ? "destructive" : "default"}
           className={cn(
             "h-7 text-xs",
-            isDisputed && "bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold shadow-md shadow-destructive/30 animate-pulse"
+            (isDisputed || isStuck) && "bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold shadow-md shadow-destructive/30 animate-pulse"
           )}
           disabled={disabled}
         >
           {uploading ? (
             <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Uploading</>
           ) : (
-            <><Upload className="h-3 w-3 mr-1" />{label}</>
+            <>{isStuck ? <RefreshCw className="h-3 w-3 mr-1" /> : <Upload className="h-3 w-3 mr-1" />}{label}</>
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Upload Transfer Proof</DialogTitle>
+          <DialogTitle>{isStuck ? "Resend Transfer & Re-upload Proof" : "Upload Transfer Proof"}</DialogTitle>
         </DialogHeader>
+
+        {/* Step-by-step instructions — always show so sellers know exact action required */}
+        <div className="rounded-lg border-2 border-destructive/40 bg-destructive/5 p-3 space-y-2">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-destructive font-bold">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            {isStuck ? "Buyer hasn't received tickets yet — required steps:" : "Required steps to fulfill this order:"}
+          </div>
+          <ol className="text-xs text-foreground space-y-1.5 list-decimal list-inside pl-1">
+            <li>Open <strong>Ticketmaster</strong> and start a transfer for these exact seats.</li>
+            <li>
+              Send the transfer to this <strong>inbound email address</strong>:
+              {transferEmailAlias ? (
+                <div className="flex items-center gap-1 mt-1.5 ml-4">
+                  <code className="text-xs bg-background border px-2 py-1 rounded font-mono break-all flex-1">
+                    {transferEmailAlias}
+                  </code>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 shrink-0"
+                    onClick={copyAlias}
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <span className="text-muted-foreground"> (loading…)</span>
+              )}
+            </li>
+            <li>Use the buyer's first name + "Seats" as the recipient name (e.g. "John Seats").</li>
+            <li>After sending the TM transfer, take a <strong>screenshot</strong> of the confirmation screen.</li>
+            <li>Upload that screenshot below. We'll verify it and forward the accept link to the buyer automatically.</li>
+          </ol>
+          <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+            <Mail className="h-3 w-3 inline mr-1" />
+            A screenshot alone is not enough — the actual Ticketmaster transfer must hit the inbound address above for the buyer to receive their tickets.
+          </p>
+        </div>
+
 
         {/* Order context — always shown so seller verifies they're on the right row */}
         {(eventTitle || eventDate || section) && (
