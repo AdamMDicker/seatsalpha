@@ -773,6 +773,9 @@ function buildSellerAlertEmail(): string {
       </ol>
     </td></tr>
   </table>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;"><tr><td align="center">
+    <a href="https://seats.ca/reseller?tab=transfers" style="display:inline-block;background:#dc2626;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:10px;">Upload Transfer Proof →</a>
+  </td></tr></table>
   <p style="margin:0;color:#71717a;font-size:13px;line-height:1.6;">
     Questions? Contact <a href="mailto:support@seats.ca" style="color:#C41E3A;font-weight:600;text-decoration:none;">support@seats.ca</a>
   </p>
