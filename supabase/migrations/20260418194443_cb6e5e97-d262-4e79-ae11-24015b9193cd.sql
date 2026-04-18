@@ -1,0 +1,1 @@
+DELETE FROM public.user_roles WHERE user_id = 'c0768913-3e54-476a-b4b2-8a0051b087ed' AND role = 'customer';
