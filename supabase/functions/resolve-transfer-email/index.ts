@@ -210,6 +210,32 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── ATOMIC CLAIM: race-safe dedupe. Only the first concurrent invocation
+    //    succeeds in writing inbound_email_id; any duplicate webhooks lose the
+    //    race and exit early, preventing duplicate seller alert / forward emails.
+    const { data: claimed, error: claimErr } = await supabase
+      .from("order_transfers")
+      .update({ inbound_email_id: email_id })
+      .eq("id", transfer.id)
+      .is("inbound_email_id", null)
+      .select("id");
+
+    if (claimErr) {
+      console.error("Failed to claim inbound email:", claimErr);
+      return new Response(JSON.stringify({ error: "Claim failed" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!claimed || claimed.length === 0) {
+      console.log(`IGNORED duplicate webhook — alias ${alias} already claimed by a concurrent invocation`);
+      return new Response(JSON.stringify({ ignored: true, reason: "concurrent_duplicate" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (transfer.status === "disputed") {
       console.log(`BLOCKED forward for alias ${alias} — status is disputed`);
       return new Response(JSON.stringify({ forwarded: false, reason: "mismatch_blocked" }), {
