@@ -125,6 +125,10 @@ Deno.serve(async (req) => {
       subject = `Ticket Sold — ${meta.eventTitle}${subjectSuffix}`;
       html = sellerNotificationHtml(meta);
       label = "seller-notification";
+    } else if (type === "seller_application") {
+      subject = `New Seller Application — ${meta.businessName}${meta.status === "approved" ? " (Auto-Approved)" : " (Pending)"}`;
+      html = sellerApplicationHtml(meta);
+      label = "seller-application";
     } else {
       return new Response(JSON.stringify({ error: "Unknown email type" }), {
         status: 400,
@@ -134,7 +138,7 @@ Deno.serve(async (req) => {
 
     const messageId = crypto.randomUUID();
     const unsubToken = crypto.randomUUID();
-    const isSellerEmail = type === "seller_notification";
+    const isSellerEmail = type === "seller_notification" || type === "seller_application";
     const displayName = isSellerEmail ? "LMK Sports Consulting" : "seats.ca";
 
     await supabase.from("email_unsubscribe_tokens").insert({ email: to, token: unsubToken });
