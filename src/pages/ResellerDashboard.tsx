@@ -201,18 +201,8 @@ const ResellerDashboard = () => {
             </div>
           )}
 
-          {/* Gate: Signup fee needed */}
-          {isApproved && agreementAccepted && !signupFeePaid && !isSuspended && (
-            <SellerSignupFee />
-          )}
-
-          {/* Gate: Billing setup needed */}
-          {isApproved && agreementAccepted && signupFeePaid && !hasActiveSubscription && !isSuspended && subscriptionStatus !== "past_due" && (
-            <SellerBillingSetup />
-          )}
-
-          {/* Fully unlocked: Seller Portal */}
-          {isFullyUnlocked && (
+          {/* Approved sellers: show portal immediately (signup fee + billing live inside the Billing tab) */}
+          {canAccessPortal && (
             <div className="max-w-4xl mx-auto space-y-8">
               {/* Tab navigation */}
               <div className="flex gap-2 flex-wrap">
@@ -236,7 +226,13 @@ const ResellerDashboard = () => {
               {activeTab === "transfers" && <SellerTransfers />}
               {activeTab === "listings" && <ResellerMyTickets />}
               {activeTab === "upload" && <ResellerCsvUpload />}
-              {activeTab === "billing" && <SellerBillingTab />}
+              {activeTab === "billing" && (
+                <div className="space-y-6">
+                  {!signupFeePaid && <SellerSignupFee />}
+                  {signupFeePaid && !hasActiveSubscription && subscriptionStatus !== "past_due" && <SellerBillingSetup />}
+                  {signupFeePaid && hasActiveSubscription && <SellerBillingTab />}
+                </div>
+              )}
               {activeTab === "payouts" && (
                 <div>
                   <h2 className="font-display text-xl font-bold mb-4">Payouts</h2>
