@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
 
     // 5. Optionally delete the auth user (only if no orders exist for them)
     let userDeleted = false;
-    if (delete_user) {
+    if (delete_user && !isSelf) {
       const { count: orderCount } = await adminClient
         .from("orders")
         .select("id", { count: "exact", head: true })
