@@ -79,6 +79,17 @@ function sellerNotificationHtml(meta: {
 }
 
 
+function sellerApplicationHtml(meta: {
+  businessName: string; firstName: string; lastName: string; email: string; phone: string;
+  isRegisteredCompany: string; corporationNumber: string; taxCollectionNumber: string;
+  status: string; sports: string; resellerId: string;
+}): string {
+  const statusColor = meta.status === "approved" ? "#059669" : "#f59e0b";
+  const statusLabel = meta.status === "approved" ? "✅ Auto-Approved" : "⏳ Pending Review";
+  const body = `<h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;letter-spacing:-0.5px;">🆕 New Seller Application</h1><p style="margin:0 0 20px;font-size:14px;color:${statusColor};font-weight:600;font-family:'Space Grotesk',Arial,sans-serif;">${statusLabel}</p><table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border:1px solid #e4e4e7;border-radius:12px;overflow:hidden;"><tr><td style="padding:16px;background:#fafafa;"><p style="margin:0;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${meta.businessName}</p></td></tr><tr><td style="padding:12px 16px;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:4px 0;font-size:13px;color:#71717a;">Name</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;">${meta.firstName} ${meta.lastName}</td></tr><tr><td style="padding:4px 0;font-size:13px;color:#71717a;">Email</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;">${meta.email}</td></tr>${meta.phone ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;">Phone</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;">${meta.phone}</td></tr>` : ""}<tr><td style="padding:4px 0;font-size:13px;color:#71717a;">Registered Company</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;">${meta.isRegisteredCompany}</td></tr>${meta.corporationNumber ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;">Corp #</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;">${meta.corporationNumber}</td></tr>` : ""}${meta.taxCollectionNumber ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;">Tax #</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;">${meta.taxCollectionNumber}</td></tr>` : ""}</table></td></tr></table><table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f8fa;border-radius:12px;border:1px solid #e4e4e7;margin-bottom:20px;"><tr><td style="padding:16px;"><p style="margin:0 0 8px;color:#18181b;font-size:13px;font-weight:700;">🏟️ Sports & Inventory</p><p style="margin:0;color:#52525b;font-size:13px;line-height:1.6;white-space:pre-line;">${meta.sports}</p></td></tr></table><table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td align="center"><a href="https://seats.ca/admin?tab=resellers" style="display:inline-block;background:#C41E3A;color:#ffffff;font-size:15px;font-weight:600;padding:14px 32px;border-radius:50px;text-decoration:none;box-shadow:0 4px 14px rgba(196,30,58,0.3);">Review in Admin Dashboard →</a></td></tr></table><p style="margin:20px 0 0;color:#71717a;font-size:12px;">Reseller ID: ${meta.resellerId}</p>`;
+  return premiumWrapper(`linear-gradient(90deg,${statusColor},${statusColor}dd,${statusColor})`, body);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -114,6 +125,10 @@ Deno.serve(async (req) => {
       subject = `Ticket Sold — ${meta.eventTitle}${subjectSuffix}`;
       html = sellerNotificationHtml(meta);
       label = "seller-notification";
+    } else if (type === "seller_application") {
+      subject = `New Seller Application — ${meta.businessName}${meta.status === "approved" ? " (Auto-Approved)" : " (Pending)"}`;
+      html = sellerApplicationHtml(meta);
+      label = "seller-application";
     } else {
       return new Response(JSON.stringify({ error: "Unknown email type" }), {
         status: 400,
@@ -123,7 +138,7 @@ Deno.serve(async (req) => {
 
     const messageId = crypto.randomUUID();
     const unsubToken = crypto.randomUUID();
-    const isSellerEmail = type === "seller_notification";
+    const isSellerEmail = type === "seller_notification" || type === "seller_application";
     const displayName = isSellerEmail ? "LMK Sports Consulting" : "seats.ca";
 
     await supabase.from("email_unsubscribe_tokens").insert({ email: to, token: unsubToken });
