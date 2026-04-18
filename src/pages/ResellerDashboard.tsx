@@ -55,6 +55,11 @@ const ResellerDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
 
   useEffect(() => {
+    const requestedTab = searchParams.get("tab");
+    if (requestedTab && portalTabs.some((tab) => tab.id === requestedTab)) {
+      setActiveTab(requestedTab);
+    }
+
     const subParam = searchParams.get("subscription");
     const signupParam = searchParams.get("signup_fee");
     const connectParam = searchParams.get("connect");
@@ -67,7 +72,7 @@ const ResellerDashboard = () => {
     if (connectParam === "success") {
       toast({ title: "Payout Account Connected!", description: "Your payout account is being set up." });
     }
-  }, [searchParams]);
+  }, [searchParams, toast]);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -86,7 +91,6 @@ const ResellerDashboard = () => {
         setIsSuspended(data[0].is_suspended);
         setConnectAccountId((data[0] as any).stripe_connect_account_id || null);
 
-        // Check subscription status
         if (data[0].status === "live" && data[0].agreement_accepted_at) {
           const { data: subData } = await supabase
             .from("seller_subscriptions")
@@ -103,9 +107,8 @@ const ResellerDashboard = () => {
 
   const isApproved = resellerStatus === "live";
   const hasActiveSubscription = subscriptionStatus === "active";
-  const isFullyUnlocked = isApproved && agreementAccepted && signupFeePaid && hasActiveSubscription && !isSuspended;
-  // Once approved + agreement accepted, show the portal — hide marketing/signup gates
   const canAccessPortal = isApproved && agreementAccepted && !isSuspended;
+  const isFullyUnlocked = canAccessPortal && signupFeePaid && hasActiveSubscription;
 
 
 
@@ -119,10 +122,10 @@ const ResellerDashboard = () => {
           <div className="container mx-auto px-4 text-center">
             <Store className="h-12 w-12 text-primary mx-auto mb-4" />
             <h1 className="font-display text-3xl md:text-4xl font-bold mb-3">
-              {canAccessPortal ? "Seller Portal" : "Become a "}
-              {!canAccessPortal && <span className="text-gradient">seats.ca Seller</span>}
+              {isFullyUnlocked ? "Seller Portal" : "Become a "}
+              {!isFullyUnlocked && <span className="text-gradient">seats.ca Seller</span>}
             </h1>
-            {!canAccessPortal && (
+            {!isFullyUnlocked && (
               <p className="text-muted-foreground max-w-lg mx-auto">
                 Join Canada's fastest-growing ticket marketplace. List your inventory, reach thousands of buyers, and grow your business with a simple annual membership.
               </p>
@@ -160,7 +163,7 @@ const ResellerDashboard = () => {
             </div>
           )}
 
-          {/* Benefits (show only for users who haven't been approved yet) */}
+          {/* Benefits (show when not fully unlocked) */}
           {!canAccessPortal && !isSuspended && (
             <div className="mb-16">
               <h2 className="font-display text-2xl font-bold text-center mb-3">Why Sell on Seats.ca?</h2>
@@ -201,10 +204,19 @@ const ResellerDashboard = () => {
             </div>
           )}
 
-          {/* Approved sellers: show portal immediately (signup fee + billing live inside the Billing tab) */}
+          {/* Gate: Signup fee needed */}
+          {isApproved && agreementAccepted && !signupFeePaid && !isSuspended && (
+            <SellerSignupFee />
+          )}
+
+          {/* Gate: Billing setup needed */}
+          {isApproved && agreementAccepted && signupFeePaid && !hasActiveSubscription && !isSuspended && subscriptionStatus !== "past_due" && (
+            <SellerBillingSetup />
+          )}
+
+          {/* Seller Portal */}
           {canAccessPortal && (
             <div className="max-w-4xl mx-auto space-y-8">
-              {/* Tab navigation */}
               <div className="flex gap-2 flex-wrap">
                 {portalTabs.map((tab) => (
                   <button
@@ -226,13 +238,7 @@ const ResellerDashboard = () => {
               {activeTab === "transfers" && <SellerTransfers />}
               {activeTab === "listings" && <ResellerMyTickets />}
               {activeTab === "upload" && <ResellerCsvUpload />}
-              {activeTab === "billing" && (
-                <div className="space-y-6">
-                  {!signupFeePaid && <SellerSignupFee />}
-                  {signupFeePaid && !hasActiveSubscription && subscriptionStatus !== "past_due" && <SellerBillingSetup />}
-                  {signupFeePaid && hasActiveSubscription && <SellerBillingTab />}
-                </div>
-              )}
+              {activeTab === "billing" && <SellerBillingTab />}
               {activeTab === "payouts" && (
                 <div>
                   <h2 className="font-display text-xl font-bold mb-4">Payouts</h2>

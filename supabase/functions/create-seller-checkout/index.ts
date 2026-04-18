@@ -74,7 +74,6 @@ serve(async (req) => {
     // Get or create the weekly price
     let priceId: string | null = null;
 
-    // Check site_settings for cached price ID
     const { data: setting } = await supabaseClient
       .from("site_settings")
       .select("value")
@@ -82,24 +81,32 @@ serve(async (req) => {
       .single();
 
     if (setting?.value) {
-      priceId = setting.value;
-      logStep("Using cached price ID", { priceId });
-    } else {
-      // Create product + price in Stripe
+      try {
+        const existingPrice = await stripe.prices.retrieve(setting.value);
+        if (!("deleted" in existingPrice)) {
+          priceId = existingPrice.id;
+          logStep("Using cached price ID", { priceId });
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logStep("Cached weekly price invalid, recreating", { priceId: setting.value, message });
+      }
+    }
+
+    if (!priceId) {
       const product = await stripe.products.create({
         name: "Seller Membership",
         description: "Weekly seller membership fee for seats.ca marketplace",
       });
       const price = await stripe.prices.create({
         product: product.id,
-        unit_amount: 100, // $1.00
+        unit_amount: 100,
         currency: "cad",
         recurring: { interval: "week" },
       });
       priceId = price.id;
       logStep("Created Stripe price", { priceId, productId: product.id });
 
-      // Cache it
       await supabaseClient.from("site_settings").upsert({
         key: SELLER_WEEKLY_PRICE_ID_KEY,
         value: priceId,
