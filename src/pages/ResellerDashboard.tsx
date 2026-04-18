@@ -209,6 +209,13 @@ const ResellerDashboard = () => {
             </div>
           )}
 
+          {/* Payout setup — shown as soon as agreement is accepted so sellers can connect Stripe early */}
+          {isApproved && agreementAccepted && !isSuspended && !connectAccountId && (
+            <div className="mb-8 max-w-xl mx-auto">
+              <SellerPayoutSetup connectAccountId={connectAccountId} />
+            </div>
+          )}
+
           {/* Gate: Signup fee needed */}
           {isApproved && agreementAccepted && !signupFeePaid && !isSuspended && (
             <SellerSignupFee />
