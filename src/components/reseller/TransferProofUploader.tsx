@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Upload, Loader2, ClipboardPaste, ImageIcon, AlertTriangle, Calendar, MapPin, Ticket } from "lucide-react";
+import { Upload, Loader2, ClipboardPaste, ImageIcon, AlertTriangle, Calendar, MapPin, Ticket, Mail, Copy, RefreshCw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
