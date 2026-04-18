@@ -203,6 +203,43 @@ const SellerApplicationForm = () => {
         if (seatError) throw seatError;
       }
 
+      // Notify LMK admin of new seller application
+      try {
+        const sportsSummary = sportEntries
+          .filter((e) => e.league)
+          .map((entry) => {
+            const leagueName = entry.league === "Other" ? `Other: ${entry.otherDetails.trim()}` : entry.league;
+            const seatsList = entry.seats
+              .slice(0, entry.locationCount)
+              .map((s, i) => `  Loc ${i + 1}: Sec ${s.section}, Row ${s.row}, ${s.seatCount} seat(s), Lowest #${s.lowestSeat}`)
+              .join("\n");
+            return `• ${leagueName}\n${seatsList}`;
+          })
+          .join("\n\n");
+
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            type: "seller_application",
+            to: "lmksportsconsulting@gmail.com",
+            meta: {
+              businessName: isRegisteredCompany ? companyName.trim() : `${firstName.trim()} ${lastName.trim()}`,
+              firstName: firstName.trim(),
+              lastName: lastName.trim(),
+              email: email.trim(),
+              phone: phone.trim(),
+              isRegisteredCompany: isRegisteredCompany ? "Yes" : "No",
+              corporationNumber: corporationNumber.trim(),
+              taxCollectionNumber: taxCollectionNumber.trim(),
+              status: shouldAutoApprove ? "approved" : "pending",
+              sports: sportsSummary,
+              resellerId: data.id,
+            },
+          },
+        });
+      } catch (notifyErr) {
+        console.error("Failed to send admin notification:", notifyErr);
+      }
+
       if (shouldAutoApprove) {
         toast({ title: "Application approved!", description: "Proceed to review and sign the Seller Agreement." });
         // Force a reload so the dashboard picks up the new status
