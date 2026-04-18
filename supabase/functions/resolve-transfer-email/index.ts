@@ -248,10 +248,17 @@ Deno.serve(async (req) => {
     const acceptLink = await extractAcceptLink(resendApiKey, email_id);
     console.log(`Extracted accept link for alias ${alias}:`, acceptLink ? `found (${safeHostname(acceptLink)})` : "not found");
 
-    // ── PROOF GATE: only forward to buyer if seller has uploaded proof AND it's confirmed ──
+    // ── PROOF GATE ──
+    // The actual Ticketmaster transfer arriving at our inbound alias IS the strongest
+    // proof that the seller initiated the transfer. Once we have a valid accept link,
+    // we forward to the buyer immediately — regardless of whether the seller uploaded a
+    // screenshot. The screenshot remains useful for fraud detection but should never
+    // block the buyer from receiving tickets they paid for.
+    //
+    // The only case we still hold is `disputed` (already short-circuited above).
     const proofUploaded = !!transfer.transfer_image_url;
-    const isConfirmed = transfer.status === "confirmed";
-    const shouldForwardNow = proofUploaded && isConfirmed;
+    const hasValidLink = isValidAcceptLink(acceptLink);
+    const shouldForwardNow = hasValidLink || (proofUploaded && transfer.status === "confirmed");
 
     // Always persist the inbound email ID and accept link so they survive for later release
     const persistPayload: Record<string, unknown> = {
