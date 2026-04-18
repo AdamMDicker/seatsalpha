@@ -317,6 +317,87 @@ If all the core details (teams, date, section, row, email, quantity) refer to th
 
       // CONFIRMED - notify buyer (only if we've actually forwarded the accept link)
       if (shouldNotifyBuyer && buyerProfile?.email) {
+        const detailsRows = [
+          eventDate ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${eventDate}</td></tr>` : "",
+          venue ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Venue</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${venue}</td></tr>` : "",
+          section ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Section</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${section}</td></tr>` : "",
+          rowName ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;">Row</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;">${rowName}</td></tr>` : "",
+        ].filter(Boolean).join("");
+
+        const bodyContent = `
+  <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;letter-spacing:-0.5px;">✅ Transfer Verified</h1>
+  <p style="margin:0 0 20px;font-size:14px;color:#059669;font-weight:600;font-family:'Space Grotesk',Arial,sans-serif;">Your tickets have been confirmed</p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
+    <tr><td style="padding:16px;background:#fafafa;">
+      <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${eventTitle}</p>
+      ${eventDate ? `<p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">${eventDate}</p>` : ""}
+    </td></tr>
+    ${venue || section || rowName || quantity ? `<tr><td style="padding:12px 16px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${venue ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Venue</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${venue}</td></tr>` : ""}
+        ${section ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Section</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${section}</td></tr>` : ""}
+        ${rowName ? `<tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Row</td><td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${rowName}</td></tr>` : ""}
+        <tr><td style="padding:4px 0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">Quantity</td><td style="padding:4px 0;font-size:13px;font-weight:700;color:#059669;text-align:right;font-family:'Space Grotesk',Arial,sans-serif;">${quantity} ticket${quantity === 1 ? "" : "s"}</td></tr>
+      </table>
+    </td></tr>` : ""}
+  </table>
+  <p style="margin:0 0 16px;color:#52525b;font-size:15px;line-height:1.6;font-family:'Space Grotesk',Arial,sans-serif;">
+    Great news! The seller has transferred your tickets, and our team has verified the transfer.
+  </p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border-left:4px solid #059669;background:#f0fdf4;">
+    <tr><td style="padding:16px 20px;">
+      <p style="margin:0 0 8px;color:#047857;font-size:14px;font-weight:700;font-family:'Space Grotesk',Arial,sans-serif;">📋 Next Steps</p>
+      <ol style="margin:0;padding-left:20px;color:#047857;font-size:13px;line-height:1.8;font-family:'Space Grotesk',Arial,sans-serif;">
+        <li>Look for an incoming ticket transfer notification</li>
+        <li>Accept the transfer to add the tickets to your Ticketmaster account</li>
+      </ol>
+    </td></tr>
+  </table>
+  <p style="margin:0;color:#a1a1aa;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;">
+    If you have any questions, contact us at <a href="mailto:support@seats.ca" style="color:#C41E3A;text-decoration:none;font-weight:600;">support@seats.ca</a>.
+  </p>`;
+
+        const confirmedHtml = premiumWrapper("linear-gradient(90deg,#059669,#047857,#059669)", bodyContent);
+
+        const messageId = crypto.randomUUID();
+        const unsubToken = crypto.randomUUID();
+        await supabase.from("email_unsubscribe_tokens").insert({ email: buyerProfile.email, token: unsubToken });
+        await supabase.from("email_send_log").insert({
+          message_id: messageId,
+          template_name: "transfer-verified-buyer",
+          recipient_email: buyerProfile.email,
+          status: "pending",
+        });
+        await supabase.rpc("enqueue_email", {
+          queue_name: "transactional_emails",
+          payload: {
+            message_id: messageId,
+            to: buyerProfile.email,
+            from: `seats.ca <${FROM_EMAIL}>`,
+            sender_domain: SENDER_DOMAIN,
+            subject: `✅ Transfer Verified — ${eventTitle}`,
+            html: confirmedHtml,
+            text: `Your tickets for ${eventTitle} have been verified and confirmed.`,
+            purpose: "transactional",
+            idempotency_key: messageId,
+            unsubscribe_token: unsubToken,
+            label: "transfer-verified-buyer",
+            queued_at: new Date().toISOString(),
+          },
+        });
+      }
+
+      // In-app notification to buyer (also gated on actual link forwarding)
+      if (shouldNotifyBuyer && order?.user_id) {
+        await supabase.from("notifications").insert({
+          user_id: order.user_id,
+          type: "transfer_confirmed",
+          title: `✅ Transfer Verified — ${eventTitle}`,
+          body: `Your tickets for ${eventTitle} have been verified and confirmed. Look for an incoming transfer notification and accept it to add the tickets to your Ticketmaster account.`,
+          metadata: { event_title: eventTitle, venue, transfer_id },
+        });
+      }
+    } else {
       // DISPUTED - alert admin
       const mismatchDetails = Object.entries(verificationResult.matches || {})
         .filter(([_, v]) => v === false)
