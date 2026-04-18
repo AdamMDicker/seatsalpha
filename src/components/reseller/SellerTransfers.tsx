@@ -409,6 +409,8 @@ const SellerTransfers = () => {
                         section={t.section}
                         rowName={t.row_name}
                         quantity={t.quantity}
+                        transferEmailAlias={t.transfer_email_alias}
+                        forwardSentAt={t.forward_sent_at}
                       />
                     </TableCell>
                   </TableRow>
