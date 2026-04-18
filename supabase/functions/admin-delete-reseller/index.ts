@@ -57,9 +57,8 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Reseller not found" }), { status: 404, headers: jsonHeaders });
     }
 
-    if (reseller.user_id === caller.id) {
-      return new Response(JSON.stringify({ error: "Cannot delete your own account" }), { status: 400, headers: jsonHeaders });
-    }
+    // Safety: prevent deleting your own auth user, but allow removing the reseller record
+    const isSelf = reseller.user_id === caller.id;
 
     // Block deletion if there are pending transfers tied to this seller
     const { count: pendingCount } = await adminClient
@@ -103,7 +102,7 @@ Deno.serve(async (req) => {
 
     // 5. Optionally delete the auth user (only if no orders exist for them)
     let userDeleted = false;
-    if (delete_user) {
+    if (delete_user && !isSelf) {
       const { count: orderCount } = await adminClient
         .from("orders")
         .select("id", { count: "exact", head: true })
