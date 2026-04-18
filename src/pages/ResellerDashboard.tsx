@@ -55,6 +55,11 @@ const ResellerDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
 
   useEffect(() => {
+    const requestedTab = searchParams.get("tab");
+    if (requestedTab && portalTabs.some((tab) => tab.id === requestedTab)) {
+      setActiveTab(requestedTab);
+    }
+
     const subParam = searchParams.get("subscription");
     const signupParam = searchParams.get("signup_fee");
     const connectParam = searchParams.get("connect");
@@ -67,7 +72,7 @@ const ResellerDashboard = () => {
     if (connectParam === "success") {
       toast({ title: "Payout Account Connected!", description: "Your payout account is being set up." });
     }
-  }, [searchParams]);
+  }, [searchParams, toast]);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -86,7 +91,6 @@ const ResellerDashboard = () => {
         setIsSuspended(data[0].is_suspended);
         setConnectAccountId((data[0] as any).stripe_connect_account_id || null);
 
-        // Check subscription status
         if (data[0].status === "live" && data[0].agreement_accepted_at) {
           const { data: subData } = await supabase
             .from("seller_subscriptions")
@@ -103,7 +107,8 @@ const ResellerDashboard = () => {
 
   const isApproved = resellerStatus === "live";
   const hasActiveSubscription = subscriptionStatus === "active";
-  const isFullyUnlocked = isApproved && agreementAccepted && signupFeePaid && hasActiveSubscription && !isSuspended;
+  const canAccessPortal = isApproved && agreementAccepted && !isSuspended;
+  const isFullyUnlocked = canAccessPortal && signupFeePaid && hasActiveSubscription;
 
 
 
@@ -159,7 +164,7 @@ const ResellerDashboard = () => {
           )}
 
           {/* Benefits (show when not fully unlocked) */}
-          {!isFullyUnlocked && !isSuspended && (
+          {!canAccessPortal && !isSuspended && (
             <div className="mb-16">
               <h2 className="font-display text-2xl font-bold text-center mb-3">Why Sell on Seats.ca?</h2>
               <p className="text-muted-foreground text-center mb-10">Low annual membership fee* to start selling.</p>
@@ -209,10 +214,9 @@ const ResellerDashboard = () => {
             <SellerBillingSetup />
           )}
 
-          {/* Fully unlocked: Seller Portal */}
-          {isFullyUnlocked && (
+          {/* Seller Portal */}
+          {canAccessPortal && (
             <div className="max-w-4xl mx-auto space-y-8">
-              {/* Tab navigation */}
               <div className="flex gap-2 flex-wrap">
                 {portalTabs.map((tab) => (
                   <button
