@@ -119,10 +119,10 @@ const ResellerDashboard = () => {
           <div className="container mx-auto px-4 text-center">
             <Store className="h-12 w-12 text-primary mx-auto mb-4" />
             <h1 className="font-display text-3xl md:text-4xl font-bold mb-3">
-              {isFullyUnlocked ? "Seller Portal" : "Become a "}
-              {!isFullyUnlocked && <span className="text-gradient">seats.ca Seller</span>}
+              {canAccessPortal ? "Seller Portal" : "Become a "}
+              {!canAccessPortal && <span className="text-gradient">seats.ca Seller</span>}
             </h1>
-            {!isFullyUnlocked && (
+            {!canAccessPortal && (
               <p className="text-muted-foreground max-w-lg mx-auto">
                 Join Canada's fastest-growing ticket marketplace. List your inventory, reach thousands of buyers, and grow your business with a simple annual membership.
               </p>
