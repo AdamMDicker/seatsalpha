@@ -18,6 +18,8 @@ interface TransferProofUploaderProps {
   section?: string;
   rowName?: string;
   quantity?: number;
+  transferEmailAlias?: string | null;
+  forwardSentAt?: string | null;
 }
 
 const TransferProofUploader = ({
