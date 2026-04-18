@@ -104,6 +104,8 @@ const ResellerDashboard = () => {
   const isApproved = resellerStatus === "live";
   const hasActiveSubscription = subscriptionStatus === "active";
   const isFullyUnlocked = isApproved && agreementAccepted && signupFeePaid && hasActiveSubscription && !isSuspended;
+  // Once approved + agreement accepted, show the portal — hide marketing/signup gates
+  const canAccessPortal = isApproved && agreementAccepted && !isSuspended;
 
 
 
