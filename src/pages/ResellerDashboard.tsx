@@ -53,7 +53,6 @@ const ResellerDashboard = () => {
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [connectAccountId, setConnectAccountId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [connectLoading, setConnectLoading] = useState(false);
 
   useEffect(() => {
     const subParam = searchParams.get("subscription");
@@ -106,22 +105,6 @@ const ResellerDashboard = () => {
   const hasActiveSubscription = subscriptionStatus === "active";
   const isFullyUnlocked = isApproved && agreementAccepted && signupFeePaid && hasActiveSubscription && !isSuspended;
 
-  const handleSetupPayouts = async () => {
-    setConnectLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-seller-connect-account");
-      if (error) throw error;
-      if (data?.url) {
-        redirectToStripeCheckout(data.url);
-      } else {
-        throw new Error("No onboarding URL returned");
-      }
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to start payout setup", variant: "destructive" });
-    } finally {
-      setConnectLoading(false);
-    }
-  };
 
 
 
