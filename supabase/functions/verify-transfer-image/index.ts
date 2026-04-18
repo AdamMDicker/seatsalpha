@@ -295,19 +295,28 @@ If all the core details (teams, date, section, row, email, quantity) refer to th
     if (isMatch) {
       // ── Auto-release the buyer accept link if Ticketmaster already sent it ──
       // (Inbound webhook stores accept_link without forwarding when proof isn't uploaded yet.)
+      let didForwardNow = false;
       if (isValidAcceptLink(transfer.accept_link) && !transfer.forward_sent_at) {
         try {
           console.log(`Auto-releasing accept link to buyer for transfer ${transfer_id}`);
           await supabase.functions.invoke("resolve-transfer-email", {
             body: { transfer_id },
           });
+          didForwardNow = true;
         } catch (relayErr) {
           console.error("Failed to auto-release accept link:", relayErr);
         }
       }
 
-      // CONFIRMED - notify buyer
-      if (buyerProfile?.email) {
+      // Only notify the buyer that their tickets are "confirmed" if the actual
+      // Ticketmaster accept link has been forwarded to them. Otherwise the email
+      // is misleading — the screenshot passed AI checks but the seller still
+      // hasn't actually transferred the tickets via Ticketmaster yet.
+      const linkAlreadyForwarded = !!transfer.forward_sent_at;
+      const shouldNotifyBuyer = linkAlreadyForwarded || didForwardNow;
+
+      // CONFIRMED - notify buyer (only if we've actually forwarded the accept link)
+      if (shouldNotifyBuyer && buyerProfile?.email) {
         const detailsRows = [
           eventDate ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${eventDate}</td></tr>` : "",
           venue ? `<tr><td style="padding:8px 12px;color:#71717a;font-size:13px;border-bottom:1px solid #f0f0f0;">Venue</td><td style="padding:8px 12px;color:#18181b;font-size:13px;font-weight:600;border-bottom:1px solid #f0f0f0;">${venue}</td></tr>` : "",
@@ -378,8 +387,8 @@ If all the core details (teams, date, section, row, email, quantity) refer to th
         });
       }
 
-      // In-app notification to buyer
-      if (order?.user_id) {
+      // In-app notification to buyer (also gated on actual link forwarding)
+      if (shouldNotifyBuyer && order?.user_id) {
         await supabase.from("notifications").insert({
           user_id: order.user_id,
           type: "transfer_confirmed",
