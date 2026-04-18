@@ -15,6 +15,7 @@ import SellerSignupFee from "@/components/reseller/SellerSignupFee";
 import SellerSalesDashboard from "@/components/reseller/SellerSalesDashboard";
 import SellerBillingTab from "@/components/reseller/SellerBillingTab";
 import SellerTransfers from "@/components/reseller/SellerTransfers";
+import SellerPayoutSetup from "@/components/reseller/SellerPayoutSetup";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 
 const benefits = [
@@ -52,7 +53,6 @@ const ResellerDashboard = () => {
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [connectAccountId, setConnectAccountId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [connectLoading, setConnectLoading] = useState(false);
 
   useEffect(() => {
     const subParam = searchParams.get("subscription");
@@ -105,22 +105,6 @@ const ResellerDashboard = () => {
   const hasActiveSubscription = subscriptionStatus === "active";
   const isFullyUnlocked = isApproved && agreementAccepted && signupFeePaid && hasActiveSubscription && !isSuspended;
 
-  const handleSetupPayouts = async () => {
-    setConnectLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-seller-connect-account");
-      if (error) throw error;
-      if (data?.url) {
-        redirectToStripeCheckout(data.url);
-      } else {
-        throw new Error("No onboarding URL returned");
-      }
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to start payout setup", variant: "destructive" });
-    } finally {
-      setConnectLoading(false);
-    }
-  };
 
 
 
@@ -208,6 +192,13 @@ const ResellerDashboard = () => {
             </div>
           )}
 
+          {/* Payout setup — shown as soon as agreement is accepted so sellers can connect Stripe early */}
+          {isApproved && agreementAccepted && !isSuspended && !connectAccountId && (
+            <div className="mb-8 max-w-xl mx-auto">
+              <SellerPayoutSetup connectAccountId={connectAccountId} />
+            </div>
+          )}
+
           {/* Gate: Signup fee needed */}
           {isApproved && agreementAccepted && !signupFeePaid && !isSuspended && (
             <SellerSignupFee />
@@ -247,28 +238,7 @@ const ResellerDashboard = () => {
               {activeTab === "payouts" && (
                 <div>
                   <h2 className="font-display text-xl font-bold mb-4">Payouts</h2>
-                  <div className="glass rounded-xl p-6 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Wallet className="h-5 w-5 text-primary" />
-                      <span className="font-semibold">Payout Account</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {connectAccountId
-                        ? "Your payout account is connected. Payouts are processed 2 weeks after each event."
-                        : "Set up your payout account to receive payments for ticket sales. Payouts are processed 2 weeks after each event."}
-                    </p>
-                    <Button
-                      variant={connectAccountId ? "outline" : "hero"}
-                      onClick={handleSetupPayouts}
-                      disabled={connectLoading}
-                    >
-                      {connectLoading
-                        ? "Redirecting..."
-                        : connectAccountId
-                          ? "Update Payout Account"
-                          : "Set Up Payouts"}
-                    </Button>
-                  </div>
+                  <SellerPayoutSetup connectAccountId={connectAccountId} />
                 </div>
               )}
             </div>
