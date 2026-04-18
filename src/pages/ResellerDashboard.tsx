@@ -255,28 +255,7 @@ const ResellerDashboard = () => {
               {activeTab === "payouts" && (
                 <div>
                   <h2 className="font-display text-xl font-bold mb-4">Payouts</h2>
-                  <div className="glass rounded-xl p-6 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Wallet className="h-5 w-5 text-primary" />
-                      <span className="font-semibold">Payout Account</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {connectAccountId
-                        ? "Your payout account is connected. Payouts are processed 2 weeks after each event."
-                        : "Set up your payout account to receive payments for ticket sales. Payouts are processed 2 weeks after each event."}
-                    </p>
-                    <Button
-                      variant={connectAccountId ? "outline" : "hero"}
-                      onClick={handleSetupPayouts}
-                      disabled={connectLoading}
-                    >
-                      {connectLoading
-                        ? "Redirecting..."
-                        : connectAccountId
-                          ? "Update Payout Account"
-                          : "Set Up Payouts"}
-                    </Button>
-                  </div>
+                  <SellerPayoutSetup connectAccountId={connectAccountId} />
                 </div>
               )}
             </div>
