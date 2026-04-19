@@ -1,56 +1,52 @@
 
-The user confirmed the full transfer flow works end-to-end. The only remaining issue is the credit card statement showing "MILK GIVEAWAYS" instead of "Seats.ca". 
+Goal: stop Stripe from retrying `stripe-webhook`, keep buyer fulfillment intact, and make the Stripe webhook setup reliable for current and future sellers.
 
-This is the same issue flagged in the earlier `.lovable/plan.md`. The statement descriptor PREFIX comes from the Stripe account's business profile, not from code — so it can only be changed in the Stripe Dashboard. Code already passes a `statement_descriptor_suffix` (e.g. "Toronto Tickets") on every checkout.
+What I found
+- `supabase/functions/stripe-webhook/index.ts` is the weak point:
+  - It uses an older Stripe SDK/API version (`npm:stripe@14.21.0`, `2023-10-16`) while the rest of the project has mostly moved to `2025-08-27.basil`.
+  - It does a lot of synchronous work inside `checkout.session.completed` (order creation, order item, transfer row, ticket inventory update, notifications, multiple email queue writes).
+  - It lacks a full protective processing wrapper around that branch, so any thrown error can cause a non-2xx response and Stripe will retry.
+- `seller-stripe-webhook` has a similar structure and should be hardened too, even though the email you received was about `stripe-webhook`.
+- The project memory explicitly says Stripe secret changes require redeploying Stripe-related functions so runtime secrets stay fresh.
 
-I should:
-1. Clearly explain that this is a Stripe account-level setting that I cannot change from code.
-2. Give exact step-by-step Stripe Dashboard instructions.
-3. Verify the suffix logic in `create-payment` is solid (it already is — falls back to `SEATS.CA TICKETS`), and check whether `create-checkout` (membership) and `create-seller-checkout` / `create-seller-signup-fee` also set descriptors so the prefix swap covers ALL charges.
+Implementation plan
+1. Reproduce and inspect the failing webhook path
+- Review live webhook logs for `stripe-webhook` to identify whether the failures are:
+  - signature mismatch / secret drift
+  - timeout / slow processing
+  - thrown processing errors on specific event payloads
+- Cross-check the recent failing Stripe event types so we know whether failures are from real checkout events or unrelated account events being sent to the endpoint.
 
-Let me check the other checkout functions to see if they also need descriptor suffixes added for consistency once the prefix is updated.
+2. Harden `stripe-webhook` so Stripe always gets a clean response for non-critical cases
+- Add structured logging throughout the function.
+- Keep signature failures as explicit non-2xx.
+- For valid signed events:
+  - immediately acknowledge unsupported/unneeded event types with 200
+  - wrap `checkout.session.completed` processing in a robust try/catch
+  - make non-essential side effects best-effort so an email/notification issue does not fail purchase fulfillment
 
-## Plan: Fix "MILK GIVEAWAYS" on credit card statements
+3. Make the fulfillment path safer and faster
+- Separate “must succeed” steps from “nice to have” steps:
+  - Must succeed: idempotency check, order creation, order item, `order_transfers`, ticket quantity update
+  - Best effort: notifications, email queue inserts, admin/seller email fan-out
+- Add null-safe guards around optional data so missing ticket/profile/transfer rows don’t crash the handler.
+- Preserve current order/transfer behavior so buyers still get fulfilled exactly as today.
 
-### Root cause
-On every cardholder statement, the descriptor reads `<PREFIX>* <suffix>` — e.g. `MILK GIVEAWAYS* Toronto Tickets`. The **prefix** ("MILK GIVEAWAYS") is set on the Stripe account itself (Public business name / Shortened descriptor), not in code. No edge function change can override it.
+4. Align Stripe versions and reliability patterns
+- Update `stripe-webhook` to the same modern Stripe SDK/API version pattern used elsewhere.
+- Apply the same hardening pattern to `seller-stripe-webhook` so seller billing webhooks do not become the next failure source.
+- If logs show secret drift rather than code failure, redeploy all Stripe-related backend functions to refresh runtime secrets.
 
-### Action required from you (Stripe Dashboard) — only way to fix this
+5. Validate end to end
+- Test buyer checkout webhook handling with a signed event payload and confirm:
+  - Stripe receives 2xx
+  - order is created once
+  - `stripe_event_id` idempotency still works
+  - `order_transfers` alias creation still works
+  - buyer/admin/seller notifications remain intact
+- Test seller billing webhook events (`checkout.session.completed`, `invoice.payment_succeeded`, `invoice.payment_failed`, `customer.subscription.deleted`) to ensure seller onboarding and billing still work for newly approved sellers.
 
-1. Open Stripe Dashboard → **Settings** → **Business** → **Public details**
-2. Set **Public business name** → `Seats.ca`
-3. Open **Settings** → **Business** → **Customer support** (or **Statement descriptor** section)
-4. Set **Shortened descriptor** → `SEATS.CA` (max 22 chars, A–Z, 0–9, spaces only)
-5. Save. Stripe may take a few minutes to propagate; new charges will read `SEATS.CA* <suffix>`.
-
-Do this on the **live-mode** account (`acct_1T9boTBgGwQ8YCQe`).
-
-### Code-side cleanup (small, optional, while we're here)
-
-`create-payment` already passes a clean suffix. The other checkout flows do **not** currently set a `statement_descriptor_suffix`, so once you update the Stripe prefix they'll read just `SEATS.CA*` with no context. I'll add short, on-brand suffixes:
-
-| Flow | File | Suffix to add |
-|------|------|---|
-| Membership / membership+ticket | `supabase/functions/create-checkout/index.ts` | `MEMBERSHIP` |
-| Seller weekly subscription | `supabase/functions/create-seller-checkout/index.ts` | `SELLER WEEKLY` |
-| Seller one-time signup fee | `supabase/functions/create-seller-signup-fee/index.ts` | `SELLER SIGNUP` |
-
-Each addition is a single `payment_intent_data` (one-time) or `subscription_data` (recurring) block with `statement_descriptor_suffix` ≤ 22 chars.
-
-### Files to edit
-- `supabase/functions/create-checkout/index.ts`
-- `supabase/functions/create-seller-checkout/index.ts`
-- `supabase/functions/create-seller-signup-fee/index.ts`
-
-No DB migrations. No frontend changes. No new secrets.
-
-### How to verify after Stripe change
-1. Update Stripe Public business name + Shortened descriptor.
-2. Make one $1 test purchase on live (or just wait for next real charge).
-3. Check the cardholder statement — should read `SEATS.CA* <city> Tickets`.
-
-<lov-actions>
-<lov-suggestion message="Approved — apply the suffix cleanup to the other three checkout functions">Apply code cleanup</lov-suggestion>
-<lov-suggestion message="Skip the code cleanup, I'll just update the Stripe Dashboard prefix">Just update Stripe, skip code</lov-suggestion>
-<lov-suggestion message="Walk me through the exact Stripe Dashboard screens with screenshots of where to click">Show me the Stripe screens in detail</lov-suggestion>
-</lov-actions>
+Technical details
+- I do not currently see a required database migration for the first pass.
+- If the live logs show repeated duplicate or partial-processing scenarios outside `orders.stripe_event_id`, I would add a dedicated webhook-event tracking table in a follow-up pass, but I would start with code hardening first.
+- Backend changes will go live immediately once implemented; no frontend publish step is needed for the webhook fix.
