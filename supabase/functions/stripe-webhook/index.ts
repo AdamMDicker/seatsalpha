@@ -153,7 +153,7 @@ serve(async (req) => {
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
   if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET not configured");
+    logStep("ERROR: STRIPE_WEBHOOK_SECRET not configured");
     return new Response(JSON.stringify({ error: "Server misconfigured" }), { status: 500 });
   }
   if (!signature) {
@@ -164,13 +164,24 @@ serve(async (req) => {
   try {
     event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
   } catch (err) {
-    console.error("Webhook signature verification failed:", err);
+    logStep("Signature verification failed", { error: String(err) });
     return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
-    // --- IDEMPOTENCY CHECK: prevent duplicate processing of the same Stripe event ---
+  logStep("Event received", { type: event.type, id: event.id });
+
+  // Fast-ack any event type we don't process — prevents Stripe retries on irrelevant events
+  if (event.type !== "checkout.session.completed") {
+    logStep("Unhandled event type, acknowledging", { type: event.type });
+    return new Response(JSON.stringify({ received: true, ignored: true }), { status: 200 });
+  }
+
+  // Wrap entire processing in try/catch. We always return 200 once the signature
+  // is valid — internal failures are logged but never trigger a Stripe retry.
+  try {
     const stripeEventId = event.id;
+
+    // --- IDEMPOTENCY CHECK ---
     const { data: existingOrder } = await supabase
       .from("orders")
       .select("id")
@@ -178,7 +189,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existingOrder) {
-      console.log(`Stripe event ${stripeEventId} already processed (order ${existingOrder.id}), skipping`);
+      logStep("Duplicate event, skipping", { stripeEventId, orderId: existingOrder.id });
       return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 });
     }
 
@@ -186,28 +197,33 @@ serve(async (req) => {
     const meta = session.metadata || {};
     const customerEmail = session.customer_email || session.customer_details?.email || "";
 
-    // Handle seller signup fee payment
+    // --- Seller signup fee path ---
     if (meta.type === "seller_signup_fee" && meta.reseller_id) {
-      await supabase
-        .from("resellers")
-        .update({ signup_fee_paid_at: new Date().toISOString() })
-        .eq("id", meta.reseller_id);
+      await safe("update reseller signup_fee_paid_at", () =>
+        supabase
+          .from("resellers")
+          .update({ signup_fee_paid_at: new Date().toISOString() })
+          .eq("id", meta.reseller_id)
+      );
 
       if (meta.user_id) {
-        await supabase.from("notifications").insert({
-          user_id: meta.user_id,
-          type: "seller",
-          title: "Sign-Up Fee Paid",
-          body: "Your $100 seller sign-up fee has been processed. You can now set up your weekly membership.",
-        });
+        await safe("notify seller signup fee paid", () =>
+          supabase.from("notifications").insert({
+            user_id: meta.user_id,
+            type: "seller",
+            title: "Sign-Up Fee Paid",
+            body: "Your $100 seller sign-up fee has been processed. You can now set up your weekly membership.",
+          })
+        );
       }
-      console.log(`Seller signup fee paid for reseller ${meta.reseller_id}`);
+      logStep("Seller signup fee processed", { resellerId: meta.reseller_id });
       return new Response(JSON.stringify({ received: true }), { status: 200 });
     }
 
-    // Only process ticket purchases (not membership-only)
+    // --- Skip non-ticket sessions (membership-only, etc.) ---
     if (!meta.event_title) {
-      return new Response(JSON.stringify({ received: true }), { status: 200 });
+      logStep("Non-ticket session, acknowledging", { sessionId: session.id });
+      return new Response(JSON.stringify({ received: true, skipped: "non-ticket" }), { status: 200 });
     }
 
     const eventTitle = meta.event_title || "Event";
@@ -217,12 +233,10 @@ serve(async (req) => {
     const eventDate = meta.event_date || "";
     const totalAmount = session.amount_total ? (session.amount_total / 100).toFixed(2) : "0.00";
 
-    // Format the date
     const formattedDate = formatEventDateET(eventDate);
     const shortDate = shortDateForSubject(eventDate);
     const subjectSuffix = shortDate ? ` · ${shortDate}` : "";
 
-    // Parse breakdown amounts from metadata
     const serviceFeeAmount = meta.service_fee ? parseFloat(meta.service_fee).toFixed(2) : "0.00";
     const membershipAmount = meta.membership_amount ? parseFloat(meta.membership_amount).toFixed(2) : "0.00";
     const ticketUnitPrice = meta.ticket_unit_price ? parseFloat(meta.ticket_unit_price) : 0;
@@ -230,7 +244,7 @@ serve(async (req) => {
       ? (ticketUnitPrice * parseInt(quantity)).toFixed(2)
       : (parseFloat(totalAmount) - parseFloat(serviceFeeAmount) - parseFloat(membershipAmount)).toFixed(2);
 
-    // Find buyer by email (efficient single-user lookup)
+    // --- Find buyer profile ---
     let buyer: { id: string; email: string } | null = null;
     if (customerEmail) {
       const { data: profileData } = await supabase
@@ -243,7 +257,10 @@ serve(async (req) => {
       }
     }
 
-    // --- CREATE ORDER RECORD ---
+    // ============================================================
+    // MUST-SUCCEED PATH: order, order_item, order_transfer, ticket inventory.
+    // Each step logs errors but never throws.
+    // ============================================================
     let orderId: string | null = null;
     if (buyer) {
       const feesAmount = parseFloat(serviceFeeAmount) || 0;
@@ -262,12 +279,11 @@ serve(async (req) => {
         .single();
 
       if (orderError) {
-        console.error("Failed to create order:", orderError);
+        logStep("ERROR: failed to create order", { error: orderError.message });
       } else {
         orderId = orderData.id;
-        console.log(`Created order ${orderId} for user ${buyer.id}`);
+        logStep("Order created", { orderId, userId: buyer.id });
 
-        // Create order item if we have a ticket_id
         if (meta.ticket_id) {
           const { error: itemError } = await supabase
             .from("order_items")
@@ -277,48 +293,52 @@ serve(async (req) => {
               quantity: parseInt(quantity) || 1,
               unit_price: ticketUnitPrice || parseFloat(totalAmount),
             });
-          if (itemError) {
-            console.error("Failed to create order item:", itemError);
-          }
+          if (itemError) logStep("ERROR: failed to create order_item", { error: itemError.message });
 
-          // Create pending order_transfer for seller to upload proof
-          // For admin-listed tickets (seller_id is null), assign to admin user
           const { data: ticketForTransfer } = await supabase
             .from("tickets")
             .select("seller_id")
             .eq("id", meta.ticket_id)
-            .single();
+            .maybeSingle();
 
-          if (orderId) {
-            // Admin fulfillment user (LMK Sports Consulting) — stored in site_settings to avoid hardcoding
-            const { data: adminSetting } = await supabase
-              .from("site_settings")
-              .select("value")
-              .eq("key", "admin_fulfillment_user_id")
-              .single();
-            const ADMIN_USER_ID = adminSetting?.value || "c0768913-3e54-476a-b4b2-8a0051b087ed";
-            const effectiveSellerId = ticketForTransfer?.seller_id || ADMIN_USER_ID;
-            // Ticketmaster requires letters only — no digits allowed in email addresses
-            const letters = "abcdefghijklmnopqrstuvwxyz";
-            let aliasRef = "";
-            for (let i = 0; i < 10; i++) {
-              aliasRef += letters[Math.floor(Math.random() * 26)];
-            }
-            const transferEmailAlias = `order-${aliasRef}@inbound.seats.ca`;
+          const { data: adminSetting } = await supabase
+            .from("site_settings")
+            .select("value")
+            .eq("key", "admin_fulfillment_user_id")
+            .maybeSingle();
+          const ADMIN_USER_ID = adminSetting?.value || "c0768913-3e54-476a-b4b2-8a0051b087ed";
+          const effectiveSellerId = ticketForTransfer?.seller_id || ADMIN_USER_ID;
 
-            await supabase.from("order_transfers").insert({
-              order_id: orderId,
-              ticket_id: meta.ticket_id,
-              seller_id: effectiveSellerId,
-              status: "pending",
-              expected_quantity: parseInt(quantity) || 1,
-              transfer_email_alias: transferEmailAlias,
-            });
-            console.log(`Created pending order_transfer for order ${orderId}, seller: ${effectiveSellerId}, alias: ${transferEmailAlias}`);
+          // Ticketmaster requires letters only — no digits in the inbound alias
+          const letters = "abcdefghijklmnopqrstuvwxyz";
+          let aliasRef = "";
+          for (let i = 0; i < 10; i++) {
+            aliasRef += letters[Math.floor(Math.random() * 26)];
+          }
+          const transferEmailAlias = `order-${aliasRef}@inbound.seats.ca`;
+
+          const { error: transferErr } = await supabase.from("order_transfers").insert({
+            order_id: orderId,
+            ticket_id: meta.ticket_id,
+            seller_id: effectiveSellerId,
+            status: "pending",
+            expected_quantity: parseInt(quantity) || 1,
+            transfer_email_alias: transferEmailAlias,
+          });
+          if (transferErr) {
+            logStep("ERROR: failed to create order_transfer", { error: transferErr.message });
+          } else {
+            logStep("Order transfer created", { orderId, sellerId: effectiveSellerId, alias: transferEmailAlias });
           }
         }
       }
+    } else {
+      logStep("No buyer profile matched, skipping order creation", { customerEmail });
     }
+
+    // ============================================================
+    // BEST-EFFORT PATH: notifications + emails. Failures are swallowed.
+    // ============================================================
 
     // --- BUYER NOTIFICATION + EMAIL ---
     if (buyer) {
@@ -337,49 +357,49 @@ serve(async (req) => {
         `Thank you for choosing seats.ca!`,
       ].filter(Boolean).join("\n");
 
-      // In-app notification
-      await supabase.from("notifications").insert({
-        user_id: buyer.id,
-        type: "purchase_buyer",
-        title: `Order Confirmed — ${eventTitle}${subjectSuffix}`,
-        body: buyerBody,
-        metadata: {
-          event_title: eventTitle,
-          tier,
-          quantity,
-          venue,
-          event_date: eventDate,
-          total_amount: totalAmount,
-          order_id: orderId,
-        },
-      });
-
-      // Email confirmation
-      if (customerEmail) {
-        await enqueueEmail(
-          customerEmail,
-          `Order Confirmed — ${eventTitle}${subjectSuffix}`,
-          buyerEmailHtml({
-            eventTitle,
-            venue,
-            eventDate,
-            formattedDate,
+      await safe("buyer in-app notification", () =>
+        supabase.from("notifications").insert({
+          user_id: buyer!.id,
+          type: "purchase_buyer",
+          title: `Order Confirmed — ${eventTitle}${subjectSuffix}`,
+          body: buyerBody,
+          metadata: {
+            event_title: eventTitle,
             tier,
             quantity,
-            ticketSubtotal,
-            hstAmount: serviceFeeAmount,
-            membershipAmount,
-            totalAmount,
-          }),
-          "buyer-confirmation"
+            venue,
+            event_date: eventDate,
+            total_amount: totalAmount,
+            order_id: orderId,
+          },
+        })
+      );
+
+      if (customerEmail) {
+        await safe("buyer confirmation email", () =>
+          enqueueEmail(
+            customerEmail,
+            `Order Confirmed — ${eventTitle}${subjectSuffix}`,
+            buyerEmailHtml({
+              eventTitle,
+              venue,
+              eventDate,
+              formattedDate,
+              tier,
+              quantity,
+              ticketSubtotal,
+              hstAmount: serviceFeeAmount,
+              membershipAmount,
+              totalAmount,
+            }),
+            "buyer-confirmation",
+          )
         );
       }
     }
 
     // --- SELLER NOTIFICATION + EMAIL ---
     const ADMIN_EMAIL = "lmksportsconsulting@gmail.com";
-
-    // Always send seller notification to admin, even without ticket_id
     let sellerNotificationSent = false;
 
     if (meta.ticket_id) {
@@ -387,31 +407,33 @@ serve(async (req) => {
         .from("tickets")
         .select("seller_id, section, row_name, seat_number, price, event_id, quantity_sold")
         .eq("id", meta.ticket_id)
-        .single();
+        .maybeSingle();
 
       if (ticket) {
-        // Increment quantity_sold to prevent overselling
         const purchasedQty = parseInt(quantity) || 1;
         const newQtySold = (ticket.quantity_sold || 0) + purchasedQty;
-        await supabase
+        const { error: invErr } = await supabase
           .from("tickets")
           .update({ quantity_sold: newQtySold })
           .eq("id", meta.ticket_id);
-        console.log(`Updated quantity_sold for ticket ${meta.ticket_id}: ${ticket.quantity_sold} → ${newQtySold}`);
+        if (invErr) {
+          logStep("ERROR: failed to update ticket quantity_sold", { error: invErr.message, ticketId: meta.ticket_id });
+        } else {
+          logStep("Inventory updated", { ticketId: meta.ticket_id, from: ticket.quantity_sold, to: newQtySold });
+        }
+
         const sectionInfo = ticket.section;
         const rowInfo = ticket.row_name || "";
-        const salePrice = ticket.price.toFixed(2);
+        const salePrice = (ticket.price ?? 0).toFixed(2);
 
-        // Retrieve the actual transfer email alias from order_transfers (letters-only)
         const { data: transferRow } = await supabase
           .from("order_transfers")
           .select("transfer_email_alias")
-          .eq("order_id", orderId)
+          .eq("order_id", orderId ?? "")
           .eq("ticket_id", meta.ticket_id)
           .maybeSingle();
 
         const transferEmailForSeller = transferRow?.transfer_email_alias || undefined;
-        // Extract the letters-only alias portion for order ref (e.g. "KXBMTQRWJF" from "order-kxbmtqrwjf@inbound.seats.ca")
         const aliasLetters = transferEmailForSeller
           ? transferEmailForSeller.replace("order-", "").replace("@inbound.seats.ca", "").toUpperCase()
           : orderId ? orderId.slice(0, 8).toUpperCase() : "N/A";
@@ -446,13 +468,14 @@ serve(async (req) => {
           `Tickets must be delivered within, at least, 48 hours before the event.`,
         ].filter(Boolean).join("\n");
 
-        // Always notify admin
-        await enqueueEmail(
-          ADMIN_EMAIL,
-          `Ticket Sold — ${eventTitle}${subjectSuffix}`,
-          sellerHtml,
-          "seller-notification",
-          { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" }
+        await safe("admin seller email", () =>
+          enqueueEmail(
+            ADMIN_EMAIL,
+            `Ticket Sold — ${eventTitle}${subjectSuffix}`,
+            sellerHtml,
+            "seller-notification",
+            { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" },
+          )
         );
         sellerNotificationSent = true;
 
@@ -461,50 +484,54 @@ serve(async (req) => {
             .from("resellers")
             .select("user_id, business_name, email")
             .eq("user_id", ticket.seller_id)
-            .single();
+            .maybeSingle();
 
           if (reseller) {
-            // In-app notification to reseller
-            await supabase.from("notifications").insert({
-              user_id: reseller.user_id,
-              type: "purchase_seller",
-              title: `Ticket Sold — ${eventTitle}${subjectSuffix}`,
-              body: sellerBody,
-              metadata: {
-                event_title: eventTitle,
-                tier: `Section ${sectionInfo}${rowInfo ? ` Row ${rowInfo}` : ""}`,
-                venue,
-                event_date: eventDate,
-                total_amount: salePrice,
-                order_ref: orderRefShort,
-                order_id: orderId,
-              },
-            });
+            await safe("reseller in-app notification", () =>
+              supabase.from("notifications").insert({
+                user_id: reseller.user_id,
+                type: "purchase_seller",
+                title: `Ticket Sold — ${eventTitle}${subjectSuffix}`,
+                body: sellerBody,
+                metadata: {
+                  event_title: eventTitle,
+                  tier: `Section ${sectionInfo}${rowInfo ? ` Row ${rowInfo}` : ""}`,
+                  venue,
+                  event_date: eventDate,
+                  total_amount: salePrice,
+                  order_ref: orderRefShort,
+                  order_id: orderId,
+                },
+              })
+            );
 
-            // Also email reseller if different from admin
             const resellerEmail = reseller.email;
             if (resellerEmail && resellerEmail !== ADMIN_EMAIL) {
-              await enqueueEmail(
-                resellerEmail,
-                `Ticket Sold — ${eventTitle}${subjectSuffix}`,
-                sellerHtml,
-                "seller-notification",
-                { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" }
+              await safe("reseller email", () =>
+                enqueueEmail(
+                  resellerEmail,
+                  `Ticket Sold — ${eventTitle}${subjectSuffix}`,
+                  sellerHtml,
+                  "seller-notification",
+                  { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" },
+                )
               );
             }
           }
         }
+      } else {
+        logStep("Ticket not found, falling back to admin email", { ticketId: meta.ticket_id });
       }
     }
 
-    // Fallback: if no ticket_id or ticket not found, still notify admin
     if (!sellerNotificationSent) {
-      // Try to get the actual alias from order_transfers
-      const { data: fallbackTransferRow } = orderId ? await supabase
-        .from("order_transfers")
-        .select("transfer_email_alias")
-        .eq("order_id", orderId)
-        .maybeSingle() : { data: null };
+      const { data: fallbackTransferRow } = orderId
+        ? await supabase
+            .from("order_transfers")
+            .select("transfer_email_alias")
+            .eq("order_id", orderId)
+            .maybeSingle()
+        : { data: null };
       const fallbackTransferEmail = fallbackTransferRow?.transfer_email_alias || undefined;
       const fallbackAliasLetters = fallbackTransferEmail
         ? fallbackTransferEmail.replace("order-", "").replace("@inbound.seats.ca", "").toUpperCase()
@@ -522,15 +549,26 @@ serve(async (req) => {
         orderRef: fallbackOrderRef,
         transferEmail: fallbackTransferEmail,
       });
-      await enqueueEmail(
-        ADMIN_EMAIL,
-        `Ticket Sold — ${eventTitle}${subjectSuffix}`,
-        fallbackHtml,
-        "seller-notification",
-        { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" }
+      await safe("fallback admin seller email", () =>
+        enqueueEmail(
+          ADMIN_EMAIL,
+          `Ticket Sold — ${eventTitle}${subjectSuffix}`,
+          fallbackHtml,
+          "seller-notification",
+          { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" },
+        )
       );
     }
-  }
 
-  return new Response(JSON.stringify({ received: true }), { status: 200 });
+    return new Response(JSON.stringify({ received: true, orderId }), { status: 200 });
+  } catch (err) {
+    // Catch-all: signature was valid; the issue is internal. Log loudly and ack so Stripe stops retrying.
+    logStep("FATAL processing error (acknowledged to Stripe)", {
+      eventId: event.id,
+      eventType: event.type,
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    return new Response(JSON.stringify({ received: true, processing_error: true }), { status: 200 });
+  }
 });
