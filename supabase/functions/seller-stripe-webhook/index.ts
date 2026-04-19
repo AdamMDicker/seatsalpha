@@ -3,8 +3,21 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const logStep = (step: string, details?: unknown) => {
-  console.log(`[SELLER-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
+  try {
+    console.log(`[SELLER-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
+  } catch {
+    console.log(`[SELLER-WEBHOOK] ${step}`);
+  }
 };
+
+async function safe<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await fn();
+  } catch (err) {
+    console.error(`[SELLER-WEBHOOK] best-effort failure (${label}):`, err);
+    return null;
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -39,6 +52,22 @@ serve(async (req) => {
 
   logStep("Event received", { type: event.type, id: event.id });
 
+  // Fast-ack any event we don't handle so Stripe doesn't retry irrelevant events.
+  const HANDLED = new Set([
+    "checkout.session.completed",
+    "invoice.payment_succeeded",
+    "invoice.payment_failed",
+    "customer.subscription.deleted",
+  ]);
+  if (!HANDLED.has(event.type)) {
+    logStep("Unhandled event type, acknowledging", { type: event.type });
+    return new Response(JSON.stringify({ received: true, ignored: true }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200,
+    });
+  }
+
+  // Wrap all processing — once signature is valid, always 200 to Stripe.
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -56,13 +85,11 @@ serve(async (req) => {
         const subscriptionId = session.subscription as string;
         const customerId = session.customer as string;
 
-        // Fetch the subscription to get period end
         const sub = await stripe.subscriptions.retrieve(subscriptionId);
         const periodEnd = new Date(sub.current_period_end * 1000).toISOString();
         const weeklyFee = (sub.items.data[0]?.price?.unit_amount || 100) / 100;
 
-        // Upsert seller_subscriptions
-        await supabase.from("seller_subscriptions").upsert({
+        const { error: subErr } = await supabase.from("seller_subscriptions").upsert({
           reseller_id: resellerId,
           stripe_subscription_id: subscriptionId,
           stripe_customer_id: customerId,
@@ -71,23 +98,23 @@ serve(async (req) => {
           weekly_fee: weeklyFee,
           discount_code: discountCode,
         }, { onConflict: "reseller_id" });
+        if (subErr) logStep("ERROR upserting seller_subscriptions", { error: subErr.message });
 
-        // Update reseller stripe_customer_id
-        await supabase
-          .from("resellers")
-          .update({ stripe_customer_id: customerId })
-          .eq("id", resellerId);
+        await safe("update reseller stripe_customer_id", () =>
+          supabase.from("resellers").update({ stripe_customer_id: customerId }).eq("id", resellerId)
+        );
 
         logStep("Subscription activated", { resellerId, subscriptionId });
 
-        // Create notification
         if (userId) {
-          await supabase.from("notifications").insert({
-            user_id: userId,
-            type: "seller",
-            title: "Seller Membership Active",
-            body: "Your weekly seller membership is now active. You can start listing tickets!",
-          });
+          await safe("seller activation notification", () =>
+            supabase.from("notifications").insert({
+              user_id: userId,
+              type: "seller",
+              title: "Seller Membership Active",
+              body: "Your weekly seller membership is now active. You can start listing tickets!",
+            })
+          );
         }
         break;
       }
@@ -104,27 +131,29 @@ serve(async (req) => {
           .from("seller_subscriptions")
           .select("reseller_id")
           .eq("stripe_subscription_id", subscriptionId)
-          .single();
+          .maybeSingle();
 
         if (sellerSub) {
-          await supabase
+          const { error: updErr } = await supabase
             .from("seller_subscriptions")
             .update({ status: "active", current_period_end: periodEnd })
             .eq("stripe_subscription_id", subscriptionId);
+          if (updErr) logStep("ERROR updating seller_subscriptions", { error: updErr.message });
 
-          // Re-activate tickets if they were delisted
           const { data: reseller } = await supabase
             .from("resellers")
             .select("user_id")
             .eq("id", sellerSub.reseller_id)
-            .single();
+            .maybeSingle();
 
           if (reseller) {
-            await supabase
-              .from("tickets")
-              .update({ is_active: true })
-              .eq("seller_id", reseller.user_id)
-              .eq("is_reseller_ticket", true);
+            await safe("re-activate seller tickets", () =>
+              supabase
+                .from("tickets")
+                .update({ is_active: true })
+                .eq("seller_id", reseller.user_id)
+                .eq("is_reseller_ticket", true)
+            );
           }
 
           logStep("Payment succeeded, subscription renewed", { subscriptionId });
@@ -141,21 +170,20 @@ serve(async (req) => {
           .from("seller_subscriptions")
           .select("reseller_id")
           .eq("stripe_subscription_id", subscriptionId)
-          .single();
+          .maybeSingle();
 
         if (sellerSub) {
-          // Set status to past_due
-          await supabase
+          const { error: updErr } = await supabase
             .from("seller_subscriptions")
             .update({ status: "past_due" })
             .eq("stripe_subscription_id", subscriptionId);
+          if (updErr) logStep("ERROR setting past_due", { error: updErr.message });
 
-          // IMMEDIATELY delist all seller tickets
           const { data: reseller } = await supabase
             .from("resellers")
             .select("user_id")
             .eq("id", sellerSub.reseller_id)
-            .single();
+            .maybeSingle();
 
           if (reseller) {
             const { count } = await supabase
@@ -171,13 +199,14 @@ serve(async (req) => {
               ticketsDelisted: count,
             });
 
-            // Notify seller
-            await supabase.from("notifications").insert({
-              user_id: reseller.user_id,
-              type: "seller",
-              title: "Payment Failed — Tickets Delisted",
-              body: "Your weekly seller membership payment failed. All your tickets have been delisted. Please update your payment method to restore your listings.",
-            });
+            await safe("seller payment failed notification", () =>
+              supabase.from("notifications").insert({
+                user_id: reseller.user_id,
+                type: "seller",
+                title: "Payment Failed — Tickets Delisted",
+                body: "Your weekly seller membership payment failed. All your tickets have been delisted. Please update your payment method to restore your listings.",
+              })
+            );
           }
         }
         break;
@@ -190,46 +219,56 @@ serve(async (req) => {
           .from("seller_subscriptions")
           .select("reseller_id")
           .eq("stripe_subscription_id", sub.id)
-          .single();
+          .maybeSingle();
 
         if (sellerSub) {
-          await supabase
+          const { error: updErr } = await supabase
             .from("seller_subscriptions")
             .update({ status: "canceled" })
             .eq("stripe_subscription_id", sub.id);
+          if (updErr) logStep("ERROR setting canceled", { error: updErr.message });
 
           const { data: reseller } = await supabase
             .from("resellers")
             .select("user_id")
             .eq("id", sellerSub.reseller_id)
-            .single();
+            .maybeSingle();
 
           if (reseller) {
-            await supabase
-              .from("tickets")
-              .update({ is_active: false })
-              .eq("seller_id", reseller.user_id)
-              .eq("is_reseller_ticket", true);
+            await safe("delist seller tickets on cancel", () =>
+              supabase
+                .from("tickets")
+                .update({ is_active: false })
+                .eq("seller_id", reseller.user_id)
+                .eq("is_reseller_ticket", true)
+            );
 
-            await supabase.from("notifications").insert({
-              user_id: reseller.user_id,
-              type: "seller",
-              title: "Seller Subscription Canceled",
-              body: "Your seller membership has been canceled. All tickets have been delisted.",
-            });
+            await safe("seller cancellation notification", () =>
+              supabase.from("notifications").insert({
+                user_id: reseller.user_id,
+                type: "seller",
+                title: "Seller Subscription Canceled",
+                body: "Your seller membership has been canceled. All tickets have been delisted.",
+              })
+            );
           }
 
           logStep("Subscription canceled", { subscriptionId: sub.id });
         }
         break;
       }
-
-      default:
-        logStep("Unhandled event type", { type: event.type });
     }
   } catch (err) {
-    logStep("Processing error", { error: String(err) });
-    return new Response("Processing error", { status: 500 });
+    logStep("FATAL processing error (acknowledged to Stripe)", {
+      eventId: event.id,
+      eventType: event.type,
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    return new Response(JSON.stringify({ received: true, processing_error: true }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200,
+    });
   }
 
   return new Response(JSON.stringify({ received: true }), {
