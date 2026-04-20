@@ -128,6 +128,24 @@ export function useTeamGames(searchTerm: string | undefined) {
     fetchGames();
   }, [searchTerm]);
 
+  // Auto-select matching game when a specific date is picked, then scroll to featured tickets.
+  // Works for both mobile and desktop.
+  useEffect(() => {
+    if (!selectedDate || games.length === 0) return;
+    const target = games.find(
+      (g) => new Date(g.event_date).toDateString() === selectedDate.toDateString()
+    );
+    if (target) {
+      setSelectedGame(target);
+      setSelectedSection(null);
+      setTimeout(() => {
+        document
+          .getElementById("featured-tickets")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 200);
+    }
+  }, [selectedDate, games]);
+
   const resetFilters = () => {
     setFilter("home");
     setSelectedMonth("all");
