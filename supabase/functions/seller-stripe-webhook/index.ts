@@ -19,6 +19,36 @@ async function safe<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
   }
 }
 
+async function logSellerWebhookEvent(
+  client: ReturnType<typeof createClient>,
+  args: {
+    stripeEventId: string;
+    eventType: string;
+    status: string;
+    processingMs?: number;
+    errorMessage?: string;
+    payloadSummary?: Record<string, unknown>;
+  },
+) {
+  try {
+    await client.from("stripe_webhook_events").upsert(
+      {
+        stripe_event_id: args.stripeEventId,
+        event_type: args.eventType,
+        source: "seller",
+        status: args.status,
+        processing_ms: args.processingMs ?? null,
+        error_message: args.errorMessage ?? null,
+        payload_summary: args.payloadSummary ?? null,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: "stripe_event_id,source" },
+    );
+  } catch (err) {
+    console.error("[SELLER-WEBHOOK] failed to log audit event:", err);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200 });
