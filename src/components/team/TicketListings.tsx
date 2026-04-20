@@ -611,7 +611,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         </div>
       </div>
 
-      <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+      <h2 id="featured-tickets" className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2 scroll-mt-24">
         <span>⭐ Featured Tickets</span>
         <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-sm font-bold text-primary">
           ({featuredTicketCount})
