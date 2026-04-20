@@ -17,7 +17,8 @@ import AdminNewsletter from "@/components/admin/AdminNewsletter";
 import AdminEmailMonitor from "@/components/admin/AdminEmailMonitor";
 import AdminSellerCodes from "@/components/admin/AdminSellerCodes";
 import AdminTransfers from "@/components/admin/AdminTransfers";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft } from "lucide-react";
+import AdminReplayWebhook from "@/components/admin/AdminReplayWebhook";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw } from "lucide-react";
 
 const tabs = [
   { id: "events", label: "Events", icon: Calendar },
@@ -34,6 +35,7 @@ const tabs = [
   { id: "hero", label: "Hero Image", icon: Image },
   { id: "newsletter", label: "Newsletter", icon: Mail },
   { id: "emails", label: "Email Monitor", icon: Activity },
+  { id: "replay", label: "Replay Webhook", icon: RefreshCw },
 ];
 
 const AdminDashboard = () => {
@@ -123,6 +125,7 @@ const AdminDashboard = () => {
         {activeTab === "hero" && <AdminHeroImage />}
         {activeTab === "newsletter" && <AdminNewsletter />}
         {activeTab === "emails" && <AdminEmailMonitor />}
+        {activeTab === "replay" && <AdminReplayWebhook />}
       </div>
     </div>
   );
