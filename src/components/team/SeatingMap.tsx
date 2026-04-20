@@ -229,6 +229,8 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
           <img src={venueMap} alt={`${displayName} Seating Chart - Full Size`} className="max-w-full max-h-[90vh] object-contain rounded-xl" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
+        </>
+      )}
 
       {/* Game info card */}
       <div className="bg-card border border-border rounded-xl p-4 mt-4 space-y-2 shadow-lg">
