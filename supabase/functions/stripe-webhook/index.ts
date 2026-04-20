@@ -233,6 +233,13 @@ serve(async (req) => {
 
     if (existingOrder) {
       logStep("Duplicate event, skipping", { stripeEventId, orderId: existingOrder.id });
+      await logWebhookEvent({
+        stripeEventId,
+        eventType: event.type,
+        status: "duplicate",
+        processingMs: Date.now() - startedAt,
+        payloadSummary: { order_id: existingOrder.id },
+      });
       return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 });
     }
 
@@ -260,12 +267,26 @@ serve(async (req) => {
         );
       }
       logStep("Seller signup fee processed", { resellerId: meta.reseller_id });
+      await logWebhookEvent({
+        stripeEventId: event.id,
+        eventType: event.type,
+        status: "processed",
+        processingMs: Date.now() - startedAt,
+        payloadSummary: { kind: "seller_signup_fee", reseller_id: meta.reseller_id },
+      });
       return new Response(JSON.stringify({ received: true }), { status: 200 });
     }
 
     // --- Skip non-ticket sessions (membership-only, etc.) ---
     if (!meta.event_title) {
       logStep("Non-ticket session, acknowledging", { sessionId: session.id });
+      await logWebhookEvent({
+        stripeEventId: event.id,
+        eventType: event.type,
+        status: "skipped",
+        processingMs: Date.now() - startedAt,
+        payloadSummary: { reason: "non-ticket", session_id: session.id },
+      });
       return new Response(JSON.stringify({ received: true, skipped: "non-ticket" }), { status: 200 });
     }
 
