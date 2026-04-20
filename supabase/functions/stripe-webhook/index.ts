@@ -196,11 +196,26 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 400 });
   }
 
+  const startedAt = Date.now();
   logStep("Event received", { type: event.type, id: event.id });
+
+  // Record receipt immediately so even crashes are visible in the audit table.
+  await logWebhookEvent({
+    stripeEventId: event.id,
+    eventType: event.type,
+    status: "received",
+    payloadSummary: { livemode: event.livemode, api_version: event.api_version },
+  });
 
   // Fast-ack any event type we don't process — prevents Stripe retries on irrelevant events
   if (event.type !== "checkout.session.completed") {
     logStep("Unhandled event type, acknowledging", { type: event.type });
+    await logWebhookEvent({
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "ignored",
+      processingMs: Date.now() - startedAt,
+    });
     return new Response(JSON.stringify({ received: true, ignored: true }), { status: 200 });
   }
 
