@@ -1,52 +1,84 @@
 
-Goal: stop Stripe from retrying `stripe-webhook`, keep buyer fulfillment intact, and make the Stripe webhook setup reliable for current and future sellers.
 
-What I found
-- `supabase/functions/stripe-webhook/index.ts` is the weak point:
-  - It uses an older Stripe SDK/API version (`npm:stripe@14.21.0`, `2023-10-16`) while the rest of the project has mostly moved to `2025-08-27.basil`.
-  - It does a lot of synchronous work inside `checkout.session.completed` (order creation, order item, transfer row, ticket inventory update, notifications, multiple email queue writes).
-  - It lacks a full protective processing wrapper around that branch, so any thrown error can cause a non-2xx response and Stripe will retry.
-- `seller-stripe-webhook` has a similar structure and should be hardened too, even though the email you received was about `stripe-webhook`.
-- The project memory explicitly says Stripe secret changes require redeploying Stripe-related functions so runtime secrets stay fresh.
+# Mobile Optimization Plan
 
-Implementation plan
-1. Reproduce and inspect the failing webhook path
-- Review live webhook logs for `stripe-webhook` to identify whether the failures are:
-  - signature mismatch / secret drift
-  - timeout / slow processing
-  - thrown processing errors on specific event payloads
-- Cross-check the recent failing Stripe event types so we know whether failures are from real checkout events or unrelated account events being sent to the endpoint.
+Focused improvements for the mobile experience (≤768px) across the highest-traffic flows: Hero → Team page → Ticket selection → Checkout. Each item is scoped, low-risk, and shippable independently.
 
-2. Harden `stripe-webhook` so Stripe always gets a clean response for non-critical cases
-- Add structured logging throughout the function.
-- Keep signature failures as explicit non-2xx.
-- For valid signed events:
-  - immediately acknowledge unsupported/unneeded event types with 200
-  - wrap `checkout.session.completed` processing in a robust try/catch
-  - make non-essential side effects best-effort so an email/notification issue does not fail purchase fulfillment
+## 1. Team page layout (biggest win)
 
-3. Make the fulfillment path safer and faster
-- Separate “must succeed” steps from “nice to have” steps:
-  - Must succeed: idempotency check, order creation, order item, `order_transfers`, ticket quantity update
-  - Best effort: notifications, email queue inserts, admin/seller email fan-out
-- Add null-safe guards around optional data so missing ticket/profile/transfer rows don’t crash the handler.
-- Preserve current order/transfer behavior so buyers still get fulfilled exactly as today.
+**Problem:** On `/teams/mlb/blue-jays`, after picking a game, `SeatingMap` and `TicketListings` render in a `grid-cols-1` stack on mobile. The seating map (~600px tall with legend) pushes ticket listings far below the fold, forcing heavy scrolling.
 
-4. Align Stripe versions and reliability patterns
-- Update `stripe-webhook` to the same modern Stripe SDK/API version pattern used elsewhere.
-- Apply the same hardening pattern to `seller-stripe-webhook` so seller billing webhooks do not become the next failure source.
-- If logs show secret drift rather than code failure, redeploy all Stripe-related backend functions to refresh runtime secrets.
+**Fix:**
+- Collapse `SeatingMap` into a tappable accordion on mobile (`<768px`), default **closed**, showing only a thin "View Seating Map" pill with the venue name. Expand on tap.
+- Reorder so `TicketListings` renders **first** on mobile (the user's primary intent), map second.
+- Move the giveaway/Jr. Jays banner from inside `SeatingMap` into a small badge at the top of `TicketListings`.
 
-5. Validate end to end
-- Test buyer checkout webhook handling with a signed event payload and confirm:
-  - Stripe receives 2xx
-  - order is created once
-  - `stripe_event_id` idempotency still works
-  - `order_transfers` alias creation still works
-  - buyer/admin/seller notifications remain intact
-- Test seller billing webhook events (`checkout.session.completed`, `invoice.payment_succeeded`, `invoice.payment_failed`, `customer.subscription.deleted`) to ensure seller onboarding and billing still work for newly approved sellers.
+## 2. Ticket card density & touch targets
 
-Technical details
-- I do not currently see a required database migration for the first pass.
-- If the live logs show repeated duplicate or partial-processing scenarios outside `orders.stripe_event_id`, I would add a dedicated webhook-event tracking table in a follow-up pass, but I would start with code hardening first.
-- Backend changes will go live immediately once implemented; no frontend publish step is needed for the webhook fix.
+**Problem:** `FeaturedTicketCard` (lines 286-386 of `TicketListings.tsx`) uses `text-[10px]` / `text-[9px]` for price subtitles and "Members enjoy LCC-included pricing" — too small per WCAG and our `mem://ui/mobile-standards` (52px min tap target).
+
+**Fix:**
+- On mobile: bump price subtitle to `text-xs`, hide "per ticket" / face-value when space-constrained, and stack the price column above the Buy button (full-width Buy button at `min-h-[48px]`).
+- Hide the seat-view thumbnail strip on mobile (saves ~80px). Replace with single "📷 View Seat (3)" pill that opens the lightbox directly.
+- Reduce `FeaturedTicketCard` padding from `p-4` to `p-3` on mobile.
+
+## 3. Filter bar overhaul
+
+**Problem:** `GameScheduleFilters` row wraps to 3+ lines on mobile (Month, Date, Opponent, # Tickets, Budget) — eats ~140px before the user sees a single game.
+
+**Fix:**
+- Collapse all filters into a single "Filters" bottom-sheet trigger button on mobile, showing active-filter count badge. Inside the sheet: vertical stack of the existing controls.
+- Keep one quick-pick visible: a horizontal scroll of month chips (e.g. "Apr · May · Jun · Jul").
+- Same approach for the perks filter row inside `TicketListings` ("Row 1 / Aisle / Accessible") — collapse into a single chip.
+
+## 4. Quantity selector card
+
+**Problem:** The `🎟️ Quantity of Tickets` panel (lines 586-612) uses `p-4` plus a 200px-wide select side-by-side, which wraps awkwardly on 360px screens.
+
+**Fix:**
+- On mobile: shrink to a single-line pill: `🎟️ Quantity: [Any ▼]` with `p-2.5`. Remove the helper paragraph (move it under the trigger as `text-[11px]` only when expanded).
+
+## 5. Sticky bottom buy bar polish
+
+**Problem:** Sticky bar (lines 738-753) only scrolls back to the filter — not the most useful action. It also overlaps the `LiveChat` widget.
+
+**Fix:**
+- Change CTA from "View Tickets" to "Buy from $X" → opens the cheapest ticket's `FeeGateDialog` directly.
+- Add `bottom: env(safe-area-inset-bottom)` (already partial) and `pb-[max(0.625rem,env(safe-area-inset-bottom))]` for iPhone notch.
+- Auto-shift the floating chat button up by `64px` when the sticky bar is visible.
+
+## 6. Hero section
+
+**Problem:** `min-h-[90vh]` hero is too tall on mobile (cuts trust signals below the fold). Two stacked CTA buttons take another 130px.
+
+**Fix:**
+- Mobile: `min-h-[70vh]` and reduce `pt-24 → pt-20`.
+- Single primary CTA "Browse Blue Jays Tickets" full-width; demote "How Membership Works" to a small text link below.
+- Drop hero subhead from `text-base` to `text-sm` and tighten leading.
+
+## 7. Navbar + safe areas
+
+- Add `env(safe-area-inset-top)` padding to the fixed `<nav>` so it clears the iPhone notch.
+- Mobile menu currently lists every page — promote "Browse Tickets" as a sticky CTA at the bottom of the open menu.
+
+## Out of scope (intentionally deferred)
+
+- Performance/bundle optimization (separate audit).
+- PWA install prompt.
+- Offline support.
+
+## Technical Summary
+
+**Files to edit:**
+- `src/components/team/TicketListings.tsx` — accordion wrap on mobile, simpler card layout, perks filter collapse, sticky bar CTA.
+- `src/pages/TeamMLBPage.tsx` (and the 6 sibling `Team{LEAGUE}Page.tsx` files) — reorder grid on mobile (tickets first), wrap `SeatingMap` in `<details>` at `<768px`.
+- `src/components/team/GameScheduleFilters.tsx` — bottom-sheet wrapper for mobile, month chip scroller.
+- `src/components/team/SeatingMap.tsx` — render in collapsible mode when prop `defaultCollapsed` is set.
+- `src/components/HeroSection.tsx` — height + CTA tweaks.
+- `src/components/Navbar.tsx` — safe-area padding, sticky CTA in mobile menu.
+- `src/index.css` — add `.safe-pt`, `.safe-pb` utility classes leveraging `env(safe-area-inset-*)`.
+
+**Approach:** Reuse existing `useIsMobile()` hook and `Sheet` primitive (`@/components/ui/sheet`) — no new deps. All changes are CSS/JSX-only; no schema or auth changes.
+
+**Risk:** Low. Desktop layout untouched (gated by `md:` Tailwind prefix and `isMobile` checks).
+
