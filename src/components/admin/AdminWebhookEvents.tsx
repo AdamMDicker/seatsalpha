@@ -123,6 +123,10 @@ const AdminWebhookEvents = () => {
           <p className="text-sm text-muted-foreground">
             Every signed Stripe webhook delivery is recorded here. Use this to spot silent failures.
           </p>
+          <p className="text-xs text-muted-foreground mt-1.5 inline-flex items-center gap-1.5">
+            <Clock className="h-3 w-3" />
+            Retention: 90 days — older events are auto-purged nightly.
+          </p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
