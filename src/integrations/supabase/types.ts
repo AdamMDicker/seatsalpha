@@ -936,7 +936,7 @@ export type Database = {
           seat_number: string | null
           seat_type: string | null
           section: string
-          seller_id: string | null
+          seller_id: string
           split_type: string | null
           stock_type: string | null
           ticket_group_account: string | null
@@ -960,7 +960,7 @@ export type Database = {
           seat_number?: string | null
           seat_type?: string | null
           section: string
-          seller_id?: string | null
+          seller_id: string
           split_type?: string | null
           stock_type?: string | null
           ticket_group_account?: string | null
@@ -984,7 +984,7 @@ export type Database = {
           seat_number?: string | null
           seat_type?: string | null
           section?: string
-          seller_id?: string | null
+          seller_id?: string
           split_type?: string | null
           stock_type?: string | null
           ticket_group_account?: string | null
