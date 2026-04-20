@@ -31,6 +31,34 @@ async function safe<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
   }
 }
 
+// --- Webhook audit logging ---
+async function logWebhookEvent(args: {
+  stripeEventId: string;
+  eventType: string;
+  status: string;
+  processingMs?: number;
+  errorMessage?: string;
+  payloadSummary?: Record<string, unknown>;
+}) {
+  try {
+    await supabase.from("stripe_webhook_events").upsert(
+      {
+        stripe_event_id: args.stripeEventId,
+        event_type: args.eventType,
+        source: "buyer",
+        status: args.status,
+        processing_ms: args.processingMs ?? null,
+        error_message: args.errorMessage ?? null,
+        payload_summary: args.payloadSummary ?? null,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: "stripe_event_id,source" },
+    );
+  } catch (err) {
+    console.error("[STRIPE-WEBHOOK] failed to log audit event:", err);
+  }
+}
+
 const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = "noreply@seats.ca";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
