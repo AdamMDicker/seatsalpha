@@ -570,61 +570,133 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       )}
 
       {(hasAisleTickets || hasRow1Tickets || hasAccessibleTickets) && (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground font-medium">Filter:</span>
-          {hasRow1Tickets && (
-            <button
-              onClick={() => setFilterRow1((v) => !v)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                filterRow1
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-              }`}
-            >
-              🥇 Row 1
-            </button>
+        <>
+          {/* Mobile: collapse all perk filters into a sheet */}
+          {isMobile ? (
+            <div className="mb-4">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button
+                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold border min-h-[40px] ${
+                      activePerksCount > 0
+                        ? "bg-primary/15 text-primary border-primary/40"
+                        : "bg-secondary text-secondary-foreground border-border"
+                    }`}
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Perks
+                    {activePerksCount > 0 && (
+                      <span className="ml-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] leading-none">
+                        {activePerksCount}
+                      </span>
+                    )}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="rounded-t-2xl safe-pb">
+                  <SheetHeader>
+                    <SheetTitle>Filter by perks</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-2 mt-4">
+                    {hasRow1Tickets && (
+                      <button
+                        onClick={() => setFilterRow1((v) => !v)}
+                        className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all border min-h-[48px] text-left ${
+                          filterRow1 ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border"
+                        }`}
+                      >
+                        🥇 Row 1
+                      </button>
+                    )}
+                    {hasAisleTickets && (
+                      <button
+                        onClick={() => setFilterAisle((v) => !v)}
+                        className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all border min-h-[48px] text-left ${
+                          filterAisle ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border"
+                        }`}
+                      >
+                        🪑 Aisle Seats
+                      </button>
+                    )}
+                    {hasAccessibleTickets && (
+                      <button
+                        onClick={() => setFilterAccessible((v) => !v)}
+                        className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all border min-h-[48px] text-left ${
+                          filterAccessible ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border"
+                        }`}
+                      >
+                        ♿ Accessible
+                      </button>
+                    )}
+                    {activePerksCount > 0 && (
+                      <button
+                        onClick={() => { setFilterRow1(false); setFilterAisle(false); setFilterAccessible(false); }}
+                        className="text-sm text-muted-foreground underline mt-2"
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          ) : (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-muted-foreground font-medium">Filter:</span>
+              {hasRow1Tickets && (
+                <button
+                  onClick={() => setFilterRow1((v) => !v)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                    filterRow1
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  🥇 Row 1
+                </button>
+              )}
+              {hasAisleTickets && (
+                <button
+                  onClick={() => setFilterAisle((v) => !v)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                    filterAisle
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  🪑 Aisle Seats
+                </button>
+              )}
+              {hasAccessibleTickets && (
+                <button
+                  onClick={() => setFilterAccessible((v) => !v)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                    filterAccessible
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  ♿ Accessible
+                </button>
+              )}
+            </div>
           )}
-          {hasAisleTickets && (
-            <button
-              onClick={() => setFilterAisle((v) => !v)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                filterAisle
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-              }`}
-            >
-              🪑 Aisle Seats
-            </button>
-          )}
-          {hasAccessibleTickets && (
-            <button
-              onClick={() => setFilterAccessible((v) => !v)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                filterAccessible
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-              }`}
-            >
-              ♿ Accessible
-            </button>
-          )}
-        </div>
+        </>
       )}
 
-      <div ref={filterBarRef} className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              🎟️ Quantity of Tickets
+      <div ref={filterBarRef} className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
+              🎟️ <span className="hidden sm:inline">Quantity of Tickets</span><span className="sm:hidden">Quantity</span>
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 hidden sm:block">
               {selectedSeatCount
                 ? `Showing listings with ${selectedSeatCount} ticket${selectedSeatCount > 1 ? "s" : ""} available.`
                 : "Select how many tickets you need to filter results."}
             </p>
           </div>
           <Select value={desiredSeats} onValueChange={setDesiredSeats}>
-            <SelectTrigger className="w-[200px] h-10 bg-card border-primary/30 font-semibold text-foreground">
+            <SelectTrigger className="w-[140px] sm:w-[200px] h-9 sm:h-10 bg-card border-primary/30 font-semibold text-foreground text-xs sm:text-sm">
               <SelectValue placeholder="Select quantity" />
             </SelectTrigger>
             <SelectContent>
