@@ -339,7 +339,7 @@ const Navbar = () => {
 
         {/* Mobile menu */}
         {isOpen && (
-          <div className="md:hidden pb-6 pt-3 space-y-1 animate-fade-in border-t border-border">
+          <div className="md:hidden pb-6 pt-3 space-y-1 animate-fade-in border-t border-border max-h-[calc(100dvh-4rem)] overflow-y-auto">
             {pageLinks.map((link) => (
               <button
                 key={link.label}
@@ -349,14 +349,6 @@ const Navbar = () => {
                 {link.label}
               </button>
             ))}
-
-            <Link
-              to="/teams/blue-jays"
-              onClick={() => setIsOpen(false)}
-              className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]"
-            >
-              Blue Jays Tickets
-            </Link>
 
             {isAdmin && (
               <Link to="/admin" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-gold rounded-lg min-h-[48px]">
@@ -381,14 +373,20 @@ const Navbar = () => {
               </>
             )}
 
-            <div className="px-4 pt-3">
+            {/* Sticky CTA at bottom of mobile menu */}
+            <div className="sticky bottom-0 -mx-1 px-4 pt-3 pb-3 bg-gradient-to-t from-background via-background to-background/0 space-y-2">
+              <Link to="/teams/blue-jays" onClick={() => setIsOpen(false)} className="block">
+                <Button variant="hero" size="lg" className="w-full min-h-[52px] text-base font-bold">
+                  Browse Tickets
+                </Button>
+              </Link>
               {user ? (
-                <Button variant="ghost" size="lg" className="w-full justify-start min-h-[52px] text-base" onClick={signOut}>
+                <Button variant="ghost" size="lg" className="w-full justify-start min-h-[48px] text-base" onClick={signOut}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign Out
                 </Button>
               ) : (
-                <Link to="/auth" onClick={() => setIsOpen(false)}>
-                  <Button variant="hero" size="lg" className="w-full min-h-[52px] text-base">Sign In</Button>
+                <Link to="/auth" onClick={() => setIsOpen(false)} className="block">
+                  <Button variant="outline" size="lg" className="w-full min-h-[48px] text-base">Sign In</Button>
                 </Link>
               )}
             </div>
