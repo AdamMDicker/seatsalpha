@@ -624,14 +624,28 @@ serve(async (req) => {
       );
     }
 
+    await logWebhookEvent({
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "processed",
+      processingMs: Date.now() - startedAt,
+      payloadSummary: { order_id: orderId, kind: "ticket_purchase" },
+    });
     return new Response(JSON.stringify({ received: true, orderId }), { status: 200 });
   } catch (err) {
-    // Catch-all: signature was valid; the issue is internal. Log loudly and ack so Stripe stops retrying.
+    const errorMessage = err instanceof Error ? err.message : String(err);
     logStep("FATAL processing error (acknowledged to Stripe)", {
       eventId: event.id,
       eventType: event.type,
-      error: err instanceof Error ? err.message : String(err),
+      error: errorMessage,
       stack: err instanceof Error ? err.stack : undefined,
+    });
+    await logWebhookEvent({
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "processing_error",
+      processingMs: Date.now() - startedAt,
+      errorMessage,
     });
     return new Response(JSON.stringify({ received: true, processing_error: true }), { status: 200 });
   }
