@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, Shield, ChevronDown, Store } from "lucide-react";
+import { Menu, X, LogOut, Shield, ChevronDown, Store, User as UserIcon, Receipt } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -280,19 +280,44 @@ const Navbar = () => {
             )}
             {user ? (
               <div className="flex items-center gap-2 flex-shrink-0">
-                {hasResellerAccount && (
-                  <Link to="/reseller" className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1">
-                    <Store className="h-3.5 w-3.5" /> Seller Portal
-                  </Link>
-                )}
-                <Link to="/my-orders" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                  My Orders
-                </Link>
                 <NotificationBell />
-                <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
-                <Button variant="ghost" size="sm" className="text-xs px-2 py-1 h-8" onClick={signOut}>
-                  <LogOut className="h-3.5 w-3.5" />
-                </Button>
+                <div className="relative">
+                  <button
+                    onClick={() => { setOpenDropdown(openDropdown === "account" ? null : "account"); setShowTeams(false); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/60 hover:bg-secondary transition-colors text-sm font-medium text-foreground border border-border"
+                  >
+                    <UserIcon className="h-4 w-4" />
+                    <span className="truncate max-w-[140px]">{user.email}</span>
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${openDropdown === "account" ? "rotate-180" : ""}`} />
+                  </button>
+                  {openDropdown === "account" && (
+                    <div className="absolute top-full right-0 mt-2 w-56 rounded-xl bg-card border border-border shadow-xl z-50 py-2 animate-fade-in">
+                      {hasResellerAccount && (
+                        <Link
+                          to="/reseller"
+                          onClick={() => setOpenDropdown(null)}
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <Store className="h-4 w-4" /> Seller Portal
+                        </Link>
+                      )}
+                      <Link
+                        to="/my-orders"
+                        onClick={() => setOpenDropdown(null)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                      >
+                        <Receipt className="h-4 w-4" /> My Orders
+                      </Link>
+                      <div className="border-t border-border my-1" />
+                      <button
+                        onClick={() => { setOpenDropdown(null); signOut(); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4" /> Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-3">
