@@ -68,6 +68,24 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
     overflow-x: hidden;
+    /* Prevent pull-to-refresh & overscroll bounce flashing white on iOS/Android */
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Prevent iOS Safari auto-zoom on input focus (any input <16px triggers zoom) */
+  @media (max-width: 767px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Larger tap targets for buttons/links on touch devices (Android Material + Apple HIG) */
+  @media (hover: none) and (pointer: coarse) {
+    button, [role="button"], a {
+      touch-action: manipulation;
+    }
   }
 
   h1, h2, h3, h4, h5, h6 {
