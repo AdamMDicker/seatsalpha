@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ZoomIn, X, Gift, Calendar, Clock, MapPin } from "lucide-react";
+import { ZoomIn, X, Gift, Calendar, Clock, MapPin, ChevronDown, Map as MapIcon } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import rogersCentreMap from "@/assets/venues/rogers-centre-seating-map-v2.png";
 import yankeeStadiumMap from "@/assets/venues/yankee-stadium-seating.jpg";
 import fenwayParkMap from "@/assets/venues/fenway-park-seating.jpg";
@@ -109,11 +110,14 @@ interface SeatingMapProps {
   };
   teamLogo?: string;
   teamColor?: string;
+  defaultCollapsedOnMobile?: boolean;
 }
 
-const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, game, teamLogo, teamColor }: SeatingMapProps) => {
+const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, game, teamLogo, teamColor, defaultCollapsedOnMobile = true }: SeatingMapProps) => {
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [mapZoomed, setMapZoomed] = useState(false);
+  const isMobile = useIsMobile();
+  const [mobileMapOpen, setMobileMapOpen] = useState(!defaultCollapsedOnMobile);
 
   const venueMap = VENUE_MAPS[game.venue];
   const isRogersCentre = game.venue === "Rogers Centre";
@@ -123,12 +127,30 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
   const formatDate = (d: string) => new Date(d).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" });
   const formatTime = (d: string) => new Date(d).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit", hour12: true });
 
+  const showMap = !isMobile || mobileMapOpen;
+
   return (
     <div>
-      <h2 className="font-display text-lg font-semibold text-foreground mb-4">
-        {displayName} Seating Map
-      </h2>
-      <div className="bg-card border border-border rounded-xl p-4 relative shadow-lg">
+      {/* Mobile collapsed pill */}
+      {isMobile && (
+        <button
+          onClick={() => setMobileMapOpen((v) => !v)}
+          className="w-full mb-3 flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-all min-h-[48px]"
+        >
+          <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <MapIcon className="h-4 w-4 text-primary" />
+            {mobileMapOpen ? "Hide" : "View"} Seating Map · {displayName}
+          </span>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${mobileMapOpen ? "rotate-180" : ""}`} />
+        </button>
+      )}
+
+      {showMap && (
+        <>
+          <h2 className="font-display text-lg font-semibold text-foreground mb-4 hidden md:block">
+            {displayName} Seating Map
+          </h2>
+          <div className="bg-card border border-border rounded-xl p-4 relative shadow-lg">
         {venueMap ? (
           <div className="relative group">
             <img
@@ -206,6 +228,8 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
           </button>
           <img src={venueMap} alt={`${displayName} Seating Chart - Full Size`} className="max-w-full max-h-[90vh] object-contain rounded-xl" onClick={(e) => e.stopPropagation()} />
         </div>
+      )}
+        </>
       )}
 
       {/* Game info card */}

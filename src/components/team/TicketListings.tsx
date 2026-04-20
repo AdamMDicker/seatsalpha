@@ -12,10 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
+import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye, SlidersHorizontal } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import FeeGateDialog from "./FeeGateDialog";
 import MobileAuthSheet from "./MobileAuthSheet";
 
@@ -289,26 +290,26 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
     return (
       <div
-        className="glass rounded-xl p-4 hover:border-primary/40 transition-all border-primary/20 cursor-pointer"
+        className="glass rounded-xl p-3 sm:p-4 hover:border-primary/40 transition-all border-primary/20 cursor-pointer"
         onClick={() => handleBuy(ticket)}
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="font-semibold text-foreground">Section {ticket.section}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <p className="font-semibold text-foreground text-sm sm:text-base">Section {ticket.section}</p>
               <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold">No Fees</span>
               {isGiveaway && perks.includes("giveaway_guaranteed") && (
                 <span className="px-1.5 py-0.5 rounded bg-accent/20 text-[10px] font-semibold text-primary flex items-center gap-0.5">
-                  <Gift className="h-2.5 w-2.5" /> Giveaway Guaranteed
+                  <Gift className="h-2.5 w-2.5" /> Giveaway
                 </span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {ticket.row_name && `Row ${ticket.row_name}`}
               {!ticket.hide_seat_numbers && ticket.seat_number && ` · Seats ${ticket.seat_number}`}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
-            <p className="text-[10px] text-primary/80 mt-0.5 font-medium">{getQuantityHint(ticket)}</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
+            <p className="text-[10px] sm:text-[11px] text-primary/80 mt-0.5 font-medium">{getQuantityHint(ticket)}</p>
             {perks.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {perks.filter((p) => p !== "giveaway_guaranteed").map((p) => {
@@ -319,29 +320,38 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
                 })}
               </div>
             )}
+            {/* Mobile: seat view pill (replaces thumbnail strip) */}
+            {isMobile && images.length > 0 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); openLightbox(images, 0); }}
+                className="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-secondary text-[11px] font-medium text-foreground/80 hover:bg-secondary/80"
+              >
+                <Camera className="h-3 w-3" /> View Seat ({images.length})
+              </button>
+            )}
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-2 flex-shrink-0">
             <div className="text-right">
               {selectedSeatCount ? (
                 <>
-                  <p className="font-display text-xl font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
-                  <p className="text-[10px] text-muted-foreground">{selectedSeatCount} tickets × ${ticket.price}</p>
+                  <p className="font-display text-lg sm:text-xl font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()} <span className="text-[10px] sm:text-xs text-muted-foreground font-normal">CAD</span></p>
+                  <p className="text-[10px] text-muted-foreground">{selectedSeatCount} × ${ticket.price}</p>
                 </>
               ) : (
                 <>
-                  <p className="font-display text-xl font-bold text-foreground">${ticket.price} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
-                  <p className="text-xs text-muted-foreground">per ticket</p>
+                  <p className="font-display text-lg sm:text-xl font-bold text-foreground">${ticket.price} <span className="text-[10px] sm:text-xs text-muted-foreground font-normal">CAD</span></p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">per ticket</p>
                 </>
               )}
-              <p className="text-[10px] text-emerald-400 mt-0.5">Members enjoy LCC-included pricing</p>
+              <p className="text-[10px] sm:text-xs text-emerald-400 mt-0.5">Members: LCC included</p>
               {ticket.face_value && ticket.face_value > 0 && (
-                <p className="text-[9px] text-muted-foreground mt-0.5">Face value: ${ticket.face_value.toFixed(2)}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">Face value: ${ticket.face_value.toFixed(2)}</p>
               )}
             </div>
             <Button
               variant="hero"
               size="sm"
-              className="animate-pulse-glow"
+              className="animate-pulse-glow min-h-[44px] sm:min-h-0 px-4"
               onClick={(e) => { e.stopPropagation(); handleBuy(ticket); }}
               disabled={buyingTicketId === ticket.id}
             >
@@ -349,37 +359,40 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             </Button>
           </div>
         </div>
-        {images.length > 0 ? (
-          <div className="mt-3">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Eye className="h-3 w-3 text-primary/70" />
-              <span className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider">Seat View</span>
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {images.map((img, idx) => (
-                <button
-                  key={img.id}
-                  onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
-                  className="relative group flex-shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all"
-                >
-                  <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
-                    <Camera className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  {img.caption && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5">
-                      <span className="text-[9px] text-white/90 line-clamp-1">{img.caption}</span>
+        {/* Desktop only: seat thumbnail strip */}
+        {!isMobile && (
+          images.length > 0 ? (
+            <div className="mt-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Eye className="h-3 w-3 text-primary/70" />
+                <span className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider">Seat View</span>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {images.map((img, idx) => (
+                  <button
+                    key={img.id}
+                    onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
+                    className="relative group flex-shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all"
+                  >
+                    <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                      <Camera className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
-                  )}
-                </button>
-              ))}
+                    {img.caption && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5">
+                        <span className="text-[9px] text-white/90 line-clamp-1">{img.caption}</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground/50">
-            <Camera className="h-3 w-3" />
-            <span>No seat view photos yet</span>
-          </div>
+          ) : (
+            <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground/50">
+              <Camera className="h-3 w-3" />
+              <span>No seat view photos yet</span>
+            </div>
+          )
         )}
       </div>
     );
@@ -514,7 +527,20 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     return () => observer.disconnect();
   }, [isMobile]);
 
+  // Toggle body attribute so floating chat button shifts up when sticky bar is visible
+  useEffect(() => {
+    if (showStickyBar && isMobile) {
+      document.body.setAttribute("data-sticky-buybar", "true");
+    } else {
+      document.body.removeAttribute("data-sticky-buybar");
+    }
+    return () => document.body.removeAttribute("data-sticky-buybar");
+  }, [showStickyBar, isMobile]);
+
   const cheapestPrice = allTickets.length > 0 ? Math.min(...allTickets.map(t => t.price)) : null;
+  const cheapestTicket = allTickets.length > 0
+    ? allTickets.reduce((min, t) => (t.price < min.price ? t : min), allTickets[0])
+    : null;
   const featuredTicketCount = featuredTickets.reduce(
     (sum, ticket) => sum + Math.max(0, ticket.quantity - ticket.quantity_sold),
     0,
@@ -523,6 +549,8 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     (sum, ticket) => sum + Math.max(0, ticket.quantity - ticket.quantity_sold),
     0,
   );
+
+  const activePerksCount = (filterRow1 ? 1 : 0) + (filterAisle ? 1 : 0) + (filterAccessible ? 1 : 0);
 
   return (
     <div id="ticket-listings">
@@ -542,61 +570,133 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       )}
 
       {(hasAisleTickets || hasRow1Tickets || hasAccessibleTickets) && (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground font-medium">Filter:</span>
-          {hasRow1Tickets && (
-            <button
-              onClick={() => setFilterRow1((v) => !v)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                filterRow1
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-              }`}
-            >
-              🥇 Row 1
-            </button>
+        <>
+          {/* Mobile: collapse all perk filters into a sheet */}
+          {isMobile ? (
+            <div className="mb-4">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button
+                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold border min-h-[40px] ${
+                      activePerksCount > 0
+                        ? "bg-primary/15 text-primary border-primary/40"
+                        : "bg-secondary text-secondary-foreground border-border"
+                    }`}
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Perks
+                    {activePerksCount > 0 && (
+                      <span className="ml-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] leading-none">
+                        {activePerksCount}
+                      </span>
+                    )}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="rounded-t-2xl safe-pb">
+                  <SheetHeader>
+                    <SheetTitle>Filter by perks</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-2 mt-4">
+                    {hasRow1Tickets && (
+                      <button
+                        onClick={() => setFilterRow1((v) => !v)}
+                        className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all border min-h-[48px] text-left ${
+                          filterRow1 ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border"
+                        }`}
+                      >
+                        🥇 Row 1
+                      </button>
+                    )}
+                    {hasAisleTickets && (
+                      <button
+                        onClick={() => setFilterAisle((v) => !v)}
+                        className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all border min-h-[48px] text-left ${
+                          filterAisle ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border"
+                        }`}
+                      >
+                        🪑 Aisle Seats
+                      </button>
+                    )}
+                    {hasAccessibleTickets && (
+                      <button
+                        onClick={() => setFilterAccessible((v) => !v)}
+                        className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all border min-h-[48px] text-left ${
+                          filterAccessible ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border"
+                        }`}
+                      >
+                        ♿ Accessible
+                      </button>
+                    )}
+                    {activePerksCount > 0 && (
+                      <button
+                        onClick={() => { setFilterRow1(false); setFilterAisle(false); setFilterAccessible(false); }}
+                        className="text-sm text-muted-foreground underline mt-2"
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          ) : (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-muted-foreground font-medium">Filter:</span>
+              {hasRow1Tickets && (
+                <button
+                  onClick={() => setFilterRow1((v) => !v)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                    filterRow1
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  🥇 Row 1
+                </button>
+              )}
+              {hasAisleTickets && (
+                <button
+                  onClick={() => setFilterAisle((v) => !v)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                    filterAisle
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  🪑 Aisle Seats
+                </button>
+              )}
+              {hasAccessibleTickets && (
+                <button
+                  onClick={() => setFilterAccessible((v) => !v)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                    filterAccessible
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  ♿ Accessible
+                </button>
+              )}
+            </div>
           )}
-          {hasAisleTickets && (
-            <button
-              onClick={() => setFilterAisle((v) => !v)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                filterAisle
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-              }`}
-            >
-              🪑 Aisle Seats
-            </button>
-          )}
-          {hasAccessibleTickets && (
-            <button
-              onClick={() => setFilterAccessible((v) => !v)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                filterAccessible
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-              }`}
-            >
-              ♿ Accessible
-            </button>
-          )}
-        </div>
+        </>
       )}
 
-      <div ref={filterBarRef} className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              🎟️ Quantity of Tickets
+      <div ref={filterBarRef} className="mb-5 rounded-xl border-2 border-primary/30 bg-primary/5 p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
+              🎟️ <span className="hidden sm:inline">Quantity of Tickets</span><span className="sm:hidden">Quantity</span>
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 hidden sm:block">
               {selectedSeatCount
                 ? `Showing listings with ${selectedSeatCount} ticket${selectedSeatCount > 1 ? "s" : ""} available.`
                 : "Select how many tickets you need to filter results."}
             </p>
           </div>
           <Select value={desiredSeats} onValueChange={setDesiredSeats}>
-            <SelectTrigger className="w-[200px] h-10 bg-card border-primary/30 font-semibold text-foreground">
+            <SelectTrigger className="w-[140px] sm:w-[200px] h-9 sm:h-10 bg-card border-primary/30 font-semibold text-foreground text-xs sm:text-sm">
               <SelectValue placeholder="Select quantity" />
             </SelectTrigger>
             <SelectContent>
@@ -735,19 +835,20 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       />
 
       {/* Mobile sticky buy bar */}
-      {isMobile && showStickyBar && cheapestPrice !== null && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-2.5 flex items-center justify-between safe-area-inset-bottom">
-          <div>
-            <p className="text-xs text-muted-foreground">Tickets from</p>
-            <p className="text-lg font-display font-bold text-foreground">${cheapestPrice} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
+      {isMobile && showStickyBar && cheapestPrice !== null && cheapestTicket && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border px-4 pt-2.5 safe-pb-2_5 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] text-muted-foreground leading-tight">Tickets from</p>
+            <p className="text-lg font-display font-bold text-foreground leading-tight">${cheapestPrice} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
           </div>
           <Button
             variant="hero"
             size="sm"
-            className="animate-pulse-glow h-9 px-5"
-            onClick={() => filterBarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className="animate-pulse-glow min-h-[44px] px-5 flex-shrink-0"
+            onClick={() => handleBuy(cheapestTicket)}
+            disabled={buyingTicketId === cheapestTicket.id}
           >
-            View Tickets
+            {buyingTicketId === cheapestTicket.id ? "..." : `Buy from $${cheapestPrice}`}
           </Button>
         </div>
       )}
