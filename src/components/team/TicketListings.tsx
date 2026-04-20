@@ -835,19 +835,20 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       />
 
       {/* Mobile sticky buy bar */}
-      {isMobile && showStickyBar && cheapestPrice !== null && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-2.5 flex items-center justify-between safe-area-inset-bottom">
-          <div>
-            <p className="text-xs text-muted-foreground">Tickets from</p>
-            <p className="text-lg font-display font-bold text-foreground">${cheapestPrice} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
+      {isMobile && showStickyBar && cheapestPrice !== null && cheapestTicket && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border px-4 pt-2.5 safe-pb-2_5 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] text-muted-foreground leading-tight">Tickets from</p>
+            <p className="text-lg font-display font-bold text-foreground leading-tight">${cheapestPrice} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
           </div>
           <Button
             variant="hero"
             size="sm"
-            className="animate-pulse-glow h-9 px-5"
-            onClick={() => filterBarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className="animate-pulse-glow min-h-[44px] px-5 flex-shrink-0"
+            onClick={() => handleBuy(cheapestTicket)}
+            disabled={buyingTicketId === cheapestTicket.id}
           >
-            View Tickets
+            {buyingTicketId === cheapestTicket.id ? "..." : `Buy from $${cheapestPrice}`}
           </Button>
         </div>
       )}
