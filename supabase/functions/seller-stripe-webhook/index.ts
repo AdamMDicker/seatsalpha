@@ -19,6 +19,36 @@ async function safe<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
   }
 }
 
+async function logSellerWebhookEvent(
+  client: ReturnType<typeof createClient>,
+  args: {
+    stripeEventId: string;
+    eventType: string;
+    status: string;
+    processingMs?: number;
+    errorMessage?: string;
+    payloadSummary?: Record<string, unknown>;
+  },
+) {
+  try {
+    await client.from("stripe_webhook_events").upsert(
+      {
+        stripe_event_id: args.stripeEventId,
+        event_type: args.eventType,
+        source: "seller",
+        status: args.status,
+        processing_ms: args.processingMs ?? null,
+        error_message: args.errorMessage ?? null,
+        payload_summary: args.payloadSummary ?? null,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: "stripe_event_id,source" },
+    );
+  } catch (err) {
+    console.error("[SELLER-WEBHOOK] failed to log audit event:", err);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200 });
@@ -51,6 +81,14 @@ serve(async (req) => {
   }
 
   logStep("Event received", { type: event.type, id: event.id });
+  const startedAt = Date.now();
+
+  await logSellerWebhookEvent(supabase, {
+    stripeEventId: event.id,
+    eventType: event.type,
+    status: "received",
+    payloadSummary: { livemode: event.livemode },
+  });
 
   // Fast-ack any event we don't handle so Stripe doesn't retry irrelevant events.
   const HANDLED = new Set([
@@ -61,6 +99,12 @@ serve(async (req) => {
   ]);
   if (!HANDLED.has(event.type)) {
     logStep("Unhandled event type, acknowledging", { type: event.type });
+    await logSellerWebhookEvent(supabase, {
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "ignored",
+      processingMs: Date.now() - startedAt,
+    });
     return new Response(JSON.stringify({ received: true, ignored: true }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
@@ -259,17 +303,32 @@ serve(async (req) => {
       }
     }
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
     logStep("FATAL processing error (acknowledged to Stripe)", {
       eventId: event.id,
       eventType: event.type,
-      error: err instanceof Error ? err.message : String(err),
+      error: errorMessage,
       stack: err instanceof Error ? err.stack : undefined,
+    });
+    await logSellerWebhookEvent(supabase, {
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "processing_error",
+      processingMs: Date.now() - startedAt,
+      errorMessage,
     });
     return new Response(JSON.stringify({ received: true, processing_error: true }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
     });
   }
+
+  await logSellerWebhookEvent(supabase, {
+    stripeEventId: event.id,
+    eventType: event.type,
+    status: "processed",
+    processingMs: Date.now() - startedAt,
+  });
 
   return new Response(JSON.stringify({ received: true }), {
     headers: { "Content-Type": "application/json" },

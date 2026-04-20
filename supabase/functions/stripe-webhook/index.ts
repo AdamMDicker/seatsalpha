@@ -31,6 +31,34 @@ async function safe<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
   }
 }
 
+// --- Webhook audit logging ---
+async function logWebhookEvent(args: {
+  stripeEventId: string;
+  eventType: string;
+  status: string;
+  processingMs?: number;
+  errorMessage?: string;
+  payloadSummary?: Record<string, unknown>;
+}) {
+  try {
+    await supabase.from("stripe_webhook_events").upsert(
+      {
+        stripe_event_id: args.stripeEventId,
+        event_type: args.eventType,
+        source: "buyer",
+        status: args.status,
+        processing_ms: args.processingMs ?? null,
+        error_message: args.errorMessage ?? null,
+        payload_summary: args.payloadSummary ?? null,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: "stripe_event_id,source" },
+    );
+  } catch (err) {
+    console.error("[STRIPE-WEBHOOK] failed to log audit event:", err);
+  }
+}
+
 const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = "noreply@seats.ca";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
@@ -168,11 +196,26 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 400 });
   }
 
+  const startedAt = Date.now();
   logStep("Event received", { type: event.type, id: event.id });
+
+  // Record receipt immediately so even crashes are visible in the audit table.
+  await logWebhookEvent({
+    stripeEventId: event.id,
+    eventType: event.type,
+    status: "received",
+    payloadSummary: { livemode: event.livemode, api_version: event.api_version },
+  });
 
   // Fast-ack any event type we don't process — prevents Stripe retries on irrelevant events
   if (event.type !== "checkout.session.completed") {
     logStep("Unhandled event type, acknowledging", { type: event.type });
+    await logWebhookEvent({
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "ignored",
+      processingMs: Date.now() - startedAt,
+    });
     return new Response(JSON.stringify({ received: true, ignored: true }), { status: 200 });
   }
 
@@ -190,6 +233,13 @@ serve(async (req) => {
 
     if (existingOrder) {
       logStep("Duplicate event, skipping", { stripeEventId, orderId: existingOrder.id });
+      await logWebhookEvent({
+        stripeEventId,
+        eventType: event.type,
+        status: "duplicate",
+        processingMs: Date.now() - startedAt,
+        payloadSummary: { order_id: existingOrder.id },
+      });
       return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 });
     }
 
@@ -217,12 +267,26 @@ serve(async (req) => {
         );
       }
       logStep("Seller signup fee processed", { resellerId: meta.reseller_id });
+      await logWebhookEvent({
+        stripeEventId: event.id,
+        eventType: event.type,
+        status: "processed",
+        processingMs: Date.now() - startedAt,
+        payloadSummary: { kind: "seller_signup_fee", reseller_id: meta.reseller_id },
+      });
       return new Response(JSON.stringify({ received: true }), { status: 200 });
     }
 
     // --- Skip non-ticket sessions (membership-only, etc.) ---
     if (!meta.event_title) {
       logStep("Non-ticket session, acknowledging", { sessionId: session.id });
+      await logWebhookEvent({
+        stripeEventId: event.id,
+        eventType: event.type,
+        status: "skipped",
+        processingMs: Date.now() - startedAt,
+        payloadSummary: { reason: "non-ticket", session_id: session.id },
+      });
       return new Response(JSON.stringify({ received: true, skipped: "non-ticket" }), { status: 200 });
     }
 
@@ -560,14 +624,28 @@ serve(async (req) => {
       );
     }
 
+    await logWebhookEvent({
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "processed",
+      processingMs: Date.now() - startedAt,
+      payloadSummary: { order_id: orderId, kind: "ticket_purchase" },
+    });
     return new Response(JSON.stringify({ received: true, orderId }), { status: 200 });
   } catch (err) {
-    // Catch-all: signature was valid; the issue is internal. Log loudly and ack so Stripe stops retrying.
+    const errorMessage = err instanceof Error ? err.message : String(err);
     logStep("FATAL processing error (acknowledged to Stripe)", {
       eventId: event.id,
       eventType: event.type,
-      error: err instanceof Error ? err.message : String(err),
+      error: errorMessage,
       stack: err instanceof Error ? err.stack : undefined,
+    });
+    await logWebhookEvent({
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "processing_error",
+      processingMs: Date.now() - startedAt,
+      errorMessage,
     });
     return new Response(JSON.stringify({ received: true, processing_error: true }), { status: 200 });
   }
