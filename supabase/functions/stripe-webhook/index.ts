@@ -532,16 +532,12 @@ serve(async (req) => {
           `Tickets must be delivered within, at least, 48 hours before the event.`,
         ].filter(Boolean).join("\n");
 
-        await safe("admin seller email", () =>
-          enqueueEmail(
-            ADMIN_EMAIL,
-            `Ticket Sold — ${eventTitle}${subjectSuffix}`,
-            sellerHtml,
-            "seller-notification",
-            { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" },
-          )
-        );
-        sellerNotificationSent = true;
+        // Determine the actual seller email:
+        // - If ticket has a seller_id → email that reseller ONLY
+        // - If ticket has no seller_id (admin-listed) → email LMK (admin) as fallback seller
+        let actualSellerEmail: string | null = null;
+        let actualSellerUserId: string | null = null;
+        let actualSellerBusinessName: string | null = null;
 
         if (ticket.seller_id) {
           const { data: reseller } = await supabase
@@ -549,39 +545,46 @@ serve(async (req) => {
             .select("user_id, business_name, email")
             .eq("user_id", ticket.seller_id)
             .maybeSingle();
-
           if (reseller) {
-            await safe("reseller in-app notification", () =>
-              supabase.from("notifications").insert({
-                user_id: reseller.user_id,
-                type: "purchase_seller",
-                title: `Ticket Sold — ${eventTitle}${subjectSuffix}`,
-                body: sellerBody,
-                metadata: {
-                  event_title: eventTitle,
-                  tier: `Section ${sectionInfo}${rowInfo ? ` Row ${rowInfo}` : ""}`,
-                  venue,
-                  event_date: eventDate,
-                  total_amount: salePrice,
-                  order_ref: orderRefShort,
-                  order_id: orderId,
-                },
-              })
-            );
-
-            const resellerEmail = reseller.email;
-            if (resellerEmail && resellerEmail !== ADMIN_EMAIL) {
-              await safe("reseller email", () =>
-                enqueueEmail(
-                  resellerEmail,
-                  `Ticket Sold — ${eventTitle}${subjectSuffix}`,
-                  sellerHtml,
-                  "seller-notification",
-                  { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" },
-                )
-              );
-            }
+            actualSellerEmail = reseller.email ?? null;
+            actualSellerUserId = reseller.user_id;
+            actualSellerBusinessName = reseller.business_name;
           }
+        } else {
+          actualSellerEmail = ADMIN_EMAIL;
+        }
+
+        if (actualSellerEmail) {
+          await safe("seller email", () =>
+            enqueueEmail(
+              actualSellerEmail!,
+              `Ticket Sold — ${eventTitle}${subjectSuffix}`,
+              sellerHtml,
+              "seller-notification",
+              { fromName: "LMK Sports Consulting", replyTo: "Lmksportsconsulting@gmail.com" },
+            )
+          );
+          sellerNotificationSent = true;
+        }
+
+        if (actualSellerUserId) {
+          await safe("reseller in-app notification", () =>
+            supabase.from("notifications").insert({
+              user_id: actualSellerUserId,
+              type: "purchase_seller",
+              title: `Ticket Sold — ${eventTitle}${subjectSuffix}`,
+              body: sellerBody,
+              metadata: {
+                event_title: eventTitle,
+                tier: `Section ${sectionInfo}${rowInfo ? ` Row ${rowInfo}` : ""}`,
+                venue,
+                event_date: eventDate,
+                total_amount: salePrice,
+                order_ref: orderRefShort,
+                order_id: orderId,
+              },
+            })
+          );
         }
       } else {
         logStep("Ticket not found, falling back to admin email", { ticketId: meta.ticket_id });
