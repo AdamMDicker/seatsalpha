@@ -12,10 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
+import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye, SlidersHorizontal } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import FeeGateDialog from "./FeeGateDialog";
 import MobileAuthSheet from "./MobileAuthSheet";
 
