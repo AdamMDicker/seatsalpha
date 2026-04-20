@@ -141,7 +141,7 @@ const TeamCFLPage = () => {
           )}
 
           {selectedGame && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="flex flex-col-reverse gap-8 lg:grid lg:grid-cols-2">
               <SeatingMap
                 availableSections={availableSections}
                 selectedSection={selectedSection}
