@@ -118,7 +118,7 @@ const TeamCFLPage = () => {
                     setSelectedGame(game);
                     setSelectedSection(null);
                     setTimeout(() => {
-                      document.getElementById("ticket-listings")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      document.getElementById("featured-tickets")?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }, 150);
                   }}
                   teamLogo={teamLogo}
