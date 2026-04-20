@@ -290,26 +290,26 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
     return (
       <div
-        className="glass rounded-xl p-4 hover:border-primary/40 transition-all border-primary/20 cursor-pointer"
+        className="glass rounded-xl p-3 sm:p-4 hover:border-primary/40 transition-all border-primary/20 cursor-pointer"
         onClick={() => handleBuy(ticket)}
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="font-semibold text-foreground">Section {ticket.section}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <p className="font-semibold text-foreground text-sm sm:text-base">Section {ticket.section}</p>
               <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold">No Fees</span>
               {isGiveaway && perks.includes("giveaway_guaranteed") && (
                 <span className="px-1.5 py-0.5 rounded bg-accent/20 text-[10px] font-semibold text-primary flex items-center gap-0.5">
-                  <Gift className="h-2.5 w-2.5" /> Giveaway Guaranteed
+                  <Gift className="h-2.5 w-2.5" /> Giveaway
                 </span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {ticket.row_name && `Row ${ticket.row_name}`}
               {!ticket.hide_seat_numbers && ticket.seat_number && ` · Seats ${ticket.seat_number}`}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
-            <p className="text-[10px] text-primary/80 mt-0.5 font-medium">{getQuantityHint(ticket)}</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{ticket.quantity - ticket.quantity_sold} available</p>
+            <p className="text-[10px] sm:text-[11px] text-primary/80 mt-0.5 font-medium">{getQuantityHint(ticket)}</p>
             {perks.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {perks.filter((p) => p !== "giveaway_guaranteed").map((p) => {
@@ -320,29 +320,38 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
                 })}
               </div>
             )}
+            {/* Mobile: seat view pill (replaces thumbnail strip) */}
+            {isMobile && images.length > 0 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); openLightbox(images, 0); }}
+                className="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-secondary text-[11px] font-medium text-foreground/80 hover:bg-secondary/80"
+              >
+                <Camera className="h-3 w-3" /> View Seat ({images.length})
+              </button>
+            )}
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-2 flex-shrink-0">
             <div className="text-right">
               {selectedSeatCount ? (
                 <>
-                  <p className="font-display text-xl font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
-                  <p className="text-[10px] text-muted-foreground">{selectedSeatCount} tickets × ${ticket.price}</p>
+                  <p className="font-display text-lg sm:text-xl font-bold text-foreground">${(ticket.price * selectedSeatCount).toLocaleString()} <span className="text-[10px] sm:text-xs text-muted-foreground font-normal">CAD</span></p>
+                  <p className="text-[10px] text-muted-foreground">{selectedSeatCount} × ${ticket.price}</p>
                 </>
               ) : (
                 <>
-                  <p className="font-display text-xl font-bold text-foreground">${ticket.price} <span className="text-xs text-muted-foreground font-normal">CAD</span></p>
-                  <p className="text-xs text-muted-foreground">per ticket</p>
+                  <p className="font-display text-lg sm:text-xl font-bold text-foreground">${ticket.price} <span className="text-[10px] sm:text-xs text-muted-foreground font-normal">CAD</span></p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">per ticket</p>
                 </>
               )}
-              <p className="text-[10px] text-emerald-400 mt-0.5">Members enjoy LCC-included pricing</p>
+              <p className="text-[10px] sm:text-xs text-emerald-400 mt-0.5">Members: LCC included</p>
               {ticket.face_value && ticket.face_value > 0 && (
-                <p className="text-[9px] text-muted-foreground mt-0.5">Face value: ${ticket.face_value.toFixed(2)}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">Face value: ${ticket.face_value.toFixed(2)}</p>
               )}
             </div>
             <Button
               variant="hero"
               size="sm"
-              className="animate-pulse-glow"
+              className="animate-pulse-glow min-h-[44px] sm:min-h-0 px-4"
               onClick={(e) => { e.stopPropagation(); handleBuy(ticket); }}
               disabled={buyingTicketId === ticket.id}
             >
@@ -350,37 +359,40 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
             </Button>
           </div>
         </div>
-        {images.length > 0 ? (
-          <div className="mt-3">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Eye className="h-3 w-3 text-primary/70" />
-              <span className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider">Seat View</span>
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {images.map((img, idx) => (
-                <button
-                  key={img.id}
-                  onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
-                  className="relative group flex-shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all"
-                >
-                  <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
-                    <Camera className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  {img.caption && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5">
-                      <span className="text-[9px] text-white/90 line-clamp-1">{img.caption}</span>
+        {/* Desktop only: seat thumbnail strip */}
+        {!isMobile && (
+          images.length > 0 ? (
+            <div className="mt-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Eye className="h-3 w-3 text-primary/70" />
+                <span className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider">Seat View</span>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {images.map((img, idx) => (
+                  <button
+                    key={img.id}
+                    onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
+                    className="relative group flex-shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all"
+                  >
+                    <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                      <Camera className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
-                  )}
-                </button>
-              ))}
+                    {img.caption && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5">
+                        <span className="text-[9px] text-white/90 line-clamp-1">{img.caption}</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground/50">
-            <Camera className="h-3 w-3" />
-            <span>No seat view photos yet</span>
-          </div>
+          ) : (
+            <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground/50">
+              <Camera className="h-3 w-3" />
+              <span>No seat view photos yet</span>
+            </div>
+          )
         )}
       </div>
     );
