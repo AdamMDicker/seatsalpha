@@ -81,6 +81,14 @@ serve(async (req) => {
   }
 
   logStep("Event received", { type: event.type, id: event.id });
+  const startedAt = Date.now();
+
+  await logSellerWebhookEvent(supabase, {
+    stripeEventId: event.id,
+    eventType: event.type,
+    status: "received",
+    payloadSummary: { livemode: event.livemode },
+  });
 
   // Fast-ack any event we don't handle so Stripe doesn't retry irrelevant events.
   const HANDLED = new Set([
@@ -91,6 +99,12 @@ serve(async (req) => {
   ]);
   if (!HANDLED.has(event.type)) {
     logStep("Unhandled event type, acknowledging", { type: event.type });
+    await logSellerWebhookEvent(supabase, {
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "ignored",
+      processingMs: Date.now() - startedAt,
+    });
     return new Response(JSON.stringify({ received: true, ignored: true }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
