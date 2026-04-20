@@ -853,6 +853,45 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_webhook_events: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          event_type: string
+          id: string
+          payload_summary: Json | null
+          processing_ms: number | null
+          received_at: string
+          source: string
+          status: string
+          stripe_event_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          payload_summary?: Json | null
+          processing_ms?: number | null
+          received_at?: string
+          source?: string
+          status?: string
+          stripe_event_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          payload_summary?: Json | null
+          processing_ms?: number | null
+          received_at?: string
+          source?: string
+          status?: string
+          stripe_event_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
