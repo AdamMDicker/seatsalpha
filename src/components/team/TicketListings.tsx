@@ -527,7 +527,20 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     return () => observer.disconnect();
   }, [isMobile]);
 
+  // Toggle body attribute so floating chat button shifts up when sticky bar is visible
+  useEffect(() => {
+    if (showStickyBar && isMobile) {
+      document.body.setAttribute("data-sticky-buybar", "true");
+    } else {
+      document.body.removeAttribute("data-sticky-buybar");
+    }
+    return () => document.body.removeAttribute("data-sticky-buybar");
+  }, [showStickyBar, isMobile]);
+
   const cheapestPrice = allTickets.length > 0 ? Math.min(...allTickets.map(t => t.price)) : null;
+  const cheapestTicket = allTickets.length > 0
+    ? allTickets.reduce((min, t) => (t.price < min.price ? t : min), allTickets[0])
+    : null;
   const featuredTicketCount = featuredTickets.reduce(
     (sum, ticket) => sum + Math.max(0, ticket.quantity - ticket.quantity_sold),
     0,
@@ -536,6 +549,8 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     (sum, ticket) => sum + Math.max(0, ticket.quantity - ticket.quantity_sold),
     0,
   );
+
+  const activePerksCount = (filterRow1 ? 1 : 0) + (filterAisle ? 1 : 0) + (filterAccessible ? 1 : 0);
 
   return (
     <div id="ticket-listings">
