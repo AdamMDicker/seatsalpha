@@ -12,7 +12,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any; data: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  checkMembership: () => Promise<void>;
+  checkMembership: () => Promise<{ subscribed: boolean; subscription_end: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,26 +32,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const checkMembership = async () => {
+    const defaultStatus = { subscribed: false, subscription_end: null as string | null };
+
     try {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) {
         console.warn("check-subscription error, retrying...", error);
-        // Retry once after a brief delay
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1000));
         const retry = await supabase.functions.invoke("check-subscription");
+
         if (!retry.error && retry.data) {
-          setIsMember(!!retry.data.subscribed);
-          setMembershipEnd(retry.data.subscription_end || null);
+          const nextStatus = {
+            subscribed: !!retry.data.subscribed,
+            subscription_end: retry.data.subscription_end || null,
+          };
+          setIsMember(nextStatus.subscribed);
+          setMembershipEnd(nextStatus.subscription_end);
+          return nextStatus;
         }
-        return;
+
+        setIsMember(false);
+        setMembershipEnd(null);
+        return defaultStatus;
       }
+
       if (data) {
-        setIsMember(!!data.subscribed);
-        setMembershipEnd(data.subscription_end || null);
+        const nextStatus = {
+          subscribed: !!data.subscribed,
+          subscription_end: data.subscription_end || null,
+        };
+        setIsMember(nextStatus.subscribed);
+        setMembershipEnd(nextStatus.subscription_end);
+        return nextStatus;
       }
     } catch {
       // silently fail
     }
+
+    return { subscribed: isMember, subscription_end: membershipEnd };
   };
 
   useEffect(() => {

@@ -199,7 +199,7 @@ const FeeGateDialog = ({
   const isLoading = selectedOption === "membership" ? membershipLoading : loading;
 
   // --- MEMBER FAST-PATH: skip pricing options entirely ---
-  if (isMember && !isAdmin) {
+  if (isMember) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md p-0 overflow-hidden max-h-[90vh] flex flex-col">
