@@ -91,6 +91,25 @@
   .glow-gold {
     box-shadow: 0 0 40px -10px hsl(42 90% 55% / 0.4);
   }
+
+  /* Safe area utilities for iPhone notch / home indicator */
+  .safe-pt {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+  .safe-pb {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  .safe-pb-2 {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  .safe-pb-2_5 {
+    padding-bottom: max(0.625rem, env(safe-area-inset-bottom));
+  }
+
+  /* Floating chat shifts up when mobile sticky buy bar is visible */
+  body[data-sticky-buybar="true"] .floating-chat-btn {
+    transform: translateY(-64px);
+  }
 }
 
 @media print {
