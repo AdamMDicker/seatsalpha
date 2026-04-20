@@ -18,17 +18,24 @@ const ResetPassword = () => {
 
   useEffect(() => {
     // Listen for the PASSWORD_RECOVERY event from the auth state change
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && window.location.hash.includes("type=recovery"))) {
         setIsRecovery(true);
       }
     });
 
-    // Also check the URL hash for type=recovery (handles page refresh)
+    // Check URL hash for type=recovery (handles page refresh / direct landing)
     const hash = window.location.hash;
-    if (hash.includes("type=recovery")) {
+    const search = window.location.search;
+    if (hash.includes("type=recovery") || search.includes("type=recovery") || hash.includes("access_token")) {
       setIsRecovery(true);
     }
+
+    // Fallback: if a session already exists when we land here, treat as recovery
+    // (Supabase consumes the hash and creates a session on /reset-password)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setIsRecovery(true);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
