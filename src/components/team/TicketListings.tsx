@@ -215,8 +215,8 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       return;
     }
 
-    await checkMembership();
-    setMemberCheckoutOverride(isMember);
+    const membershipStatus = await checkMembership();
+    setMemberCheckoutOverride(membershipStatus.subscribed);
     setFeeGateTicket(ticket);
   };
 
