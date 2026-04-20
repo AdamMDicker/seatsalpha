@@ -303,17 +303,32 @@ serve(async (req) => {
       }
     }
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
     logStep("FATAL processing error (acknowledged to Stripe)", {
       eventId: event.id,
       eventType: event.type,
-      error: err instanceof Error ? err.message : String(err),
+      error: errorMessage,
       stack: err instanceof Error ? err.stack : undefined,
+    });
+    await logSellerWebhookEvent(supabase, {
+      stripeEventId: event.id,
+      eventType: event.type,
+      status: "processing_error",
+      processingMs: Date.now() - startedAt,
+      errorMessage,
     });
     return new Response(JSON.stringify({ received: true, processing_error: true }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
     });
   }
+
+  await logSellerWebhookEvent(supabase, {
+    stripeEventId: event.id,
+    eventType: event.type,
+    status: "processed",
+    processingMs: Date.now() - startedAt,
+  });
 
   return new Response(JSON.stringify({ received: true }), {
     headers: { "Content-Type": "application/json" },
