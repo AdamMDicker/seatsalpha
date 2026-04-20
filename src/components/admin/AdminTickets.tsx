@@ -45,6 +45,7 @@ const AdminTickets = () => {
       event_id: form.event_id, section: form.section,
       row_name: form.row_name || null, seat_number: form.seat_number || null,
       price: parseFloat(form.price), quantity: parseInt(form.quantity),
+      seller_id: "c0768913-3e54-476a-b4b2-8a0051b087ed",
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Ticket added!" });
