@@ -152,52 +152,14 @@ const PaymentSuccess = () => {
           </div>
         </div>
 
-        {/* Upsell section */}
-        <div className="space-y-4">
-          <h2 className="font-display text-xl font-bold text-foreground text-center">
-            Enhance Your Game Day
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {upsellCards.map((card, i) => (
-              <div
-                key={i}
-                className={`rounded-xl border p-5 flex flex-col items-center text-center gap-3 transition-all ${
-                  card.live
-                    ? "border-primary/30 bg-card hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
-                    : "border-border/50 bg-card opacity-70"
-                }`}
-              >
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    card.live
-                      ? "bg-primary/20 text-primary"
-                      : "bg-secondary text-muted-foreground"
-                  }`}
-                >
-                  {card.icon}
-                </div>
-                <h3 className="font-display font-semibold text-foreground text-sm">
-                  {card.title}
-                </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {card.description}
-                </p>
-                {card.live && card.href ? (
-                  <a href={card.href} target="_blank" rel="noopener noreferrer" className="w-full">
-                    <Button variant="hero" size="sm" className="w-full gap-1.5">
-                      {card.cta}
-                      <ExternalLink className="h-3 w-3" />
-                    </Button>
-                  </a>
-                ) : (
-                  <Button variant="secondary" size="sm" className="w-full" disabled>
-                    {card.cta}
-                  </Button>
-                )}
-              </div>
-            ))}
+        {/* Upsell section hidden for now */}
+        {false && (
+          <div className="space-y-4">
+            <h2 className="font-display text-xl font-bold text-foreground text-center">
+              Enhance Your Game Day
+            </h2>
           </div>
-        </div>
+        )}
 
         <div className="text-center">
           <Link to="/">
