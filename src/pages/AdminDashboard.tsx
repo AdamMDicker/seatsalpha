@@ -19,7 +19,8 @@ import AdminSellerCodes from "@/components/admin/AdminSellerCodes";
 import AdminTransfers from "@/components/admin/AdminTransfers";
 import AdminReplayWebhook from "@/components/admin/AdminReplayWebhook";
 import AdminWebhookEvents from "@/components/admin/AdminWebhookEvents";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook } from "lucide-react";
+import AdminSectionViews from "@/components/admin/AdminSectionViews";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles } from "lucide-react";
 
 const tabs = [
   { id: "events", label: "Events", icon: Calendar },
@@ -34,6 +35,7 @@ const tabs = [
   { id: "banned", label: "Banned", icon: Ban },
   { id: "visibility", label: "Visibility", icon: Eye },
   { id: "hero", label: "Hero Image", icon: Image },
+  { id: "section-views", label: "AI Seat Views", icon: Sparkles },
   { id: "newsletter", label: "Newsletter", icon: Mail },
   { id: "emails", label: "Email Monitor", icon: Activity },
   { id: "webhooks", label: "Webhook Log", icon: Webhook },
@@ -125,6 +127,7 @@ const AdminDashboard = () => {
         {activeTab === "banned" && <AdminBannedUsers />}
         {activeTab === "visibility" && <AdminLeagueVisibility />}
         {activeTab === "hero" && <AdminHeroImage />}
+        {activeTab === "section-views" && <AdminSectionViews />}
         {activeTab === "newsletter" && <AdminNewsletter />}
         {activeTab === "emails" && <AdminEmailMonitor />}
         {activeTab === "webhooks" && <AdminWebhookEvents />}
