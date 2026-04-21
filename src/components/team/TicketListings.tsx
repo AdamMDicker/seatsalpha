@@ -810,6 +810,14 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
                 className="w-full max-h-[75vh] object-contain"
               />
 
+              {/* AI-generated badge */}
+              {lightboxImages[lightboxIndex].isAiGenerated && (
+                <div className="absolute top-3 right-12 flex items-center gap-1.5 bg-primary/90 text-primary-foreground text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-lg">
+                  <Sparkles className="h-3 w-3" />
+                  <span>AI reference — actual view may differ</span>
+                </div>
+              )}
+
               {/* Caption overlay */}
               {lightboxImages[lightboxIndex].caption && (
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-8">
