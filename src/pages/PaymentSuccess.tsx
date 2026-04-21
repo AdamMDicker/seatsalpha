@@ -1,10 +1,13 @@
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Check, Car, ExternalLink, Home, Hotel, Plane, Crown, ShoppingBag, CalendarDays, MapPin, Armchair, Ticket } from "lucide-react";
+import { Check, Car, ExternalLink, Home, Hotel, Plane, Crown, ShoppingBag, CalendarDays, MapPin, Armchair, Ticket, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useSearchParams } from "react-router-dom";
 import { getUberDeepLink } from "@/utils/uberDeepLink";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { mapRogersCentreSectionToCategory } from "@/utils/sectionCategoryMap";
 
 interface UpsellCard {
   icon: React.ReactNode;
@@ -48,6 +51,37 @@ const PaymentSuccess = () => {
   const eventDate = searchParams.get("date");
   const qty = searchParams.get("qty");
   const uberLink = venue ? getUberDeepLink(venue) : null;
+  const [aiViewUrl, setAiViewUrl] = useState<string | null>(null);
+
+  // Fetch AI-generated section reference view as a fallback "what your seats look like" preview.
+  useEffect(() => {
+    const venueName = venue ? decodeURIComponent(venue) : null;
+    const sectionName = tier ? decodeURIComponent(tier) : null;
+    if (!venueName || !sectionName) return;
+
+    // Currently only Rogers Centre has section view mappings.
+    if (!venueName.toLowerCase().includes("rogers centre")) return;
+
+    const categoryId = mapRogersCentreSectionToCategory(sectionName);
+    if (!categoryId) return;
+
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("venue_section_views")
+        .select("image_url")
+        .eq("venue", "Rogers Centre")
+        .eq("section_id", categoryId)
+        .maybeSingle();
+      if (!cancelled && !error && data?.image_url) {
+        setAiViewUrl(data.image_url);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [venue, tier]);
 
   const upsellCards: UpsellCard[] = [
     ...(uberLink
