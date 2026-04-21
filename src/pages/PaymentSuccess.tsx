@@ -186,6 +186,35 @@ const PaymentSuccess = () => {
           </div>
         </div>
 
+        {/* AI-generated section reference view (fallback when no real seat photos) */}
+        {aiViewUrl && (
+          <div className="bg-card border border-primary/20 rounded-2xl overflow-hidden">
+            <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="font-display text-lg font-bold text-foreground">
+                  Your section view
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  A reference shot of what fans see from {tier ? decodeURIComponent(tier) : "your section"}.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/15 text-primary border border-primary/30">
+                <Sparkles className="h-3 w-3" />
+                AI reference
+              </span>
+            </div>
+            <img
+              src={aiViewUrl}
+              alt={`Reference view from section ${tier ? decodeURIComponent(tier) : ""} at ${venue ? decodeURIComponent(venue) : "the venue"}`}
+              className="w-full aspect-video object-cover"
+              loading="lazy"
+            />
+            <p className="px-5 py-3 text-xs text-muted-foreground border-t border-border">
+              AI-generated reference — actual view from your exact seat may differ.
+            </p>
+          </div>
+        )}
+
         {/* Upsell section hidden for now */}
         {false && (
           <div className="space-y-4">
