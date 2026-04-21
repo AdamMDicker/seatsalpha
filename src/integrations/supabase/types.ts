@@ -1017,6 +1017,30 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_section_views: {
+        Row: {
+          generated_at: string
+          id: string
+          image_url: string
+          section_id: string
+          venue: string
+        }
+        Insert: {
+          generated_at?: string
+          id?: string
+          image_url: string
+          section_id: string
+          venue: string
+        }
+        Update: {
+          generated_at?: string
+          id?: string
+          image_url?: string
+          section_id?: string
+          venue?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_tickets: {
