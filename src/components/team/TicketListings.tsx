@@ -12,13 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye, SlidersHorizontal } from "lucide-react";
+import { Camera, Gift, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Eye, SlidersHorizontal, Sparkles } from "lucide-react";
 import { expandTeamNames } from "@/utils/teamNameUtils";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import FeeGateDialog from "./FeeGateDialog";
 import MobileAuthSheet from "./MobileAuthSheet";
+import { mapRogersCentreSectionToCategory } from "@/utils/sectionCategoryMap";
 
 interface TicketInfo {
   id: string;
@@ -41,6 +42,7 @@ interface SeatImage {
   ticket_id: string;
   image_url: string;
   caption: string | null;
+  isAiGenerated?: boolean;
 }
 
 interface TicketListingsProps {
@@ -114,18 +116,55 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     const ids = tickets.map((t) => t.id);
     if (ids.length === 0) return;
     const fetchImages = async () => {
-      const { data } = await supabase.from("seat_images").select("id, ticket_id, image_url, caption").in("ticket_id", ids);
-      if (data) {
-        const grouped: Record<string, SeatImage[]> = {};
-        data.forEach((img) => {
-          if (!grouped[img.ticket_id]) grouped[img.ticket_id] = [];
-          grouped[img.ticket_id].push(img);
-        });
-        setSeatImages(grouped);
+      // 1. Fetch real seller-uploaded seat images
+      const { data: realImages } = await supabase
+        .from("seat_images")
+        .select("id, ticket_id, image_url, caption")
+        .in("ticket_id", ids);
+
+      const grouped: Record<string, SeatImage[]> = {};
+      (realImages || []).forEach((img) => {
+        if (!grouped[img.ticket_id]) grouped[img.ticket_id] = [];
+        grouped[img.ticket_id].push(img);
+      });
+
+      // 2. Fetch AI section reference views for this venue (Rogers Centre fallback)
+      if (venueName === "Rogers Centre") {
+        const { data: sectionViews } = await supabase
+          .from("venue_section_views")
+          .select("section_id, image_url")
+          .eq("venue", "Rogers Centre");
+
+        if (sectionViews && sectionViews.length > 0) {
+          const viewsBySection: Record<string, string> = {};
+          sectionViews.forEach((v) => {
+            viewsBySection[v.section_id] = v.image_url;
+          });
+
+          // For each ticket without real photos, inject an AI fallback if available
+          tickets.forEach((ticket) => {
+            if (grouped[ticket.id] && grouped[ticket.id].length > 0) return;
+            const category = mapRogersCentreSectionToCategory(ticket.section);
+            if (!category) return;
+            const aiUrl = viewsBySection[category];
+            if (!aiUrl) return;
+            grouped[ticket.id] = [
+              {
+                id: `ai-${category}-${ticket.id}`,
+                ticket_id: ticket.id,
+                image_url: aiUrl,
+                caption: "AI-generated reference view",
+                isAiGenerated: true,
+              },
+            ];
+          });
+        }
       }
+
+      setSeatImages(grouped);
     };
     fetchImages();
-  }, [tickets]);
+  }, [tickets, venueName]);
 
   // Auto-open FeeGateDialog if returning from auth with buyTicket param
   useEffect(() => {
