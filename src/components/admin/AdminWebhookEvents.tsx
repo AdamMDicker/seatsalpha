@@ -22,6 +22,8 @@ type WebhookEvent = {
 const STATUS_STYLES: Record<string, string> = {
   processed: "bg-green-500/10 text-green-500 border-green-500/30",
   processing_error: "bg-destructive/10 text-destructive border-destructive/30",
+  signature_failed: "bg-destructive/10 text-destructive border-destructive/30",
+  ignored_no_signature: "bg-yellow-500/10 text-yellow-500 border-yellow-500/30",
   duplicate: "bg-blue-500/10 text-blue-500 border-blue-500/30",
   ignored: "bg-muted text-muted-foreground border-border",
   skipped: "bg-yellow-500/10 text-yellow-500 border-yellow-500/30",
