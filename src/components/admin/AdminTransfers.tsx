@@ -147,6 +147,24 @@ const AdminTransfers = () => {
     setActionLoading(true);
     const { transfer, action } = confirmDialog;
 
+    if (action === "delete") {
+      const { error } = await supabase
+        .from("order_transfers")
+        .delete()
+        .eq("id", transfer.id);
+
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Deleted", description: "Transfer record removed." });
+        fetchTransfers();
+      }
+
+      setActionLoading(false);
+      setConfirmDialog({ open: false, transfer: null, action: "confirm" });
+      return;
+    }
+
     const updates: Record<string, any> = {};
     if (action === "confirm") {
       updates.status = "confirmed";
