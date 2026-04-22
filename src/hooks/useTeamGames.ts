@@ -99,7 +99,11 @@ export function useTeamGames(searchTerm: string | undefined) {
           ticketsByEvent[t.event_id].push(t);
         });
 
+        // Defensive client-side filter: never show games that have already started,
+        // even if a stale cache or query lag returns them.
+        const todayStartMs = new Date(todayStart).getTime();
         const gamesWithTickets: GameEvent[] = events
+          .filter((game) => new Date(game.event_date).getTime() >= todayStartMs)
           .map((game) => {
             const tickets = (ticketsByEvent[game.id] || []).sort(
               (a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)
