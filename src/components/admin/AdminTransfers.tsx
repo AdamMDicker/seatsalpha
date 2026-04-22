@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight, MailX, Send, Link2, AlertTriangle } from "lucide-react";
+import { CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, ExternalLink, Search, RefreshCw, ScanSearch, ChevronLeft, ChevronRight, MailX, Send, Link2, AlertTriangle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 const PAGE_SIZE = 20;
@@ -53,7 +53,7 @@ const AdminTransfers = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
-  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; transfer: AdminTransfer | null; action: "confirm" | "dispute" | "reset" }>({ open: false, transfer: null, action: "confirm" });
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; transfer: AdminTransfer | null; action: "confirm" | "dispute" | "reset" | "delete" }>({ open: false, transfer: null, action: "confirm" });
   const [actionLoading, setActionLoading] = useState(false);
   const [reverifying, setReverifying] = useState<string | null>(null);
   const [relaying, setRelaying] = useState<string | null>(null);
@@ -147,6 +147,24 @@ const AdminTransfers = () => {
     setActionLoading(true);
     const { transfer, action } = confirmDialog;
 
+    if (action === "delete") {
+      const { error } = await supabase
+        .from("order_transfers")
+        .delete()
+        .eq("id", transfer.id);
+
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Deleted", description: "Transfer record removed." });
+        fetchTransfers();
+      }
+
+      setActionLoading(false);
+      setConfirmDialog({ open: false, transfer: null, action: "confirm" });
+      return;
+    }
+
     const updates: Record<string, any> = {};
     if (action === "confirm") {
       updates.status = "confirmed";
@@ -211,7 +229,7 @@ const AdminTransfers = () => {
   // Reset page when filters change
   useEffect(() => { setPage(1); }, [statusFilter, search]);
 
-  const actionLabel = { confirm: "Confirm", dispute: "Dispute", reset: "Reset" };
+  const actionLabel = { confirm: "Confirm", dispute: "Dispute", reset: "Reset", delete: "Delete" };
 
   if (loading) {
     return (
@@ -404,6 +422,12 @@ const AdminTransfers = () => {
                             {relaying === t.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
                             Resend Relay
                           </Button>
+                          <Button
+                            size="sm" variant="destructive" className="h-7 text-xs"
+                            onClick={() => setConfirmDialog({ open: true, transfer: t, action: "delete" })}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" /> Delete
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -438,6 +462,7 @@ const AdminTransfers = () => {
               {confirmDialog.action === "confirm" && "This will mark the transfer as confirmed and notify the buyer that their tickets are ready."}
               {confirmDialog.action === "dispute" && "This will mark the transfer as disputed. The seller will be notified to re-upload proof."}
               {confirmDialog.action === "reset" && "This will reset the transfer to pending, clearing all uploaded proof and verification results."}
+              {confirmDialog.action === "delete" && "This will permanently delete this transfer record. The order and ticket are not affected, but the transfer history will be lost. This action cannot be undone."}
             </DialogDescription>
           </DialogHeader>
           {confirmDialog.transfer && (
@@ -462,7 +487,7 @@ const AdminTransfers = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDialog({ open: false, transfer: null, action: "confirm" })} disabled={actionLoading}>Cancel</Button>
             <Button
-              variant={confirmDialog.action === "dispute" ? "destructive" : "default"}
+              variant={confirmDialog.action === "dispute" || confirmDialog.action === "delete" ? "destructive" : "default"}
               onClick={handleAction}
               disabled={actionLoading}
             >
