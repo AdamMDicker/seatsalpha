@@ -45,9 +45,15 @@ const EventsSection = () => {
         .order("event_date", { ascending: true })
         .limit(20);
 
-      if (dbEvents && dbEvents.length > 0) {
+      // Defensive: re-filter on the client to guarantee no past games slip through stale caches.
+      const nowMs = new Date(now).getTime();
+      const upcomingDbEvents = (dbEvents ?? []).filter(
+        (ev) => new Date(ev.event_date).getTime() >= nowMs
+      );
+
+      if (upcomingDbEvents.length > 0) {
         const eventsWithInfo = (await Promise.all(
-          dbEvents.map(async (ev) => {
+          upcomingDbEvents.map(async (ev) => {
             const { data: tickets } = await (supabase
               .from("public_tickets" as any)
               .select("is_reseller_ticket, price, quantity, quantity_sold")
