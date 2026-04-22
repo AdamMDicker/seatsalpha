@@ -53,7 +53,7 @@ const AdminTransfers = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
-  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; transfer: AdminTransfer | null; action: "confirm" | "dispute" | "reset" }>({ open: false, transfer: null, action: "confirm" });
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; transfer: AdminTransfer | null; action: "confirm" | "dispute" | "reset" | "delete" }>({ open: false, transfer: null, action: "confirm" });
   const [actionLoading, setActionLoading] = useState(false);
   const [reverifying, setReverifying] = useState<string | null>(null);
   const [relaying, setRelaying] = useState<string | null>(null);
