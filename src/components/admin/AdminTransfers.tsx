@@ -487,7 +487,7 @@ const AdminTransfers = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDialog({ open: false, transfer: null, action: "confirm" })} disabled={actionLoading}>Cancel</Button>
             <Button
-              variant={confirmDialog.action === "dispute" ? "destructive" : "default"}
+              variant={confirmDialog.action === "dispute" || confirmDialog.action === "delete" ? "destructive" : "default"}
               onClick={handleAction}
               disabled={actionLoading}
             >
