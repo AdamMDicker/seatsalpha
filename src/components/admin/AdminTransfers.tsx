@@ -462,6 +462,7 @@ const AdminTransfers = () => {
               {confirmDialog.action === "confirm" && "This will mark the transfer as confirmed and notify the buyer that their tickets are ready."}
               {confirmDialog.action === "dispute" && "This will mark the transfer as disputed. The seller will be notified to re-upload proof."}
               {confirmDialog.action === "reset" && "This will reset the transfer to pending, clearing all uploaded proof and verification results."}
+              {confirmDialog.action === "delete" && "This will permanently delete this transfer record. The order and ticket are not affected, but the transfer history will be lost. This action cannot be undone."}
             </DialogDescription>
           </DialogHeader>
           {confirmDialog.transfer && (
