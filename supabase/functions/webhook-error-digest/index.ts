@@ -192,6 +192,13 @@ Deno.serve(async (req) => {
     let queued = 0;
     for (const recipient of recipients) {
       const messageId = `webhook-digest-${recipient}-${new Date().toISOString().slice(0, 10)}`;
+      const unsubToken = crypto.randomUUID();
+
+      // Insert unsubscribe token (compliance — one per email)
+      await supabase.from("email_unsubscribe_tokens").insert({
+        email: recipient,
+        token: unsubToken,
+      });
 
       // Log pending send
       await supabase.from("email_send_log").insert({
@@ -206,11 +213,17 @@ Deno.serve(async (req) => {
         queue_name: "transactional_emails",
         payload: {
           message_id: messageId,
-          template_name: "webhook-error-digest",
-          recipient,
+          idempotency_key: messageId,
+          unsubscribe_token: unsubToken,
+          to: recipient,
+          from: FROM_EMAIL,
+          sender_domain: SENDER_DOMAIN,
           subject,
           html,
-          from: FROM_EMAIL,
+          text: subject,
+          purpose: "transactional",
+          label: "webhook-error-digest",
+          queued_at: new Date().toISOString(),
         },
       });
 
