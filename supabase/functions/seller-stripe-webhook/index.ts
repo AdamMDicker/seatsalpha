@@ -57,8 +57,12 @@ serve(async (req) => {
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
   const webhookSecret = Deno.env.get("SELLER_STRIPE_WEBHOOK_SECRET");
   if (!stripeKey || !webhookSecret) {
-    logStep("ERROR", { message: "Missing STRIPE_SECRET_KEY or SELLER_STRIPE_WEBHOOK_SECRET" });
-    return new Response("Server misconfigured", { status: 500 });
+    console.error("[SELLER-WEBHOOK] Misconfigured: missing STRIPE_SECRET_KEY or SELLER_STRIPE_WEBHOOK_SECRET");
+    // Always 200 to Stripe so the endpoint isn't auto-disabled. Surface in function logs instead.
+    return new Response(JSON.stringify({ received: true, misconfigured: true }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200,
+    });
   }
 
   const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -70,14 +74,47 @@ serve(async (req) => {
 
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
-  if (!sig) return new Response("No signature", { status: 400 });
+  if (!sig) {
+    logStep("Missing stripe-signature header — acknowledging with 200");
+    await logSellerWebhookEvent(supabase, {
+      stripeEventId: `no_sig_${Date.now()}`,
+      eventType: "unknown",
+      status: "ignored_no_signature",
+      errorMessage: "Request had no stripe-signature header",
+    });
+    return new Response(JSON.stringify({ received: true, ignored: "no_signature" }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200,
+    });
+  }
 
   let event: Stripe.Event;
   try {
     event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
   } catch (err) {
-    logStep("Signature verification failed", { error: String(err) });
-    return new Response("Invalid signature", { status: 400 });
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    logStep("Signature verification failed — acknowledging with 200", { error: errorMessage });
+    // Try to extract the event id from the raw body for traceability.
+    let parsedEventId = `sig_fail_${Date.now()}`;
+    let parsedEventType = "unknown";
+    try {
+      const parsed = JSON.parse(body) as { id?: string; type?: string };
+      if (parsed?.id) parsedEventId = parsed.id;
+      if (parsed?.type) parsedEventType = parsed.type;
+    } catch {
+      // ignore — body wasn't valid JSON
+    }
+    await logSellerWebhookEvent(supabase, {
+      stripeEventId: parsedEventId,
+      eventType: parsedEventType,
+      status: "signature_failed",
+      errorMessage,
+    });
+    // Always 200 so Stripe stops retrying and won't disable the endpoint.
+    return new Response(JSON.stringify({ received: true, signature_failed: true }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200,
+    });
   }
 
   logStep("Event received", { type: event.type, id: event.id });
