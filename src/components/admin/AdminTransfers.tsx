@@ -422,6 +422,12 @@ const AdminTransfers = () => {
                             {relaying === t.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
                             Resend Relay
                           </Button>
+                          <Button
+                            size="sm" variant="destructive" className="h-7 text-xs"
+                            onClick={() => setConfirmDialog({ open: true, transfer: t, action: "delete" })}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" /> Delete
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
