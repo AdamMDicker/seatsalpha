@@ -229,7 +229,7 @@ const AdminTransfers = () => {
   // Reset page when filters change
   useEffect(() => { setPage(1); }, [statusFilter, search]);
 
-  const actionLabel = { confirm: "Confirm", dispute: "Dispute", reset: "Reset" };
+  const actionLabel = { confirm: "Confirm", dispute: "Dispute", reset: "Reset", delete: "Delete" };
 
   if (loading) {
     return (
