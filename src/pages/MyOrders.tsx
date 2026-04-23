@@ -6,10 +6,19 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Package, Calendar, ChevronRight, ShoppingBag } from "lucide-react";
+import { Package, Calendar, ChevronRight, ShoppingBag, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 import { useResellerAccount } from "@/hooks/useResellerAccount";
+import FulfillmentIssueBanner from "@/components/FulfillmentIssueBanner";
+
+const STUCK_AFTER_MS = 5 * 60 * 1000; // 5 minutes
+
+function isStuck(order: { status: string; created_at: string }): boolean {
+  if (order.status === "completed") return false;
+  const ageMs = Date.now() - new Date(order.created_at).getTime();
+  return ageMs > STUCK_AFTER_MS;
+}
 
 type OrderItem = Tables<"order_items"> & {
   tickets: {
@@ -81,13 +90,26 @@ const MyOrders = () => {
           </Card>
         ) : (
           <div className="space-y-4">
+            {/* Top-of-page banner if any order is stuck (>5min, not completed) */}
+            {orders.some(isStuck) && (
+              <FulfillmentIssueBanner variant="pending" />
+            )}
             {orders.map((order) => {
               const firstItem = order.order_items[0];
               const event = firstItem?.tickets?.events;
+              const stuck = isStuck(order);
               return (
                 <Link key={order.id} to={`/notifications/${order.id}`} className="block">
-                  <Card className="hover:border-primary/40 transition-colors">
+                  <Card className={`transition-colors ${stuck ? "border-destructive/50 hover:border-destructive" : "hover:border-primary/40"}`}>
                     <CardContent className="p-5">
+                      {stuck && (
+                        <div className="flex items-start gap-2 mb-3 pb-3 border-b border-destructive/30 text-destructive">
+                          <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs font-semibold leading-snug">
+                            Fulfillment delayed — tap to view details and contact support if needed.
+                          </p>
+                        </div>
+                      )}
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-foreground truncate">
