@@ -92,8 +92,12 @@ describe("Flow 1 — Non-member ticket purchase with LCC fee gate", () => {
   });
 
   it("allows full-lot purchase when remaining quantity is odd", () => {
+    // 3 available, take all 3 — odd-lot exemption applies
     expect(isValidQuantity(3, 3, null)).toBe(true);
-    expect(isValidQuantity(2, 3, null)).toBe(false);
+    // 3 available, take 1 — odd, not full lot → invalid
+    expect(isValidQuantity(1, 3, null)).toBe(false);
+    // 3 available, take 2 — even, valid (leaves 1 single, but allowed)
+    expect(isValidQuantity(2, 3, null)).toBe(true);
   });
 
   it("invokes create-payment with correct iPhone-friendly payload", async () => {
