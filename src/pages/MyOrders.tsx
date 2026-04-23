@@ -97,10 +97,19 @@ const MyOrders = () => {
             {orders.map((order) => {
               const firstItem = order.order_items[0];
               const event = firstItem?.tickets?.events;
+              const stuck = isStuck(order);
               return (
                 <Link key={order.id} to={`/notifications/${order.id}`} className="block">
-                  <Card className="hover:border-primary/40 transition-colors">
+                  <Card className={`transition-colors ${stuck ? "border-destructive/50 hover:border-destructive" : "hover:border-primary/40"}`}>
                     <CardContent className="p-5">
+                      {stuck && (
+                        <div className="flex items-start gap-2 mb-3 pb-3 border-b border-destructive/30 text-destructive">
+                          <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs font-semibold leading-snug">
+                            Fulfillment delayed — tap to view details and contact support if needed.
+                          </p>
+                        </div>
+                      )}
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-foreground truncate">
