@@ -260,8 +260,13 @@ const Auth = () => {
             variant="outline"
             className="w-full gap-2"
             onClick={async () => {
+              // Build full destination URL so OAuth provider returns user to the
+              // page they were trying to reach (e.g. team page with buyTicket).
+              const target = redirectTo.startsWith("http")
+                ? redirectTo
+                : `${window.location.origin}${redirectTo}`;
               const { error } = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: window.location.origin,
+                redirect_uri: target,
               });
               if (error) {
                 toast({ title: "Error", description: String(error), variant: "destructive" });
@@ -281,8 +286,11 @@ const Auth = () => {
             variant="outline"
             className="w-full gap-2"
             onClick={async () => {
+              const target = redirectTo.startsWith("http")
+                ? redirectTo
+                : `${window.location.origin}${redirectTo}`;
               const { error } = await lovable.auth.signInWithOAuth("apple", {
-                redirect_uri: window.location.origin,
+                redirect_uri: target,
               });
               if (error) {
                 toast({ title: "Error", description: String(error), variant: "destructive" });
