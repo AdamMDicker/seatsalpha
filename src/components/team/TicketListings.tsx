@@ -886,7 +886,16 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         open={showAuthSheet}
         onOpenChange={(open) => {
           setShowAuthSheet(open);
-          if (!open) setPendingBuyTicket(null);
+          if (!open) {
+            setPendingBuyTicket(null);
+            // Clear the resume params if user dismissed without signing in
+            const params = new URLSearchParams(searchParams);
+            if (params.has("buyTicket") || params.has("buyQty")) {
+              params.delete("buyTicket");
+              params.delete("buyQty");
+              setSearchParams(params, { replace: true });
+            }
+          }
         }}
         onSuccess={handleAuthSuccess}
       />
