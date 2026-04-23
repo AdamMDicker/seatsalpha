@@ -235,13 +235,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const handleBuy = async (ticket: TicketInfo) => {
     if (!user) {
-      if (isMobile) {
-        // Mobile: open auth sheet instead of redirecting
-        setPendingBuyTicket(ticket);
-        setShowAuthSheet(true);
-        return;
-      }
-      // Desktop: redirect flow — include game ID so the correct game is re-selected
+      // Persist buy context in URL so OAuth redirects can resume the flow
       const params = new URLSearchParams(searchParams);
       params.set("buyTicket", ticket.id);
       if (gameId) {
@@ -250,6 +244,16 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
       if (desiredSeats !== "any") {
         params.set("buyQty", desiredSeats);
       }
+
+      if (isMobile) {
+        // Mobile: push params into URL (so OAuth redirect_uri preserves them)
+        // then open auth sheet.
+        setSearchParams(params, { replace: true });
+        setPendingBuyTicket(ticket);
+        setShowAuthSheet(true);
+        return;
+      }
+      // Desktop: redirect to /auth, returning here after sign-in
       const redirectPath = `${location.pathname}?${params.toString()}`;
       navigate(`/auth?redirect=${encodeURIComponent(redirectPath)}`);
       return;
@@ -260,13 +264,19 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     setFeeGateTicket(ticket);
   };
 
-  const handleAuthSuccess = () => {
-    // After mobile auth succeeds, auto-open fee gate for the pending ticket
+  const handleAuthSuccess = async () => {
+    // After mobile auth succeeds, refresh membership status then open fee gate
     if (pendingBuyTicket) {
+      try {
+        const membershipStatus = await checkMembership();
+        setMemberCheckoutOverride(membershipStatus.subscribed);
+      } catch {
+        setMemberCheckoutOverride(null);
+      }
       setTimeout(() => {
         setFeeGateTicket(pendingBuyTicket);
         setPendingBuyTicket(null);
-      }, 300);
+      }, 200);
     }
   };
 
@@ -876,7 +886,16 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
         open={showAuthSheet}
         onOpenChange={(open) => {
           setShowAuthSheet(open);
-          if (!open) setPendingBuyTicket(null);
+          if (!open) {
+            setPendingBuyTicket(null);
+            // Clear the resume params if user dismissed without signing in
+            const params = new URLSearchParams(searchParams);
+            if (params.has("buyTicket") || params.has("buyQty")) {
+              params.delete("buyTicket");
+              params.delete("buyQty");
+              setSearchParams(params, { replace: true });
+            }
+          }
         }}
         onSuccess={handleAuthSuccess}
       />

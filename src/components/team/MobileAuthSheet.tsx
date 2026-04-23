@@ -189,7 +189,7 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
                 className="w-full gap-2"
                 onClick={async () => {
                   const { error } = await lovable.auth.signInWithOAuth("google", {
-                    redirect_uri: window.location.origin,
+                    redirect_uri: window.location.href,
                   });
                   if (error) {
                     toast({ title: "Error", description: String(error), variant: "destructive" });
@@ -210,7 +210,7 @@ const MobileAuthSheet = ({ open, onOpenChange, onSuccess }: MobileAuthSheetProps
                 className="w-full gap-2"
                 onClick={async () => {
                   const { error } = await lovable.auth.signInWithOAuth("apple", {
-                    redirect_uri: window.location.origin,
+                    redirect_uri: window.location.href,
                   });
                   if (error) {
                     toast({ title: "Error", description: String(error), variant: "destructive" });
