@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Check, Car, ExternalLink, Home, Hotel, Plane, Crown, ShoppingBag, CalendarDays, MapPin, Armchair, Ticket, Sparkles } from "lucide-react";
@@ -8,6 +8,8 @@ import { getUberDeepLink } from "@/utils/uberDeepLink";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { mapRogersCentreSectionToCategory } from "@/utils/sectionCategoryMap";
+import { useAuth } from "@/contexts/AuthContext";
+import FulfillmentIssueBanner from "@/components/FulfillmentIssueBanner";
 
 interface UpsellCard {
   icon: React.ReactNode;
