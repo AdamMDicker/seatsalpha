@@ -6,10 +6,19 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Package, Calendar, ChevronRight, ShoppingBag } from "lucide-react";
+import { Package, Calendar, ChevronRight, ShoppingBag, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 import { useResellerAccount } from "@/hooks/useResellerAccount";
+import FulfillmentIssueBanner from "@/components/FulfillmentIssueBanner";
+
+const STUCK_AFTER_MS = 5 * 60 * 1000; // 5 minutes
+
+function isStuck(order: { status: string; created_at: string }): boolean {
+  if (order.status === "completed") return false;
+  const ageMs = Date.now() - new Date(order.created_at).getTime();
+  return ageMs > STUCK_AFTER_MS;
+}
 
 type OrderItem = Tables<"order_items"> & {
   tickets: {
