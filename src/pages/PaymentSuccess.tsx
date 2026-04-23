@@ -47,6 +47,7 @@ function formatEventDate(raw: string): string {
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const venue = searchParams.get("venue");
   const eventTitle = searchParams.get("event");
   const tier = searchParams.get("tier");
@@ -54,6 +55,60 @@ const PaymentSuccess = () => {
   const qty = searchParams.get("qty");
   const uberLink = venue ? getUberDeepLink(venue) : null;
   const [aiViewUrl, setAiViewUrl] = useState<string | null>(null);
+
+  // Fulfillment status: poll for the order to appear after Stripe redirect.
+  // If no order is created within 30s, show the missing-order banner.
+  // If an order exists but is still "pending" after polling, show the pending-fulfillment banner.
+  const [fulfillmentState, setFulfillmentState] = useState<"checking" | "ok" | "pending" | "missing">("checking");
+  const [retrying, setRetrying] = useState(false);
+
+  const checkFulfillment = useCallback(async (): Promise<"ok" | "pending" | "missing"> => {
+    if (!user) return "missing";
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const { data } = await supabase
+      .from("orders")
+      .select("id, status, created_at")
+      .eq("user_id", user.id)
+      .gte("created_at", twoMinutesAgo)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const recent = data?.[0];
+    if (!recent) return "missing";
+    if (recent.status === "completed") return "ok";
+    return "pending";
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 10; // ~30s total at 3s intervals
+
+    const poll = async () => {
+      const result = await checkFulfillment();
+      if (cancelled) return;
+      if (result === "ok") {
+        setFulfillmentState("ok");
+        return;
+      }
+      attempts += 1;
+      if (attempts >= maxAttempts) {
+        setFulfillmentState(result); // "pending" or "missing"
+        return;
+      }
+      setTimeout(poll, 3000);
+    };
+    poll();
+
+    return () => { cancelled = true; };
+  }, [user, checkFulfillment]);
+
+  const handleRetry = async () => {
+    setRetrying(true);
+    const result = await checkFulfillment();
+    setFulfillmentState(result === "ok" ? "ok" : result);
+    setRetrying(false);
+  };
 
   // Fetch AI-generated section reference view as a fallback "what your seats look like" preview.
   useEffect(() => {
