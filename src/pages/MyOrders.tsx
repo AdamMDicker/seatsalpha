@@ -90,6 +90,10 @@ const MyOrders = () => {
           </Card>
         ) : (
           <div className="space-y-4">
+            {/* Top-of-page banner if any order is stuck (>5min, not completed) */}
+            {orders.some(isStuck) && (
+              <FulfillmentIssueBanner variant="pending" />
+            )}
             {orders.map((order) => {
               const firstItem = order.order_items[0];
               const event = firstItem?.tickets?.events;
