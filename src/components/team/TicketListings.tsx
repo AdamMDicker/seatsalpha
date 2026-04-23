@@ -260,13 +260,19 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
     setFeeGateTicket(ticket);
   };
 
-  const handleAuthSuccess = () => {
-    // After mobile auth succeeds, auto-open fee gate for the pending ticket
+  const handleAuthSuccess = async () => {
+    // After mobile auth succeeds, refresh membership status then open fee gate
     if (pendingBuyTicket) {
+      try {
+        const membershipStatus = await checkMembership();
+        setMemberCheckoutOverride(membershipStatus.subscribed);
+      } catch {
+        setMemberCheckoutOverride(null);
+      }
       setTimeout(() => {
         setFeeGateTicket(pendingBuyTicket);
         setPendingBuyTicket(null);
-      }, 300);
+      }, 200);
     }
   };
 
