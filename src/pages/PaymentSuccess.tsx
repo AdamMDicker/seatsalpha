@@ -187,6 +187,14 @@ const PaymentSuccess = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-28 pb-20 px-4 max-w-3xl mx-auto space-y-8">
+        {/* Fulfillment issue banner — shown when webhook hasn't created/completed the order */}
+        {(fulfillmentState === "pending" || fulfillmentState === "missing") && (
+          <FulfillmentIssueBanner
+            variant={fulfillmentState}
+            onRetry={handleRetry}
+            retrying={retrying}
+          />
+        )}
         {/* Confirmation card */}
         <div className="glass rounded-2xl p-10 text-center space-y-5">
           <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
