@@ -710,6 +710,17 @@ const AdminE2ETest = () => {
                 <Clock className="h-4 w-4" />
                 <span>Last run: <span className="font-mono text-foreground">{formatLastRun(lastRunAt)}</span></span>
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={copyRunSummary}
+                disabled={stage === "idle" && !lastRunAt}
+                className="gap-1.5 h-7 px-2 text-xs"
+                title="Copy timestamp, current step, and pass/fail counts to clipboard"
+              >
+                <Copy className="h-3 w-3" />
+                Copy run summary
+              </Button>
             </div>
           </div>
         </CardContent>
