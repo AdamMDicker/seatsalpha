@@ -578,6 +578,60 @@ const AdminE2ETest = () => {
     return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
   };
 
+  // ── Trace ID helpers ────────────────────────────────────────────
+  // Each E2E run is tagged with a UUID that is echoed in every backend
+  // log line (see [e2e-trace:<uuid>] prefix in run-purchase-test). Click
+  // the search icon to open an analytics query with the trace pre-filled.
+  const PROJECT_REF = "fkcszgrewzhswdtsqpad";
+  const copyTrace = async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      toast.success("Trace ID copied");
+    } catch {
+      toast.error("Could not copy — long-press to select");
+    }
+  };
+  const edgeLogsUrl = (fn: string, traceFragment?: string) => {
+    const base = `https://supabase.com/dashboard/project/${PROJECT_REF}/functions/${fn}/logs`;
+    return traceFragment ? `${base}?search=${encodeURIComponent(traceFragment)}` : base;
+  };
+  const queueLogsUrl = (traceFragment?: string) =>
+    edgeLogsUrl("process-email-queue", traceFragment);
+
+  const TraceChip = ({
+    label,
+    value,
+    fn,
+  }: {
+    label: string;
+    value: string;
+    fn?: string;
+  }) => (
+    <span className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-1.5 py-0.5 text-[10px] font-mono text-foreground/80">
+      <span className="text-muted-foreground">{label}:</span>
+      <span className="truncate max-w-[180px]" title={value}>{value}</span>
+      <button
+        type="button"
+        onClick={() => copyTrace(value)}
+        className="hover:text-primary p-0.5"
+        title="Copy trace ID"
+      >
+        <Copy className="h-3 w-3" />
+      </button>
+      {fn && (
+        <a
+          href={edgeLogsUrl(fn, value)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-primary p-0.5"
+          title={`Open ${fn} logs filtered by this trace`}
+        >
+          <Search className="h-3 w-3" />
+        </a>
+      )}
+    </span>
+  );
+
   return (
     <div className="space-y-6">
       {/* Live status panel — always visible */}
