@@ -355,6 +355,15 @@ Deno.serve(async (req) => {
           recipient: latest?.recipient_email ?? null,
           error: latest?.error_message ?? null,
           loggedAt: latest?.created_at ?? null,
+          // Full set of log rows found for this template (most recent first)
+          logRows: matches.map((m) => ({
+            recipient: m.recipient_email,
+            status: m.status,
+            messageId: m.message_id,
+            loggedAt: m.created_at,
+            error: m.error_message,
+          })),
+          rowCount: matches.length,
         };
       });
 
