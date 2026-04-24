@@ -570,11 +570,28 @@ const AdminE2ETest = () => {
       {(stage !== "idle") && (
         <Card className="border-primary/20">
           <CardHeader>
-            <CardTitle className="font-display text-base flex items-center justify-between">
+            <CardTitle className="font-display text-base flex items-center justify-between gap-2 flex-wrap">
               <span>Test Steps</span>
-              <Badge variant={stage === "done" ? "default" : stage === "error" ? "destructive" : "secondary"}>
-                {stage === "done" ? "All steps complete" : stage === "error" ? "Failed" : "Running…"}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant={stage === "done" ? "default" : stage === "error" ? "destructive" : "secondary"}>
+                  {stage === "done" ? "All steps complete" : stage === "error" ? "Failed" : "Running…"}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={viewStepDetails}
+                  disabled={!focusableStep}
+                  className="gap-1.5 h-7 px-2 text-xs"
+                  title={
+                    focusableStep
+                      ? `Jump to "${focusableStep.label}" — opens its logs and results inline`
+                      : "No active step yet"
+                  }
+                >
+                  <Eye className="h-3 w-3" />
+                  View step details
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
