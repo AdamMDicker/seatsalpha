@@ -18,6 +18,7 @@ import {
   Loader2,
   Circle,
   History,
+  Eye,
 } from "lucide-react";
 
 const STORAGE_KEY = "admin-e2e-test-state-v1";
