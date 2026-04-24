@@ -423,8 +423,11 @@ const AdminE2ETest = () => {
       return;
     }
     const d = r.data as { ordersDeleted: number; inventoryRestored: number; emailsInWindow: number };
+    // Also wipe the on-screen test results + persisted localStorage state
+    reset();
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
     toast.success(
-      `Cleared ${d.ordersDeleted} order(s), restored ${d.inventoryRestored} ticket(s). ${d.emailsInWindow} email log row(s) retained.`
+      `Cleared ${d.ordersDeleted} order(s), restored ${d.inventoryRestored} ticket(s). ${d.emailsInWindow} email log row(s) retained. Screen reset.`
     );
   };
 
