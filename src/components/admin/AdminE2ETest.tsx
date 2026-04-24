@@ -153,17 +153,6 @@ const AdminE2ETest = () => {
     );
   };
 
-  const updateStep = (id: string, patch: Partial<Step>) => {
-    setSteps((prev) =>
-      prev.map((s) => {
-        if (s.id !== id) return s;
-        const next = { ...s, ...patch };
-        if (patch.status === "running" && !s.startedAt) next.startedAt = Date.now();
-        if (patch.status && patch.status !== "running" && !s.endedAt) next.endedAt = Date.now();
-        return next;
-      })
-    );
-  };
 
   const failRemaining = (fromId: string) => {
     setSteps((prev) => {
