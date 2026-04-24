@@ -135,6 +135,7 @@ const AdminE2ETest = () => {
       setCheckoutUrl(saved.checkoutUrl);
       setOrderInfo(saved.orderInfo);
       setAssertion(saved.assertion);
+      setLastRunAt(saved.lastRunAt ?? null);
       setRestoredFromStorage(true);
       if (saved.stage === "running") {
         toast.info("Restored test state — your last test was interrupted. Use 'Re-assert' to verify emails.");
@@ -150,12 +151,19 @@ const AdminE2ETest = () => {
       return;
     }
     const payload: PersistedState = {
-      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, savedAt: Date.now(),
+      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, savedAt: Date.now(),
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {}
-  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion]);
+  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt]);
+
+  // Stamp lastRunAt whenever a run completes (done or error).
+  useEffect(() => {
+    if (stage === "done" || stage === "error") {
+      setLastRunAt(Date.now());
+    }
+  }, [stage]);
 
   const log = (msg: string, kind: "info" | "ok" | "warn" | "err" = "info") => {
     setLogs((l) => [...l, { ts: new Date().toLocaleTimeString(), msg, kind }]);
