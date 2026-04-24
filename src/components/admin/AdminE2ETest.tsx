@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,21 @@ import {
   AlertTriangle,
   Loader2,
   Circle,
+  History,
 } from "lucide-react";
+
+const STORAGE_KEY = "admin-e2e-test-state-v1";
+
+interface PersistedState {
+  stage: Stage;
+  steps: Step[];
+  logs: Array<{ ts: string; msg: string; kind?: "info" | "ok" | "warn" | "err" }>;
+  buyerEmail: string;
+  checkoutUrl: string | null;
+  orderInfo: { orderId: string; transferId: string | null; transferAlias: string | null } | null;
+  assertion: AssertResult | null;
+  savedAt: number;
+}
 
 interface TemplateResult {
   template: string;
@@ -76,6 +90,52 @@ const AdminE2ETest = () => {
   } | null>(null);
   const [assertion, setAssertion] = useState<AssertResult | null>(null);
   const [clearing, setClearing] = useState(false);
+  const [recovering, setRecovering] = useState(false);
+  const [restoredFromStorage, setRestoredFromStorage] = useState(false);
+
+  // ── Persist state across page reloads / auth redirects ─────────
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved: PersistedState = JSON.parse(raw);
+      // Only restore if saved within last 24h
+      if (Date.now() - saved.savedAt > 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
+      setStage(saved.stage === "running" ? "error" : saved.stage);
+      setSteps(
+        saved.stage === "running"
+          ? saved.steps.map((s) => (s.status === "running" ? { ...s, status: "failed", detail: "Interrupted (page reload / logout)" } : s))
+          : saved.steps
+      );
+      setLogs(saved.logs);
+      setBuyerEmail(saved.buyerEmail);
+      setCheckoutUrl(saved.checkoutUrl);
+      setOrderInfo(saved.orderInfo);
+      setAssertion(saved.assertion);
+      setRestoredFromStorage(true);
+      if (saved.stage === "running") {
+        toast.info("Restored test state — your last test was interrupted. Use 'Re-assert' to verify emails.");
+      }
+    } catch (e) {
+      console.warn("Failed to restore E2E test state", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (stage === "idle") {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    const payload: PersistedState = {
+      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, savedAt: Date.now(),
+    };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {}
+  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion]);
 
   const log = (msg: string, kind: "info" | "ok" | "warn" | "err" = "info") => {
     setLogs((l) => [...l, { ts: new Date().toLocaleTimeString(), msg, kind }]);
@@ -91,6 +151,83 @@ const AdminE2ETest = () => {
         return next;
       })
     );
+  };
+
+  const recoverLastTest = async () => {
+    setRecovering(true);
+    log("Looking up your most recent test order…", "info");
+    try {
+      // Find the most recent $0.50 test order for this admin
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Not signed in");
+        setRecovering(false);
+        return;
+      }
+      const { data: orders, error } = await supabase
+        .from("orders")
+        .select("id, created_at, total_amount")
+        .eq("user_id", user.id)
+        .gte("total_amount", 0.49)
+        .lte("total_amount", 0.51)
+        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      if (!orders || orders.length === 0) {
+        toast.warning("No recent $0.50 test orders found in the last 24h");
+        log("No recent test order found.", "warn");
+        setRecovering(false);
+        return;
+      }
+      const orderId = orders[0].id;
+      log(`✓ Found recent test order ${orderId.slice(0, 8)}… (${new Date(orders[0].created_at).toLocaleTimeString()})`, "ok");
+
+      // Pull related transfer for context
+      const { data: transfers } = await supabase
+        .from("order_transfers")
+        .select("id, transfer_email_alias, ticket_id, seller_id")
+        .eq("order_id", orderId)
+        .limit(1);
+      const t = transfers?.[0];
+
+      setOrderInfo({
+        orderId,
+        transferId: t?.id ?? null,
+        transferAlias: t?.transfer_email_alias ?? null,
+      });
+      // Mark all steps as done so user can see the recovered context
+      setSteps(INITIAL_STEPS.map((s) => ({
+        ...s,
+        status: s.id === "assert" ? "running" : "done",
+        detail: s.id === "open" ? "Completed in previous session" : s.id === "poll" ? `Order ${orderId.slice(0, 8)}…` : undefined,
+      })));
+      setStage("running");
+
+      // Now re-assert against the buyer email
+      log("Asserting email_send_log for recovered order…", "info");
+      const assertRes = await supabase.functions.invoke("run-purchase-test", {
+        body: { action: "assert", buyerEmail: buyerEmail || user.email },
+      });
+      if (assertRes.error) throw assertRes.error;
+      const a = assertRes.data as AssertResult;
+      setAssertion(a);
+      updateStep("assert", {
+        status: a.failCount === 0 ? "done" : "failed",
+        detail: `${a.passCount}/${a.totalExpected} templates verified`,
+      });
+      setStage(a.failCount === 0 ? "done" : "error");
+      log(`Result: ${a.passCount}/${a.totalExpected} verified`, a.failCount === 0 ? "ok" : "warn");
+      if (a.failCount === 0) toast.success(`All ${a.totalExpected} templates verified ✅`);
+      else toast.warning(`${a.failCount} template(s) missing — see results below`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Recovery failed: ${msg}`);
+      log(`Recovery error: ${msg}`, "err");
+      setStage("error");
+    } finally {
+      setRecovering(false);
+    }
   };
 
   const failRemaining = (fromId: string) => {
@@ -347,9 +484,19 @@ const AdminE2ETest = () => {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={runTest} disabled={isRunning} className="gap-2">
+            <Button onClick={runTest} disabled={isRunning || recovering} className="gap-2">
               {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
               {isRunning ? (currentStep?.label ?? "Running…") : "Run E2E Test"}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={recoverLastTest}
+              disabled={isRunning || recovering}
+              className="gap-2"
+              title="Find your most recent $0.50 test order and re-run the email assertion (use this after a logout/redirect)"
+            >
+              {recovering ? <Loader2 className="h-4 w-4 animate-spin" /> : <History className="h-4 w-4" />}
+              Recover Last Test
             </Button>
             {checkoutUrl && isRunning && (
               <Button variant="outline" onClick={() => window.open(checkoutUrl, "_blank")} className="gap-2">
@@ -376,6 +523,14 @@ const AdminE2ETest = () => {
               Clear Test Data
             </Button>
           </div>
+
+          {restoredFromStorage && stage !== "idle" && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
+              <strong>Restored from previous session.</strong> Your last test state was recovered from local storage.
+              {stage === "error" && " The test was interrupted (likely by a logout/redirect) — click 'Recover Last Test' to verify the order's emails actually went out."}
+            </div>
+          )}
+
 
           {orderInfo && (
             <div className="text-sm text-muted-foreground">
