@@ -78,6 +78,18 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action: string = body.action || "start";
 
+    // ── Trace ID ──────────────────────────────────────────────────
+    // Every E2E run is tagged with a single traceId. The client passes
+    // it on every action call; we echo it back in responses and stamp
+    // every console.log so an admin can grep edge-function logs and
+    // the analytics_query database for the exact run.
+    const traceId: string =
+      typeof body.traceId === "string" && body.traceId.length > 0
+        ? body.traceId
+        : crypto.randomUUID();
+    const trace = (msg: string) => console.log(`[e2e-trace:${traceId}] [${action}] ${msg}`);
+    trace(`begin action=${action}`);
+
     // --- ACTION: start ---
     if (action === "start") {
       const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
