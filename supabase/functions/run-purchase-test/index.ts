@@ -150,6 +150,7 @@ Deno.serve(async (req) => {
         cancel_url: `${origin}/admin?e2e=canceled`,
         metadata: {
           test_run: "true",
+          trace_id: traceId,
           event_title: evt.title,
           ticket_quantity: "1",
           ticket_tier: tier,
@@ -161,11 +162,13 @@ Deno.serve(async (req) => {
           membership_amount: "0",
         },
         payment_intent_data: {
-          metadata: { test_run: "true" },
+          metadata: { test_run: "true", trace_id: traceId },
         },
       });
 
+      trace(`stripe session created id=${session.id} ticket=${availableTicket.id}`);
       return jsonResponse({
+        traceId,
         url: session.url,
         sessionId: session.id,
         ticketId: availableTicket.id,
