@@ -313,9 +313,12 @@ Deno.serve(async (req) => {
     }
 
     // --- ACTION: assert ---
+    // Looks at email_send_log over the last hour and classifies each
+    // expected template as passed / failed / missing. "missing" means no
+    // row exists yet (queue dispatcher may still be draining); "failed"
+    // means a row exists but the send errored (dlq / failed / bounced).
     if (action === "assert") {
       const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      const { buyerEmail } = body;
       const { data: rows } = await supabase
         .from("email_send_log")
         .select("template_name, recipient_email, status, error_message, created_at, message_id")
@@ -323,16 +326,32 @@ Deno.serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(500);
 
+      const PASS_STATUSES = new Set(["sent", "pending"]);
+      const FAIL_STATUSES = new Set(["dlq", "failed", "bounced", "complained", "suppressed"]);
+
       const summary = EXPECTED_TEMPLATES.map((tpl) => {
         const matches = (rows ?? []).filter((r) => r.template_name === tpl.name);
         const latest = matches[0];
-        const passed =
-          !!latest && (latest.status === "sent" || latest.status === "pending");
+        const status = latest?.status ?? "missing";
+        const passed = !!latest && PASS_STATUSES.has(status);
+        let reason: "passed" | "missing" | "failed" = "passed";
+        let hint: string | null = null;
+        if (!latest) {
+          reason = "missing";
+          hint = `No email_send_log row yet for ${tpl.name}. Trigger: ${tpl.trigger}.`;
+        } else if (FAIL_STATUSES.has(status)) {
+          reason = "failed";
+          hint = latest.error_message
+            ? `Send failed: ${latest.error_message.slice(0, 200)}`
+            : `Send marked ${status} with no error message.`;
+        }
         return {
           template: tpl.name,
           trigger: tpl.trigger,
-          status: latest?.status ?? "missing",
+          status,
           passed,
+          reason,
+          hint,
           recipient: latest?.recipient_email ?? null,
           error: latest?.error_message ?? null,
           loggedAt: latest?.created_at ?? null,
@@ -340,10 +359,14 @@ Deno.serve(async (req) => {
       });
 
       const passCount = summary.filter((s) => s.passed).length;
+      const missingCount = summary.filter((s) => s.reason === "missing").length;
+      const failedCount = summary.filter((s) => s.reason === "failed").length;
       return jsonResponse({
         totalExpected: summary.length,
         passCount,
         failCount: summary.length - passCount,
+        missingCount,
+        failedCount,
         summary,
       });
     }

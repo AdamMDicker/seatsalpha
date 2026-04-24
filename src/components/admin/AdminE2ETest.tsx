@@ -38,6 +38,10 @@ interface TemplateResult {
   trigger: string;
   status: string;
   passed: boolean;
+  /** "passed" | "missing" | "failed" — provided by backend, optional for backwards-compat */
+  reason?: "passed" | "missing" | "failed";
+  /** Human-readable hint for why the template did not pass. */
+  hint?: string | null;
   recipient: string | null;
   error: string | null;
   loggedAt: string | null;
@@ -47,6 +51,9 @@ interface AssertResult {
   totalExpected: number;
   passCount: number;
   failCount: number;
+  /** Optional: present on newer backend responses. */
+  missingCount?: number;
+  failedCount?: number;
   summary: TemplateResult[];
 }
 
@@ -367,30 +374,70 @@ const AdminE2ETest = () => {
     await new Promise((r) => setTimeout(r, 8000));
     updateStep("queue_wait", { status: "done", detail: "Queue should have drained" });
 
-    // ── Step 6: assert ─────────────────────────────────────────────
-    updateStep("assert", { status: "running" });
+    // ── Step 6: assert (with retry) ────────────────────────────────
+    // The queue dispatcher is async — some templates can take several
+    // seconds to land in email_send_log. We poll the assert endpoint
+    // up to ~60s, only marking step 6 as failed if templates are
+    // still missing or failed after the full window.
+    updateStep("assert", { status: "running", detail: "Verifying email_send_log…" });
     log("Asserting email_send_log entries for each template…", "info");
-    const assertRes = await supabase.functions.invoke("run-purchase-test", {
-      body: { action: "assert", buyerEmail: usedEmail },
-    });
-    if (assertRes.error) {
-      const detail = `Assert error: ${assertRes.error.message}`;
+
+    const ASSERT_MAX_ATTEMPTS = 6;       // 6 attempts
+    const ASSERT_INTERVAL_MS = 10_000;   // 10s between attempts → ~60s total
+
+    let a: AssertResult | null = null;
+    let lastError: string | null = null;
+    for (let attempt = 1; attempt <= ASSERT_MAX_ATTEMPTS; attempt++) {
+      const assertRes = await supabase.functions.invoke("run-purchase-test", {
+        body: { action: "assert", buyerEmail: usedEmail },
+      });
+      if (assertRes.error) {
+        lastError = assertRes.error.message;
+        log(`Assert call errored (attempt ${attempt}/${ASSERT_MAX_ATTEMPTS}): ${lastError}`, "warn");
+      } else {
+        a = assertRes.data as AssertResult;
+        setAssertion(a);
+        const detail = `${a.passCount}/${a.totalExpected} verified (attempt ${attempt})`;
+        updateStep("assert", { status: "running", detail });
+        if (a.failCount === 0) {
+          log(`All templates verified on attempt ${attempt}`, "ok");
+          break;
+        }
+        const missing = a.summary.filter((s) => (s.reason ?? (s.status === "missing" ? "missing" : "failed")) === "missing");
+        const failed = a.summary.filter((s) => s.reason === "failed");
+        log(
+          `Attempt ${attempt}: ${a.passCount}/${a.totalExpected} verified · ${missing.length} missing · ${failed.length} failed`,
+          "info"
+        );
+      }
+      if (attempt < ASSERT_MAX_ATTEMPTS && (a === null || a.failCount > 0)) {
+        await new Promise((r) => setTimeout(r, ASSERT_INTERVAL_MS));
+      }
+    }
+
+    if (!a) {
+      const detail = `Assert error after ${ASSERT_MAX_ATTEMPTS} attempts: ${lastError ?? "unknown"}`;
       log(detail, "err");
       updateStep("assert", { status: "failed", detail });
       setStage("error");
       return;
     }
-    const a = assertRes.data as AssertResult;
-    setAssertion(a);
+
     const assertDetail = `${a.passCount}/${a.totalExpected} templates verified`;
-    log(`Result: ${assertDetail}`, a.failCount === 0 ? "ok" : "warn");
+    log(`Final result: ${assertDetail}`, a.failCount === 0 ? "ok" : "warn");
+    if (a.failCount > 0) {
+      const missing = a.summary.filter((s) => s.reason === "missing" || (!s.reason && s.status === "missing"));
+      const failed = a.summary.filter((s) => s.reason === "failed" || (!s.reason && s.status !== "missing" && !s.passed));
+      if (missing.length) log(`Missing templates: ${missing.map((m) => m.template).join(", ")}`, "warn");
+      if (failed.length) log(`Failed templates: ${failed.map((m) => `${m.template} (${m.status})`).join(", ")}`, "err");
+    }
     updateStep("assert", {
       status: a.failCount === 0 ? "done" : "failed",
       detail: assertDetail,
     });
     setStage(a.failCount === 0 ? "done" : "error");
     if (a.failCount === 0) toast.success(`All ${a.totalExpected} email templates verified ✅`);
-    else toast.warning(`${a.failCount} template(s) missing — see results below`);
+    else toast.warning(`${a.failCount} template(s) not verified — see results below`);
   };
 
   const reAssert = async () => {
