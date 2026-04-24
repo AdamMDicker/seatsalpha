@@ -50,7 +50,7 @@ const AdminDashboard = () => {
   const { user, isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState("events");
+  const [activeTab, setActiveTab] = useState("e2e");
   const [serverVerified, setServerVerified] = useState(false);
   const [transferCounts, setTransferCounts] = useState<{ pending: number; disputed: number }>({ pending: 0, disputed: 0 });
 
