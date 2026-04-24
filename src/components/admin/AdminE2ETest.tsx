@@ -833,6 +833,44 @@ const AdminE2ETest = () => {
                           {s.detail}
                         </p>
                       )}
+                      {s.traceId && (
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          <TraceChip label="trace" value={s.traceId} fn="run-purchase-test" />
+                        </div>
+                      )}
+                      {s.id === "trigger" && triggerCalls.length > 0 && (
+                        <div className="mt-2 rounded-md border border-border/60 bg-muted/30 divide-y divide-border/40">
+                          {triggerCalls.map((c) => (
+                            <div key={c.callTraceId} className="px-3 py-2 text-xs font-mono">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge
+                                  variant={c.ok ? "default" : "destructive"}
+                                  className="text-[10px] uppercase"
+                                >
+                                  {c.ok ? "ok" : "fail"}
+                                </Badge>
+                                <span className="text-foreground/90">{c.template}</span>
+                                <span className="text-muted-foreground">· {c.durationMs}ms</span>
+                              </div>
+                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                <TraceChip label="call" value={c.callTraceId} fn={c.fn} />
+                                <a
+                                  href={edgeLogsUrl(c.fn)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  {c.fn} logs
+                                </a>
+                              </div>
+                              {c.detail && (
+                                <div className="text-destructive mt-1 break-all">{c.detail}</div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </li>
                 );
