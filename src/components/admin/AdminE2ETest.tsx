@@ -886,6 +886,25 @@ const AdminE2ETest = () => {
                 <Copy className="h-3 w-3" />
                 Copy run summary
               </Button>
+              {failedSteps.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={retryFailedSteps}
+                  disabled={!canRetryFailed}
+                  className="gap-1.5 h-7 px-2 text-xs"
+                  title={
+                    hasUpstreamFailure
+                      ? "Steps 1-3 require a fresh Stripe checkout — use 'Run E2E Test' instead"
+                      : !orderInfo?.orderId
+                      ? "Missing order context — recover or run a fresh test first"
+                      : `Re-run: ${failedSteps.map((s) => s.label).join(", ")}`
+                  }
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Retry failed ({failedSteps.length})
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
