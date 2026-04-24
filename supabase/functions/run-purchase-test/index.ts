@@ -194,7 +194,10 @@ Deno.serve(async (req) => {
       const order = (orders ?? []).find(
         (o) => Math.abs(Number(o.total_amount) - 0.5) < 0.01
       );
-      if (!order) return jsonResponse({ ready: false });
+      if (!order) {
+        trace("poll not-ready");
+        return jsonResponse({ traceId, ready: false });
+      }
 
       const { data: transfer } = await supabase
         .from("order_transfers")
