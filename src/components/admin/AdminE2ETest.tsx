@@ -95,6 +95,46 @@ const AdminE2ETest = () => {
   const [clearing, setClearing] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const [restoredFromStorage, setRestoredFromStorage] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareNote, setShareNote] = useState("");
+  const [sharing, setSharing] = useState(false);
+
+  const shareReport = async () => {
+    const trimmed = shareEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    if (stage === "idle") {
+      toast.error("Run a test first — there's nothing to share yet");
+      return;
+    }
+    setSharing(true);
+    try {
+      const { error } = await supabase.functions.invoke("share-e2e-report", {
+        body: {
+          recipientEmail: trimmed,
+          note: shareNote.trim() || null,
+          stage,
+          buyerEmail: buyerEmail || null,
+          orderInfo,
+          steps,
+          assertion,
+          logs: logs.slice(-50),
+          generatedAt: new Date().toISOString(),
+        },
+      });
+      if (error) throw error;
+      toast.success(`Report sent to ${trimmed}`);
+      setShareNote("");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message ?? "Failed to send report");
+    } finally {
+      setSharing(false);
+    }
+  };
+
 
   // ── Persist state across page reloads / auth redirects ─────────
   useEffect(() => {
