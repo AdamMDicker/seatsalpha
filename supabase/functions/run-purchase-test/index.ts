@@ -275,7 +275,19 @@ Deno.serve(async (req) => {
         .eq("id", transferId);
       await call("transfer-relay-stalled-reminder", "transfer-relay-stalled-reminder", {});
 
-      // 6. Seller proof reminder
+      // 6. Seller proof reminder — set accept_link_extracted_at >30min ago,
+      // clear seller_reminder_sent_at, and ensure transfer_image_url is null
+      // so the cron picks up our test row.
+      await supabase
+        .from("order_transfers")
+        .update({
+          accept_link_extracted_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+          seller_reminder_sent_at: null,
+          admin_escalation_sent_at: null,
+          transfer_image_url: null,
+          status: "pending",
+        })
+        .eq("id", transferId);
       await call("seller-proof-reminder", "seller-proof-reminder", {});
 
       // 7. Seller application email (synthetic)
