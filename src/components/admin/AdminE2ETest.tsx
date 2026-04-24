@@ -90,9 +90,67 @@ const AdminE2ETest = () => {
   } | null>(null);
   const [assertion, setAssertion] = useState<AssertResult | null>(null);
   const [clearing, setClearing] = useState(false);
+  const [recovering, setRecovering] = useState(false);
+  const [restoredFromStorage, setRestoredFromStorage] = useState(false);
+
+  // ── Persist state across page reloads / auth redirects ─────────
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved: PersistedState = JSON.parse(raw);
+      // Only restore if saved within last 24h
+      if (Date.now() - saved.savedAt > 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
+      setStage(saved.stage === "running" ? "error" : saved.stage);
+      setSteps(
+        saved.stage === "running"
+          ? saved.steps.map((s) => (s.status === "running" ? { ...s, status: "failed", detail: "Interrupted (page reload / logout)" } : s))
+          : saved.steps
+      );
+      setLogs(saved.logs);
+      setBuyerEmail(saved.buyerEmail);
+      setCheckoutUrl(saved.checkoutUrl);
+      setOrderInfo(saved.orderInfo);
+      setAssertion(saved.assertion);
+      setRestoredFromStorage(true);
+      if (saved.stage === "running") {
+        toast.info("Restored test state — your last test was interrupted. Use 'Re-assert' to verify emails.");
+      }
+    } catch (e) {
+      console.warn("Failed to restore E2E test state", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (stage === "idle") {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    const payload: PersistedState = {
+      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, savedAt: Date.now(),
+    };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {}
+  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion]);
 
   const log = (msg: string, kind: "info" | "ok" | "warn" | "err" = "info") => {
     setLogs((l) => [...l, { ts: new Date().toLocaleTimeString(), msg, kind }]);
+  };
+
+  const updateStep = (id: string, patch: Partial<Step>) => {
+    setSteps((prev) =>
+      prev.map((s) => {
+        if (s.id !== id) return s;
+        const next = { ...s, ...patch };
+        if (patch.status === "running" && !s.startedAt) next.startedAt = Date.now();
+        if (patch.status && patch.status !== "running" && !s.endedAt) next.endedAt = Date.now();
+        return next;
+      })
+    );
   };
 
   const updateStep = (id: string, patch: Partial<Step>) => {
