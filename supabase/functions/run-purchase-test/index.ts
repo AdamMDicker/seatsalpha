@@ -229,21 +229,18 @@ Deno.serve(async (req) => {
         }
       }
 
-      // 1. Transfer confirmation (buyer + seller confirmed) via notify-buyer-transfer
-      await call("notify-buyer-transfer", "notify-buyer-transfer", {
+      // 1. Transfer confirmation (buyer + seller confirmed)
+      await call("notify-buyer-transfer (confirm)", "notify-buyer-transfer", {
         transfer_id: transferId,
+        action: "confirm",
       });
 
-      // 2. Transfer disputed — re-call notify-buyer-transfer in dispute mode if supported.
-      //    Fallback: bump the transfer to 'disputed' and re-trigger.
-      await supabase
-        .from("order_transfers")
-        .update({ status: "disputed" })
-        .eq("id", transferId);
-      await call("notify-buyer-transfer (disputed)", "notify-buyer-transfer", {
+      // 2. Transfer disputed
+      await call("notify-buyer-transfer (dispute)", "notify-buyer-transfer", {
         transfer_id: transferId,
+        action: "dispute",
       });
-      // restore so subsequent steps work
+      // Restore confirmed state so subsequent reminder paths trigger.
       await supabase
         .from("order_transfers")
         .update({ status: "confirmed", confirmed_at: new Date().toISOString() })
