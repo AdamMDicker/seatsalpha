@@ -98,12 +98,7 @@ const AdminDashboard = () => {
 
           <button
             type="button"
-            onClick={() => {
-              setActiveTab("e2e");
-              requestAnimationFrame(() => {
-                document.getElementById("admin-e2e-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-              });
-            }}
+            onClick={() => setActiveTab("e2e")}
             className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:opacity-90"
           >
             <PlayCircle className="h-4 w-4" />
@@ -133,12 +128,6 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {activeTab === "e2e" && (
-          <div id="admin-e2e-section" className="mb-4 flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-sm font-semibold text-primary">
-            <PlayCircle className="h-4 w-4" />
-            E2E Test — currently active
-          </div>
-        )}
         {activeTab === "events" && <AdminEvents />}
         {activeTab === "tickets" && <AdminTickets />}
         {activeTab === "import" && <AdminCsvImport />}

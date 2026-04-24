@@ -18,8 +18,7 @@ import {
   Loader2,
   Circle,
   History,
-  Copy,
-  Search,
+  Eye,
 } from "lucide-react";
 
 const STORAGE_KEY = "admin-e2e-test-state-v1";
@@ -32,27 +31,7 @@ interface PersistedState {
   checkoutUrl: string | null;
   orderInfo: { orderId: string; transferId: string | null; transferAlias: string | null } | null;
   assertion: AssertResult | null;
-  lastRunAt: number | null;
-  traceId: string | null;
-  triggerCalls: TriggerCall[];
   savedAt: number;
-}
-
-interface EmailLogRow {
-  recipient: string;
-  status: string;
-  messageId: string | null;
-  loggedAt: string;
-  error: string | null;
-}
-
-interface TriggerCall {
-  template: string;
-  fn: string;
-  callTraceId: string;
-  ok: boolean;
-  durationMs: number;
-  detail?: string;
 }
 
 interface TemplateResult {
@@ -60,27 +39,16 @@ interface TemplateResult {
   trigger: string;
   status: string;
   passed: boolean;
-  /** "passed" | "missing" | "failed" — provided by backend, optional for backwards-compat */
-  reason?: "passed" | "missing" | "failed";
-  /** Human-readable hint for why the template did not pass. */
-  hint?: string | null;
   recipient: string | null;
   error: string | null;
   loggedAt: string | null;
-  /** All matching email_send_log rows for this template (newest first). */
-  logRows?: EmailLogRow[];
-  rowCount?: number;
 }
 
 interface AssertResult {
   totalExpected: number;
   passCount: number;
   failCount: number;
-  /** Optional: present on newer backend responses. */
-  missingCount?: number;
-  failedCount?: number;
   summary: TemplateResult[];
-  traceId?: string;
 }
 
 type StepStatus = "pending" | "running" | "done" | "failed" | "skipped";
@@ -93,8 +61,6 @@ interface Step {
   detail?: string;
   startedAt?: number;
   endedAt?: number;
-  /** Trace ID for this step's backend call(s). */
-  traceId?: string;
 }
 
 const INITIAL_STEPS: Step[] = [
@@ -124,9 +90,6 @@ const AdminE2ETest = () => {
     transferAlias: string | null;
   } | null>(null);
   const [assertion, setAssertion] = useState<AssertResult | null>(null);
-  const [lastRunAt, setLastRunAt] = useState<number | null>(null);
-  const [traceId, setTraceId] = useState<string | null>(null);
-  const [triggerCalls, setTriggerCalls] = useState<TriggerCall[]>([]);
   const [clearing, setClearing] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const [restoredFromStorage, setRestoredFromStorage] = useState(false);
@@ -153,9 +116,6 @@ const AdminE2ETest = () => {
       setCheckoutUrl(saved.checkoutUrl);
       setOrderInfo(saved.orderInfo);
       setAssertion(saved.assertion);
-      setLastRunAt(saved.lastRunAt ?? null);
-      setTraceId(saved.traceId ?? null);
-      setTriggerCalls(saved.triggerCalls ?? []);
       setRestoredFromStorage(true);
       if (saved.stage === "running") {
         toast.info("Restored test state — your last test was interrupted. Use 'Re-assert' to verify emails.");
@@ -171,19 +131,12 @@ const AdminE2ETest = () => {
       return;
     }
     const payload: PersistedState = {
-      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, traceId, triggerCalls, savedAt: Date.now(),
+      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, savedAt: Date.now(),
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {}
-  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, traceId, triggerCalls]);
-
-  // Stamp lastRunAt whenever a run completes (done or error).
-  useEffect(() => {
-    if (stage === "done" || stage === "error") {
-      setLastRunAt(Date.now());
-    }
-  }, [stage]);
+  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion]);
 
   const log = (msg: string, kind: "info" | "ok" | "warn" | "err" = "info") => {
     setLogs((l) => [...l, { ts: new Date().toLocaleTimeString(), msg, kind }]);
@@ -292,30 +245,21 @@ const AdminE2ETest = () => {
   const reset = () => {
     setStage("idle");
     setLogs([]);
-    setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: "pending", detail: undefined, startedAt: undefined, endedAt: undefined, traceId: undefined })));
+    setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: "pending", detail: undefined, startedAt: undefined, endedAt: undefined })));
     setCheckoutUrl(null);
     setOrderInfo(null);
     setAssertion(null);
-    setTraceId(null);
-    setTriggerCalls([]);
   };
 
   const runTest = async () => {
     reset();
-    // One trace ID for the entire run — passed to every backend action
-    // and stamped on every console.log in the orchestrator + sub-functions.
-    const runTraceId =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `trace-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    setTraceId(runTraceId);
     setStage("running");
-    log(`Starting end-to-end test… trace=${runTraceId}`);
+    log("Starting end-to-end test…");
 
     // ── Step 1: start ──────────────────────────────────────────────
-    updateStep("start", { status: "running", traceId: runTraceId });
+    updateStep("start", { status: "running" });
     const startRes = await supabase.functions.invoke("run-purchase-test", {
-      body: { action: "start", buyerEmail: buyerEmail || undefined, traceId: runTraceId },
+      body: { action: "start", buyerEmail: buyerEmail || undefined },
     });
     if (startRes.error || !startRes.data?.url) {
       const detail = startRes.error?.message || "no URL returned";
@@ -332,17 +276,17 @@ const AdminE2ETest = () => {
       buyerEmail: string;
     };
     setCheckoutUrl(url);
-    updateStep("start", { status: "done", detail: `Event: ${eventTitle} · buyer ${usedEmail}`, traceId: runTraceId });
+    updateStep("start", { status: "done", detail: `Event: ${eventTitle} · buyer ${usedEmail}` });
     log(`✓ Checkout session created for "${eventTitle}" → buyer ${usedEmail}`, "ok");
 
     // ── Step 2: open in new tab ────────────────────────────────────
-    updateStep("open", { status: "running", traceId: runTraceId });
+    updateStep("open", { status: "running" });
     window.open(url, "_blank", "noopener,noreferrer");
-    updateStep("open", { status: "done", detail: "Tab opened — pay the $0.50 charge to continue", traceId: runTraceId });
+    updateStep("open", { status: "done", detail: "Tab opened — pay the $0.50 charge to continue" });
     log("Opened Stripe Checkout in a new tab. Pay the $0.50 charge to continue.", "info");
 
     // ── Step 3: poll ───────────────────────────────────────────────
-    updateStep("poll", { status: "running", detail: "Waiting for webhook…", traceId: runTraceId });
+    updateStep("poll", { status: "running", detail: "Waiting for webhook…" });
     log("Waiting for Stripe webhook to create the order…", "info");
     const start = Date.now();
     let pollAttempts = 0;
@@ -351,9 +295,9 @@ const AdminE2ETest = () => {
       await new Promise((r) => setTimeout(r, 4000));
       pollAttempts++;
       const elapsed = Math.floor((Date.now() - start) / 1000);
-      updateStep("poll", { status: "running", detail: `Attempt ${pollAttempts} · ${elapsed}s elapsed`, traceId: runTraceId });
+      updateStep("poll", { status: "running", detail: `Attempt ${pollAttempts} · ${elapsed}s elapsed` });
       const pollRes = await supabase.functions.invoke("run-purchase-test", {
-        body: { action: "poll", traceId: runTraceId },
+        body: { action: "poll" },
       });
       if (pollRes.error) {
         log(`Poll error: ${pollRes.error.message}`, "warn");
@@ -383,17 +327,15 @@ const AdminE2ETest = () => {
     updateStep("poll", {
       status: "done",
       detail: `Order ${order.orderId.slice(0, 8)}… · alias ${order.transferAlias ?? "n/a"} (after ${pollAttempts} attempt(s))`,
-      traceId: runTraceId,
     });
     log(`✓ Order created: ${order.orderId.slice(0, 8)}… (transfer alias: ${order.transferAlias ?? "n/a"})`, "ok");
 
     // ── Step 4: trigger downstream emails ──────────────────────────
-    updateStep("trigger", { status: "running", traceId: runTraceId });
+    updateStep("trigger", { status: "running" });
     log("Triggering all downstream email paths…", "info");
     const trigRes = await supabase.functions.invoke("run-purchase-test", {
       body: {
         action: "trigger",
-        traceId: runTraceId,
         orderId: order.orderId,
         transferId: order.transferId,
         ticketId: order.ticketId,
@@ -409,97 +351,54 @@ const AdminE2ETest = () => {
       setStage("error");
       return;
     }
-    const triggered: TriggerCall[] = trigRes.data?.triggered ?? [];
-    setTriggerCalls(triggered);
+    const triggered: Array<{ template: string; ok: boolean; detail?: string }> =
+      trigRes.data?.triggered ?? [];
     const okCount = triggered.filter((t) => t.ok).length;
     triggered.forEach((t) =>
-      log(
-        `${t.ok ? "✓" : "✗"} ${t.template} [${t.callTraceId?.slice(-8) ?? "?"}]${t.detail ? ` — ${t.detail}` : ""}`,
-        t.ok ? "ok" : "warn"
-      )
+      log(`${t.ok ? "✓" : "✗"} ${t.template}${t.detail ? ` — ${t.detail}` : ""}`, t.ok ? "ok" : "warn")
     );
     updateStep("trigger", {
       status: okCount === triggered.length ? "done" : "done",
       detail: `${okCount}/${triggered.length} downstream calls succeeded`,
-      traceId: runTraceId,
     });
 
     // ── Step 5: queue wait ─────────────────────────────────────────
-    updateStep("queue_wait", { status: "running", detail: "Sleeping 8s…", traceId: runTraceId });
+    updateStep("queue_wait", { status: "running", detail: "Sleeping 8s…" });
     log("Waiting 8s for queue dispatcher to process emails…", "info");
     await new Promise((r) => setTimeout(r, 8000));
-    updateStep("queue_wait", { status: "done", detail: "Queue should have drained", traceId: runTraceId });
+    updateStep("queue_wait", { status: "done", detail: "Queue should have drained" });
 
-    // ── Step 6: assert (with retry) ────────────────────────────────
-    updateStep("assert", { status: "running", detail: "Verifying email_send_log…", traceId: runTraceId });
+    // ── Step 6: assert ─────────────────────────────────────────────
+    updateStep("assert", { status: "running" });
     log("Asserting email_send_log entries for each template…", "info");
-
-    const ASSERT_MAX_ATTEMPTS = 6;       // 6 attempts
-    const ASSERT_INTERVAL_MS = 10_000;   // 10s between attempts → ~60s total
-
-    let a: AssertResult | null = null;
-    let lastError: string | null = null;
-    for (let attempt = 1; attempt <= ASSERT_MAX_ATTEMPTS; attempt++) {
-      const assertRes = await supabase.functions.invoke("run-purchase-test", {
-        body: { action: "assert", buyerEmail: usedEmail, traceId: runTraceId },
-      });
-      if (assertRes.error) {
-        lastError = assertRes.error.message;
-        log(`Assert call errored (attempt ${attempt}/${ASSERT_MAX_ATTEMPTS}): ${lastError}`, "warn");
-      } else {
-        a = assertRes.data as AssertResult;
-        setAssertion(a);
-        const detail = `${a.passCount}/${a.totalExpected} verified (attempt ${attempt})`;
-        updateStep("assert", { status: "running", detail, traceId: runTraceId });
-        if (a.failCount === 0) {
-          log(`All templates verified on attempt ${attempt}`, "ok");
-          break;
-        }
-        const missing = a.summary.filter((s) => (s.reason ?? (s.status === "missing" ? "missing" : "failed")) === "missing");
-        const failed = a.summary.filter((s) => s.reason === "failed");
-        log(
-          `Attempt ${attempt}: ${a.passCount}/${a.totalExpected} verified · ${missing.length} missing · ${failed.length} failed`,
-          "info"
-        );
-      }
-      if (attempt < ASSERT_MAX_ATTEMPTS && (a === null || a.failCount > 0)) {
-        await new Promise((r) => setTimeout(r, ASSERT_INTERVAL_MS));
-      }
-    }
-
-    if (!a) {
-      const detail = `Assert error after ${ASSERT_MAX_ATTEMPTS} attempts: ${lastError ?? "unknown"}`;
+    const assertRes = await supabase.functions.invoke("run-purchase-test", {
+      body: { action: "assert", buyerEmail: usedEmail },
+    });
+    if (assertRes.error) {
+      const detail = `Assert error: ${assertRes.error.message}`;
       log(detail, "err");
       updateStep("assert", { status: "failed", detail });
       setStage("error");
       return;
     }
-
+    const a = assertRes.data as AssertResult;
+    setAssertion(a);
     const assertDetail = `${a.passCount}/${a.totalExpected} templates verified`;
-    log(`Final result: ${assertDetail}`, a.failCount === 0 ? "ok" : "warn");
-    if (a.failCount > 0) {
-      const missing = a.summary.filter((s) => s.reason === "missing" || (!s.reason && s.status === "missing"));
-      const failed = a.summary.filter((s) => s.reason === "failed" || (!s.reason && s.status !== "missing" && !s.passed));
-      if (missing.length) log(`Missing templates: ${missing.map((m) => m.template).join(", ")}`, "warn");
-      if (failed.length) log(`Failed templates: ${failed.map((m) => `${m.template} (${m.status})`).join(", ")}`, "err");
-    }
+    log(`Result: ${assertDetail}`, a.failCount === 0 ? "ok" : "warn");
     updateStep("assert", {
       status: a.failCount === 0 ? "done" : "failed",
       detail: assertDetail,
-      traceId: runTraceId,
     });
     setStage(a.failCount === 0 ? "done" : "error");
     if (a.failCount === 0) toast.success(`All ${a.totalExpected} email templates verified ✅`);
-    else toast.warning(`${a.failCount} template(s) not verified — see results below`);
+    else toast.warning(`${a.failCount} template(s) missing — see results below`);
   };
 
   const reAssert = async () => {
-    const tid = traceId ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `trace-${Date.now()}`);
-    if (!traceId) setTraceId(tid);
-    updateStep("assert", { status: "running", traceId: tid });
-    log(`Re-checking email_send_log… trace=${tid}`, "info");
+    updateStep("assert", { status: "running" });
+    log("Re-checking email_send_log…", "info");
     const r = await supabase.functions.invoke("run-purchase-test", {
-      body: { action: "assert", buyerEmail, traceId: tid },
+      body: { action: "assert", buyerEmail },
     });
     if (r.data) {
       const a = r.data as AssertResult;
@@ -508,167 +407,8 @@ const AdminE2ETest = () => {
       updateStep("assert", {
         status: a.failCount === 0 ? "done" : "failed",
         detail: `${a.passCount}/${a.totalExpected} templates verified`,
-        traceId: tid,
       });
       setStage(a.failCount === 0 ? "done" : "error");
-    }
-  };
-
-  /**
-   * Retry only the steps that previously failed in the downstream pipeline
-   * (trigger → queue_wait → assert). Steps 1-3 require a real Stripe payment
-   * and cannot be retried in-place; if they failed, prompt user to start over.
-   * Picks up from the earliest failed/skipped step among {trigger, queue_wait, assert}.
-   */
-  const retryFailedSteps = async () => {
-    const failedIds = steps.filter((s) => s.status === "failed").map((s) => s.id);
-    if (failedIds.length === 0) {
-      toast.info("No failed steps to retry");
-      return;
-    }
-    if (failedIds.includes("start") || failedIds.includes("open") || failedIds.includes("poll")) {
-      toast.error("Steps 1-3 require a fresh Stripe checkout — use 'Run E2E Test' instead.");
-      return;
-    }
-    if (!orderInfo?.orderId) {
-      toast.error("Missing order context — use 'Recover last test' first.");
-      return;
-    }
-
-    const tid =
-      traceId ??
-      (typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `trace-${Date.now()}`);
-    if (!traceId) setTraceId(tid);
-
-    // Determine resume point: earliest failed step in the downstream pipeline.
-    const downstream = ["trigger", "queue_wait", "assert"] as const;
-    const resumeFromIdx = downstream.findIndex((id) => failedIds.includes(id));
-    const resumeFrom = resumeFromIdx === -1 ? "assert" : downstream[resumeFromIdx];
-
-    setStage("running");
-    log(`Retrying failed step(s): ${failedIds.join(", ")} (from "${resumeFrom}") · trace=${tid}`, "info");
-
-    // Reset failed downstream steps to pending so they can run again.
-    setSteps((prev) =>
-      prev.map((s) => {
-        if (!downstream.includes(s.id as typeof downstream[number])) return s;
-        const startIdx = downstream.indexOf(resumeFrom);
-        const sIdx = downstream.indexOf(s.id as typeof downstream[number]);
-        if (sIdx >= startIdx) {
-          return { ...s, status: "pending", detail: undefined, startedAt: undefined, endedAt: undefined };
-        }
-        return s;
-      }),
-    );
-
-    try {
-      // We need ticketId/sellerId for the trigger call. If we don't have them
-      // cached, fetch them from the existing order_transfer row.
-      let ticketId: string | null = null;
-      let sellerId: string | null = null;
-      if (resumeFrom === "trigger" && orderInfo.transferId) {
-        const { data: tRow } = await supabase
-          .from("order_transfers")
-          .select("ticket_id, seller_id")
-          .eq("id", orderInfo.transferId)
-          .maybeSingle();
-        ticketId = tRow?.ticket_id ?? null;
-        sellerId = tRow?.seller_id ?? null;
-      }
-
-      const usedEmail = buyerEmail || (await supabase.auth.getUser()).data.user?.email || "";
-
-      // ── Re-run trigger ─────────────────────────────────────────────
-      if (resumeFrom === "trigger") {
-        updateStep("trigger", { status: "running", traceId: tid });
-        const trigRes = await supabase.functions.invoke("run-purchase-test", {
-          body: {
-            action: "trigger",
-            traceId: tid,
-            orderId: orderInfo.orderId,
-            transferId: orderInfo.transferId,
-            ticketId,
-            sellerId,
-            buyerEmail: usedEmail,
-          },
-        });
-        if (trigRes.error) {
-          const detail = `Trigger error: ${trigRes.error.message}`;
-          log(detail, "err");
-          updateStep("trigger", { status: "failed", detail });
-          setStage("error");
-          return;
-        }
-        const triggered: TriggerCall[] = trigRes.data?.triggered ?? [];
-        setTriggerCalls(triggered);
-        const okCount = triggered.filter((t) => t.ok).length;
-        triggered.forEach((t) =>
-          log(`${t.ok ? "✓" : "✗"} ${t.template} [${t.callTraceId?.slice(-8) ?? "?"}]`, t.ok ? "ok" : "warn"),
-        );
-        updateStep("trigger", {
-          status: "done",
-          detail: `${okCount}/${triggered.length} downstream calls succeeded`,
-          traceId: tid,
-        });
-      }
-
-      // ── Re-run queue wait ──────────────────────────────────────────
-      if (resumeFrom === "trigger" || resumeFrom === "queue_wait") {
-        updateStep("queue_wait", { status: "running", detail: "Sleeping 8s…", traceId: tid });
-        log("Waiting 8s for queue dispatcher…", "info");
-        await new Promise((r) => setTimeout(r, 8000));
-        updateStep("queue_wait", { status: "done", detail: "Queue should have drained", traceId: tid });
-      }
-
-      // ── Re-run assert (with retry) ─────────────────────────────────
-      updateStep("assert", { status: "running", detail: "Verifying email_send_log…", traceId: tid });
-      const ASSERT_MAX_ATTEMPTS = 6;
-      const ASSERT_INTERVAL_MS = 10_000;
-      let a: AssertResult | null = null;
-      let lastError: string | null = null;
-      for (let attempt = 1; attempt <= ASSERT_MAX_ATTEMPTS; attempt++) {
-        const assertRes = await supabase.functions.invoke("run-purchase-test", {
-          body: { action: "assert", buyerEmail: usedEmail, traceId: tid },
-        });
-        if (assertRes.error) {
-          lastError = assertRes.error.message;
-          log(`Assert errored (attempt ${attempt}/${ASSERT_MAX_ATTEMPTS}): ${lastError}`, "warn");
-        } else {
-          a = assertRes.data as AssertResult;
-          setAssertion(a);
-          updateStep("assert", {
-            status: "running",
-            detail: `${a.passCount}/${a.totalExpected} verified (attempt ${attempt})`,
-            traceId: tid,
-          });
-          if (a.failCount === 0) break;
-        }
-        if (attempt < ASSERT_MAX_ATTEMPTS && (a === null || a.failCount > 0)) {
-          await new Promise((r) => setTimeout(r, ASSERT_INTERVAL_MS));
-        }
-      }
-
-      if (!a) {
-        updateStep("assert", { status: "failed", detail: `Assert error: ${lastError ?? "unknown"}` });
-        setStage("error");
-        return;
-      }
-
-      updateStep("assert", {
-        status: a.failCount === 0 ? "done" : "failed",
-        detail: `${a.passCount}/${a.totalExpected} templates verified`,
-        traceId: tid,
-      });
-      setStage(a.failCount === 0 ? "done" : "error");
-      if (a.failCount === 0) toast.success(`Retry succeeded — all ${a.totalExpected} templates verified ✅`);
-      else toast.warning(`${a.failCount} template(s) still failing`);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      log(`Retry error: ${msg}`, "err");
-      toast.error(`Retry failed: ${msg}`);
-      setStage("error");
     }
   };
 
@@ -694,13 +434,25 @@ const AdminE2ETest = () => {
 
   const isRunning = stage === "running";
   const currentStep = steps.find((s) => s.status === "running");
-  const failedSteps = steps.filter((s) => s.status === "failed");
-  const hasUpstreamFailure = failedSteps.some((s) => ["start", "open", "poll"].includes(s.id));
-  const canRetryFailed =
-    !isRunning &&
-    failedSteps.length > 0 &&
-    !hasUpstreamFailure &&
-    !!orderInfo?.orderId;
+  const focusableStep =
+    currentStep ?? steps.find((s) => s.status === "failed") ?? steps.slice().reverse().find((s) => s.status === "done");
+  const [flashStepId, setFlashStepId] = useState<string | null>(null);
+
+  const viewStepDetails = () => {
+    const target = focusableStep;
+    if (!target) {
+      toast.info("No active step to focus");
+      return;
+    }
+    const el = document.getElementById(`e2e-step-${target.id}`);
+    if (!el) {
+      toast.warning("Step row not visible yet");
+      return;
+    }
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setFlashStepId(target.id);
+    setTimeout(() => setFlashStepId(null), 1800);
+  };
 
   const stepIcon = (status: StepStatus) => {
     switch (status) {
@@ -720,196 +472,8 @@ const AdminE2ETest = () => {
     return `${(ms / 1000).toFixed(1)}s`;
   };
 
-  // ── Live status summary ────────────────────────────────────────
-  const completedSteps = steps.filter((s) => s.status === "done").length;
-  const totalSteps = steps.length;
-  const statusLabel =
-    stage === "running" ? "Running" :
-    stage === "done"    ? "Passed" :
-    stage === "error"   ? "Failed" :
-    "Idle";
-  const statusVariant: "default" | "secondary" | "destructive" =
-    stage === "done" ? "default" :
-    stage === "error" ? "destructive" :
-    "secondary";
-  const statusDot =
-    stage === "running" ? "bg-primary animate-pulse" :
-    stage === "done"    ? "bg-emerald-500" :
-    stage === "error"   ? "bg-destructive" :
-    "bg-muted-foreground/40";
-  const formatLastRun = (ts: number | null) => {
-    if (!ts) return "Never";
-    const d = new Date(ts);
-    return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
-  };
-
-  const copyRunSummary = async () => {
-    const lines: string[] = [];
-    lines.push(`E2E Run Summary`);
-    lines.push(`Status: ${statusLabel}`);
-    lines.push(`Last run: ${formatLastRun(lastRunAt)}`);
-    if (traceId) lines.push(`Trace ID: ${traceId}`);
-    lines.push(`Steps: ${completedSteps}/${totalSteps} complete`);
-    const failedSteps = steps.filter((s) => s.status === "failed");
-    if (failedSteps.length) {
-      lines.push(`Failed steps: ${failedSteps.map((s) => s.label).join("; ")}`);
-    }
-    if (stage === "running" && currentStep) {
-      lines.push(`Current step: ${currentStep.label}`);
-    }
-    if (assertion) {
-      lines.push(
-        `Templates: ${assertion.passCount}/${assertion.totalExpected} passing` +
-          (assertion.failCount ? ` (${assertion.failCount} failing)` : ""),
-      );
-      const failed = assertion.summary.filter((t) => !t.passed);
-      if (failed.length) {
-        lines.push(`Missing/failed templates: ${failed.map((t) => t.template).join(", ")}`);
-      }
-    }
-    const text = lines.join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success("Run summary copied to clipboard");
-    } catch {
-      toast.error("Could not copy — clipboard blocked");
-    }
-  };
-
-  // ── Trace ID helpers ────────────────────────────────────────────
-  // Each E2E run is tagged with a UUID that is echoed in every backend
-  // log line (see [e2e-trace:<uuid>] prefix in run-purchase-test). Click
-  // the search icon to open an analytics query with the trace pre-filled.
-  const PROJECT_REF = "fkcszgrewzhswdtsqpad";
-  const copyTrace = async (id: string) => {
-    try {
-      await navigator.clipboard.writeText(id);
-      toast.success("Trace ID copied");
-    } catch {
-      toast.error("Could not copy — long-press to select");
-    }
-  };
-  const edgeLogsUrl = (fn: string, traceFragment?: string) => {
-    const base = `https://supabase.com/dashboard/project/${PROJECT_REF}/functions/${fn}/logs`;
-    return traceFragment ? `${base}?search=${encodeURIComponent(traceFragment)}` : base;
-  };
-  const queueLogsUrl = (traceFragment?: string) =>
-    edgeLogsUrl("process-email-queue", traceFragment);
-
-  const TraceChip = ({
-    label,
-    value,
-    fn,
-  }: {
-    label: string;
-    value: string;
-    fn?: string;
-  }) => (
-    <span className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-1.5 py-0.5 text-[10px] font-mono text-foreground/80">
-      <span className="text-muted-foreground">{label}:</span>
-      <span className="truncate max-w-[180px]" title={value}>{value}</span>
-      <button
-        type="button"
-        onClick={() => copyTrace(value)}
-        className="hover:text-primary p-0.5"
-        title="Copy trace ID"
-      >
-        <Copy className="h-3 w-3" />
-      </button>
-      {fn && (
-        <a
-          href={edgeLogsUrl(fn, value)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-primary p-0.5"
-          title={`Open ${fn} logs filtered by this trace`}
-        >
-          <Search className="h-3 w-3" />
-        </a>
-      )}
-    </span>
-  );
-
   return (
     <div className="space-y-6">
-      {/* Live status panel — always visible */}
-      <Card className="border-primary/30">
-        <CardContent className="py-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <span className={`inline-block h-2.5 w-2.5 rounded-full ${statusDot}`} />
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-semibold">E2E Run Status</span>
-                  <Badge variant={statusVariant} className="text-[10px] uppercase tracking-wide">
-                    {statusLabel}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                  {stage === "running" && currentStep
-                    ? `Current: ${currentStep.label}`
-                    : stage === "idle"
-                    ? "No active run"
-                    : `${completedSteps}/${totalSteps} steps complete`}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-4 text-xs">
-              {traceId && (
-                <TraceChip label="trace" value={traceId} fn="run-purchase-test" />
-              )}
-              {assertion && (
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  <span className="font-mono">
-                    {assertion.passCount}/{assertion.totalExpected} templates
-                  </span>
-                  {assertion.failCount > 0 && (
-                    <Badge variant="destructive" className="text-[10px]">
-                      {assertion.failCount} failing
-                    </Badge>
-                  )}
-                </div>
-              )}
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>Last run: <span className="font-mono text-foreground">{formatLastRun(lastRunAt)}</span></span>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={copyRunSummary}
-                disabled={stage === "idle" && !lastRunAt}
-                className="gap-1.5 h-7 px-2 text-xs"
-                title="Copy timestamp, current step, and pass/fail counts to clipboard"
-              >
-                <Copy className="h-3 w-3" />
-                Copy run summary
-              </Button>
-              {failedSteps.length > 0 && (
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={retryFailedSteps}
-                  disabled={!canRetryFailed}
-                  className="gap-1.5 h-7 px-2 text-xs"
-                  title={
-                    hasUpstreamFailure
-                      ? "Steps 1-3 require a fresh Stripe checkout — use 'Run E2E Test' instead"
-                      : !orderInfo?.orderId
-                      ? "Missing order context — recover or run a fresh test first"
-                      : `Re-run: ${failedSteps.map((s) => s.label).join(", ")}`
-                  }
-                >
-                  <RefreshCw className="h-3 w-3" />
-                  Retry failed ({failedSteps.length})
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <Card className="border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-display">
@@ -1006,11 +570,28 @@ const AdminE2ETest = () => {
       {(stage !== "idle") && (
         <Card className="border-primary/20">
           <CardHeader>
-            <CardTitle className="font-display text-base flex items-center justify-between">
+            <CardTitle className="font-display text-base flex items-center justify-between gap-2 flex-wrap">
               <span>Test Steps</span>
-              <Badge variant={stage === "done" ? "default" : stage === "error" ? "destructive" : "secondary"}>
-                {stage === "done" ? "All steps complete" : stage === "error" ? "Failed" : "Running…"}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant={stage === "done" ? "default" : stage === "error" ? "destructive" : "secondary"}>
+                  {stage === "done" ? "All steps complete" : stage === "error" ? "Failed" : "Running…"}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={viewStepDetails}
+                  disabled={!focusableStep}
+                  className="gap-1.5 h-7 px-2 text-xs"
+                  title={
+                    focusableStep
+                      ? `Jump to "${focusableStep.label}" — opens its logs and results inline`
+                      : "No active step yet"
+                  }
+                >
+                  <Eye className="h-3 w-3" />
+                  View step details
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1020,7 +601,10 @@ const AdminE2ETest = () => {
                 return (
                   <li
                     key={s.id}
-                    className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
+                    id={`e2e-step-${s.id}`}
+                    className={`flex items-start gap-3 rounded-lg border p-3 transition-all duration-300 ${
+                      flashStepId === s.id ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+                    } ${
                       s.status === "running"
                         ? "border-primary/50 bg-primary/5"
                         : s.status === "failed"
@@ -1060,44 +644,6 @@ const AdminE2ETest = () => {
                         >
                           {s.detail}
                         </p>
-                      )}
-                      {s.traceId && (
-                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                          <TraceChip label="trace" value={s.traceId} fn="run-purchase-test" />
-                        </div>
-                      )}
-                      {s.id === "trigger" && triggerCalls.length > 0 && (
-                        <div className="mt-2 rounded-md border border-border/60 bg-muted/30 divide-y divide-border/40">
-                          {triggerCalls.map((c) => (
-                            <div key={c.callTraceId} className="px-3 py-2 text-xs font-mono">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge
-                                  variant={c.ok ? "default" : "destructive"}
-                                  className="text-[10px] uppercase"
-                                >
-                                  {c.ok ? "ok" : "fail"}
-                                </Badge>
-                                <span className="text-foreground/90">{c.template}</span>
-                                <span className="text-muted-foreground">· {c.durationMs}ms</span>
-                              </div>
-                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                                <TraceChip label="call" value={c.callTraceId} fn={c.fn} />
-                                <a
-                                  href={edgeLogsUrl(c.fn)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                  {c.fn} logs
-                                </a>
-                              </div>
-                              {c.detail && (
-                                <div className="text-destructive mt-1 break-all">{c.detail}</div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
                       )}
                     </div>
                   </li>
@@ -1169,83 +715,12 @@ const AdminE2ETest = () => {
                       >
                         {s.status}
                       </Badge>
-                      {typeof s.rowCount === "number" && (
-                        <Badge variant="secondary" className="text-xs">
-                          {s.rowCount} row{s.rowCount === 1 ? "" : "s"}
-                        </Badge>
-                      )}
                     </div>
-                    {s.hint && (
-                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                        {s.hint}
-                      </p>
-                    )}
-                    {s.logRows && s.logRows.length > 0 ? (
-                      <div className="mt-2 rounded-md border border-border/60 bg-muted/30 divide-y divide-border/40">
-                        {s.logRows.map((row, idx) => (
-                          <div key={`${row.messageId ?? idx}-${row.loggedAt}`} className="px-3 py-2 text-xs font-mono">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge
-                                variant={
-                                  row.status === "sent" ? "default" :
-                                  row.status === "pending" ? "secondary" :
-                                  "destructive"
-                                }
-                                className="text-[10px] uppercase"
-                              >
-                                {row.status}
-                              </Badge>
-                              <span className="text-foreground/90">→ {row.recipient}</span>
-                              <span className="text-muted-foreground">
-                                {new Date(row.loggedAt).toLocaleTimeString()}
-                              </span>
-                            </div>
-                            <div className="text-muted-foreground mt-0.5 break-all">
-                              <span className="opacity-70">template:</span> {s.template}
-                              {row.messageId && (
-                                <> · <span className="opacity-70">msg_id:</span> {row.messageId}</>
-                              )}
-                            </div>
-                            <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                              {row.messageId && (
-                                <TraceChip
-                                  label="msg_id"
-                                  value={row.messageId}
-                                  fn="process-email-queue"
-                                />
-                              )}
-                              <a
-                                href={queueLogsUrl(row.messageId ?? s.template)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                                queue logs
-                              </a>
-                              <a
-                                href={edgeLogsUrl("send-transactional-email", s.template)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                                send logs
-                              </a>
-                            </div>
-                            {row.error && (
-                              <div className="text-destructive mt-0.5 break-all">
-                                error: {row.error}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        No email_send_log rows found for this template.
-                      </div>
-                    )}
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {s.recipient && <>→ {s.recipient}</>}
+                      {s.loggedAt && <> · logged {new Date(s.loggedAt).toLocaleTimeString()}</>}
+                      {s.error && <span className="text-destructive"> · {s.error}</span>}
+                    </div>
                   </div>
                 </div>
               ))}

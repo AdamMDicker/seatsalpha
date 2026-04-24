@@ -78,18 +78,6 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action: string = body.action || "start";
 
-    // ── Trace ID ──────────────────────────────────────────────────
-    // Every E2E run is tagged with a single traceId. The client passes
-    // it on every action call; we echo it back in responses and stamp
-    // every console.log so an admin can grep edge-function logs and
-    // the analytics_query database for the exact run.
-    const traceId: string =
-      typeof body.traceId === "string" && body.traceId.length > 0
-        ? body.traceId
-        : crypto.randomUUID();
-    const trace = (msg: string) => console.log(`[e2e-trace:${traceId}] [${action}] ${msg}`);
-    trace(`begin action=${action}`);
-
     // --- ACTION: start ---
     if (action === "start") {
       const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -150,7 +138,6 @@ Deno.serve(async (req) => {
         cancel_url: `${origin}/admin?e2e=canceled`,
         metadata: {
           test_run: "true",
-          trace_id: traceId,
           event_title: evt.title,
           ticket_quantity: "1",
           ticket_tier: tier,
@@ -162,13 +149,11 @@ Deno.serve(async (req) => {
           membership_amount: "0",
         },
         payment_intent_data: {
-          metadata: { test_run: "true", trace_id: traceId },
+          metadata: { test_run: "true" },
         },
       });
 
-      trace(`stripe session created id=${session.id} ticket=${availableTicket.id}`);
       return jsonResponse({
-        traceId,
         url: session.url,
         sessionId: session.id,
         ticketId: availableTicket.id,
@@ -194,10 +179,7 @@ Deno.serve(async (req) => {
       const order = (orders ?? []).find(
         (o) => Math.abs(Number(o.total_amount) - 0.5) < 0.01
       );
-      if (!order) {
-        trace("poll not-ready");
-        return jsonResponse({ traceId, ready: false });
-      }
+      if (!order) return jsonResponse({ ready: false });
 
       const { data: transfer } = await supabase
         .from("order_transfers")
@@ -205,9 +187,7 @@ Deno.serve(async (req) => {
         .eq("order_id", order.id)
         .maybeSingle();
 
-      trace(`poll ready=${!!order} order=${order?.id ?? "n/a"}`);
       return jsonResponse({
-        traceId,
         ready: true,
         orderId: order.id,
         transferId: transfer?.id ?? null,
@@ -232,49 +212,20 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${serviceKey}`,
         apikey: serviceKey,
-        "x-e2e-trace-id": traceId,
       };
 
-      const triggerLog: Array<{
-        template: string;
-        ok: boolean;
-        detail?: string;
-        fn: string;
-        callTraceId: string;
-        durationMs: number;
-      }> = [];
-      async function call(label: string, fn: string, payload: Record<string, unknown>) {
-        const callTraceId = `${traceId}:${fn}:${crypto.randomUUID().slice(0, 8)}`;
-        const t0 = Date.now();
-        trace(`→ call ${fn} callTrace=${callTraceId}`);
+      const triggerLog: Array<{ template: string; ok: boolean; detail?: string }> = [];
+      async function call(label: string, fn: string, payload: unknown) {
         try {
           const r = await fetch(`${supabaseUrl}/functions/v1/${fn}`, {
             method: "POST",
-            headers: { ...headers, "x-e2e-call-trace-id": callTraceId },
-            body: JSON.stringify({ ...payload, _e2e_trace_id: traceId, _e2e_call_trace_id: callTraceId }),
+            headers,
+            body: JSON.stringify(payload),
           });
           const text = await r.text();
-          const durationMs = Date.now() - t0;
-          trace(`← ${fn} status=${r.status} duration=${durationMs}ms`);
-          triggerLog.push({
-            template: label,
-            fn,
-            callTraceId,
-            ok: r.ok,
-            durationMs,
-            detail: r.ok ? undefined : text.slice(0, 200),
-          });
+          triggerLog.push({ template: label, ok: r.ok, detail: r.ok ? undefined : text.slice(0, 200) });
         } catch (err) {
-          const durationMs = Date.now() - t0;
-          trace(`✗ ${fn} threw after ${durationMs}ms: ${String(err).slice(0, 100)}`);
-          triggerLog.push({
-            template: label,
-            fn,
-            callTraceId,
-            ok: false,
-            durationMs,
-            detail: String(err).slice(0, 200),
-          });
+          triggerLog.push({ template: label, ok: false, detail: String(err).slice(0, 200) });
         }
       }
 
@@ -358,17 +309,13 @@ Deno.serve(async (req) => {
         },
       });
 
-      trace(`trigger complete count=${triggerLog.length}`);
-      return jsonResponse({ traceId, triggered: triggerLog });
+      return jsonResponse({ triggered: triggerLog });
     }
 
     // --- ACTION: assert ---
-    // Looks at email_send_log over the last hour and classifies each
-    // expected template as passed / failed / missing. "missing" means no
-    // row exists yet (queue dispatcher may still be draining); "failed"
-    // means a row exists but the send errored (dlq / failed / bounced).
     if (action === "assert") {
       const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { buyerEmail } = body;
       const { data: rows } = await supabase
         .from("email_send_log")
         .select("template_name, recipient_email, status, error_message, created_at, message_id")
@@ -376,58 +323,27 @@ Deno.serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(500);
 
-      const PASS_STATUSES = new Set(["sent", "pending"]);
-      const FAIL_STATUSES = new Set(["dlq", "failed", "bounced", "complained", "suppressed"]);
-
       const summary = EXPECTED_TEMPLATES.map((tpl) => {
         const matches = (rows ?? []).filter((r) => r.template_name === tpl.name);
         const latest = matches[0];
-        const status = latest?.status ?? "missing";
-        const passed = !!latest && PASS_STATUSES.has(status);
-        let reason: "passed" | "missing" | "failed" = "passed";
-        let hint: string | null = null;
-        if (!latest) {
-          reason = "missing";
-          hint = `No email_send_log row yet for ${tpl.name}. Trigger: ${tpl.trigger}.`;
-        } else if (FAIL_STATUSES.has(status)) {
-          reason = "failed";
-          hint = latest.error_message
-            ? `Send failed: ${latest.error_message.slice(0, 200)}`
-            : `Send marked ${status} with no error message.`;
-        }
+        const passed =
+          !!latest && (latest.status === "sent" || latest.status === "pending");
         return {
           template: tpl.name,
           trigger: tpl.trigger,
-          status,
+          status: latest?.status ?? "missing",
           passed,
-          reason,
-          hint,
           recipient: latest?.recipient_email ?? null,
           error: latest?.error_message ?? null,
           loggedAt: latest?.created_at ?? null,
-          // Full set of log rows found for this template (most recent first)
-          logRows: matches.map((m) => ({
-            recipient: m.recipient_email,
-            status: m.status,
-            messageId: m.message_id,
-            loggedAt: m.created_at,
-            error: m.error_message,
-          })),
-          rowCount: matches.length,
         };
       });
 
       const passCount = summary.filter((s) => s.passed).length;
-      const missingCount = summary.filter((s) => s.reason === "missing").length;
-      const failedCount = summary.filter((s) => s.reason === "failed").length;
-      trace(`assert pass=${passCount}/${summary.length} missing=${missingCount} failed=${failedCount}`);
       return jsonResponse({
-        traceId,
         totalExpected: summary.length,
         passCount,
         failCount: summary.length - passCount,
-        missingCount,
-        failedCount,
         summary,
       });
     }
