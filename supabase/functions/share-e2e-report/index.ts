@@ -1,6 +1,10 @@
 // Send an E2E test report to an arbitrary email address (admin only).
-// Uses Resend directly — does not depend on a registered transactional template.
+// Enqueues through the Lovable Emails pipeline (pgmq `transactional_emails` queue)
+// so sends use the project's verified sender domain (notify.seats.ca).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+const SENDER_DOMAIN = "notify.seats.ca";
+const FROM_EMAIL = "noreply@seats.ca";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -181,12 +185,6 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendKey) {
-      return new Response(JSON.stringify({ error: "RESEND_API_KEY not configured" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
@@ -233,31 +231,34 @@ Deno.serve(async (req) => {
       : payload.stage;
     const subject = `Seats.ca E2E Report — ${passText} — ${new Date(payload.generatedAt).toLocaleString()}`;
 
-    const resp = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Seats.ca Admin <noreply@notify.seats.ca>",
-        to: [payload.recipientEmail],
+    // Enqueue through the Lovable Emails pipeline so we use the verified
+    // sender domain. `process-email-queue` will drain it within a few seconds.
+    const messageId = crypto.randomUUID();
+    const { error: enqueueError } = await supabase.rpc("enqueue_email", {
+      queue_name: "transactional_emails",
+      payload: {
+        message_id: messageId,
+        to: payload.recipientEmail,
+        from: `Seats.ca Admin <${FROM_EMAIL}>`,
+        sender_domain: SENDER_DOMAIN,
         reply_to: sharedBy,
         subject,
         html,
-      }),
+        text: subject,
+        purpose: "transactional",
+        idempotency_key: messageId,
+        template_name: "e2e-report",
+      },
     });
 
-    const result = await resp.json().catch(() => ({}));
-
-    if (!resp.ok) {
-      console.error("Resend error", result);
-      return new Response(JSON.stringify({ error: "Failed to send email", detail: result }), {
+    if (enqueueError) {
+      console.error("enqueue_email error", enqueueError);
+      return new Response(JSON.stringify({ error: "Failed to enqueue email", detail: enqueueError.message }), {
         status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ success: true, id: result.id ?? null }), {
+    return new Response(JSON.stringify({ success: true, id: messageId, queued: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
