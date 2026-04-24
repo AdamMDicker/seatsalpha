@@ -160,7 +160,11 @@ const AdminDashboard = () => {
         {activeTab === "emails" && <AdminEmailMonitor />}
         {activeTab === "webhooks" && <AdminWebhookEvents />}
         {activeTab === "replay" && <AdminReplayWebhook />}
-        {activeTab === "e2e" && <AdminE2ETest />}
+        {activeTab === "e2e" && (
+          <div id="admin-e2e-panel">
+            <AdminE2ETest />
+          </div>
+        )}
       </div>
     </div>
   );
