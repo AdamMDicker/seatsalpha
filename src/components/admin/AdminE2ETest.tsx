@@ -153,6 +153,82 @@ const AdminE2ETest = () => {
     );
   };
 
+  const recoverLastTest = async () => {
+    setRecovering(true);
+    log("Looking up your most recent test order…", "info");
+    try {
+      // Find the most recent $0.50 test order for this admin
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Not signed in");
+        setRecovering(false);
+        return;
+      }
+      const { data: orders, error } = await supabase
+        .from("orders")
+        .select("id, created_at, total_amount")
+        .eq("user_id", user.id)
+        .gte("total_amount", 0.49)
+        .lte("total_amount", 0.51)
+        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      if (!orders || orders.length === 0) {
+        toast.warning("No recent $0.50 test orders found in the last 24h");
+        log("No recent test order found.", "warn");
+        setRecovering(false);
+        return;
+      }
+      const orderId = orders[0].id;
+      log(`✓ Found recent test order ${orderId.slice(0, 8)}… (${new Date(orders[0].created_at).toLocaleTimeString()})`, "ok");
+
+      // Pull related transfer for context
+      const { data: transfers } = await supabase
+        .from("order_transfers")
+        .select("id, transfer_email_alias, ticket_id, seller_id")
+        .eq("order_id", orderId)
+        .limit(1);
+      const t = transfers?.[0];
+
+      setOrderInfo({
+        orderId,
+        transferId: t?.id ?? null,
+        transferAlias: t?.transfer_email_alias ?? null,
+      });
+      // Mark all steps as done so user can see the recovered context
+      setSteps(INITIAL_STEPS.map((s) => ({
+        ...s,
+        status: s.id === "assert" ? "running" : "done",
+        detail: s.id === "open" ? "Completed in previous session" : s.id === "poll" ? `Order ${orderId.slice(0, 8)}…` : undefined,
+      })));
+      setStage("running");
+
+      // Now re-assert against the buyer email
+      log("Asserting email_send_log for recovered order…", "info");
+      const assertRes = await supabase.functions.invoke("run-purchase-test", {
+        body: { action: "assert", buyerEmail: buyerEmail || user.email },
+      });
+      if (assertRes.error) throw assertRes.error;
+      const a = assertRes.data as AssertResult;
+      setAssertion(a);
+      updateStep("assert", {
+        status: a.failCount === 0 ? "done" : "failed",
+        detail: `${a.passCount}/${a.totalExpected} templates verified`,
+      });
+      setStage(a.failCount === 0 ? "done" : "error");
+      log(`Result: ${a.passCount}/${a.totalExpected} verified`, a.failCount === 0 ? "ok" : "warn");
+      if (a.failCount === 0) toast.success(`All ${a.totalExpected} templates verified ✅`);
+      else toast.warning(`${a.failCount} template(s) missing — see results below`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Recovery failed: ${msg}`);
+      log(`Recovery error: ${msg}`, "err");
+      setStage("error");
+    } finally {
+      setRecovering(false);
+    }
+  };
 
   const failRemaining = (fromId: string) => {
     setSteps((prev) => {
