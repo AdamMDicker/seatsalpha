@@ -30,6 +30,7 @@ interface PersistedState {
   checkoutUrl: string | null;
   orderInfo: { orderId: string; transferId: string | null; transferAlias: string | null } | null;
   assertion: AssertResult | null;
+  lastRunAt: number | null;
   savedAt: number;
 }
 
@@ -107,6 +108,7 @@ const AdminE2ETest = () => {
     transferAlias: string | null;
   } | null>(null);
   const [assertion, setAssertion] = useState<AssertResult | null>(null);
+  const [lastRunAt, setLastRunAt] = useState<number | null>(null);
   const [clearing, setClearing] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const [restoredFromStorage, setRestoredFromStorage] = useState(false);
@@ -133,6 +135,7 @@ const AdminE2ETest = () => {
       setCheckoutUrl(saved.checkoutUrl);
       setOrderInfo(saved.orderInfo);
       setAssertion(saved.assertion);
+      setLastRunAt(saved.lastRunAt ?? null);
       setRestoredFromStorage(true);
       if (saved.stage === "running") {
         toast.info("Restored test state — your last test was interrupted. Use 'Re-assert' to verify emails.");
@@ -148,12 +151,19 @@ const AdminE2ETest = () => {
       return;
     }
     const payload: PersistedState = {
-      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, savedAt: Date.now(),
+      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, savedAt: Date.now(),
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {}
-  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion]);
+  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt]);
+
+  // Stamp lastRunAt whenever a run completes (done or error).
+  useEffect(() => {
+    if (stage === "done" || stage === "error") {
+      setLastRunAt(Date.now());
+    }
+  }, [stage]);
 
   const log = (msg: string, kind: "info" | "ok" | "warn" | "err" = "info") => {
     setLogs((l) => [...l, { ts: new Date().toLocaleTimeString(), msg, kind }]);
@@ -510,8 +520,76 @@ const AdminE2ETest = () => {
     return `${(ms / 1000).toFixed(1)}s`;
   };
 
+  // ── Live status summary ────────────────────────────────────────
+  const completedSteps = steps.filter((s) => s.status === "done").length;
+  const totalSteps = steps.length;
+  const statusLabel =
+    stage === "running" ? "Running" :
+    stage === "done"    ? "Passed" :
+    stage === "error"   ? "Failed" :
+    "Idle";
+  const statusVariant: "default" | "secondary" | "destructive" =
+    stage === "done" ? "default" :
+    stage === "error" ? "destructive" :
+    "secondary";
+  const statusDot =
+    stage === "running" ? "bg-primary animate-pulse" :
+    stage === "done"    ? "bg-emerald-500" :
+    stage === "error"   ? "bg-destructive" :
+    "bg-muted-foreground/40";
+  const formatLastRun = (ts: number | null) => {
+    if (!ts) return "Never";
+    const d = new Date(ts);
+    return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+  };
+
   return (
     <div className="space-y-6">
+      {/* Live status panel — always visible */}
+      <Card className="border-primary/30">
+        <CardContent className="py-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className={`inline-block h-2.5 w-2.5 rounded-full ${statusDot}`} />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold">E2E Run Status</span>
+                  <Badge variant={statusVariant} className="text-[10px] uppercase tracking-wide">
+                    {statusLabel}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  {stage === "running" && currentStep
+                    ? `Current: ${currentStep.label}`
+                    : stage === "idle"
+                    ? "No active run"
+                    : `${completedSteps}/${totalSteps} steps complete`}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-4 text-xs">
+              {assertion && (
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <span className="font-mono">
+                    {assertion.passCount}/{assertion.totalExpected} templates
+                  </span>
+                  {assertion.failCount > 0 && (
+                    <Badge variant="destructive" className="text-[10px]">
+                      {assertion.failCount} failing
+                    </Badge>
+                  )}
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                <span>Last run: <span className="font-mono text-foreground">{formatLastRun(lastRunAt)}</span></span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-display">
