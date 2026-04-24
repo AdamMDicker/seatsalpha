@@ -420,7 +420,9 @@ Deno.serve(async (req) => {
       const passCount = summary.filter((s) => s.passed).length;
       const missingCount = summary.filter((s) => s.reason === "missing").length;
       const failedCount = summary.filter((s) => s.reason === "failed").length;
+      trace(`assert pass=${passCount}/${summary.length} missing=${missingCount} failed=${failedCount}`);
       return jsonResponse({
+        traceId,
         totalExpected: summary.length,
         passCount,
         failCount: summary.length - passCount,
