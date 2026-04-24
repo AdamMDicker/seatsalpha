@@ -672,6 +672,7 @@ const AdminE2ETest = () => {
     }
   };
 
+  const clearTestData = async () => {
     if (!confirm("Delete all $0.50 test orders, items and transfers from the last 24h? Email log rows will be retained for audit.")) return;
     setClearing(true);
     const r = await supabase.functions.invoke("clear-test-data", {
