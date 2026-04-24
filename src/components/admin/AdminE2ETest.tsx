@@ -578,6 +578,39 @@ const AdminE2ETest = () => {
     return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
   };
 
+  const copyRunSummary = async () => {
+    const lines: string[] = [];
+    lines.push(`E2E Run Summary`);
+    lines.push(`Status: ${statusLabel}`);
+    lines.push(`Last run: ${formatLastRun(lastRunAt)}`);
+    if (traceId) lines.push(`Trace ID: ${traceId}`);
+    lines.push(`Steps: ${completedSteps}/${totalSteps} complete`);
+    const failedSteps = steps.filter((s) => s.status === "failed");
+    if (failedSteps.length) {
+      lines.push(`Failed steps: ${failedSteps.map((s) => s.label).join("; ")}`);
+    }
+    if (stage === "running" && currentStep) {
+      lines.push(`Current step: ${currentStep.label}`);
+    }
+    if (assertion) {
+      lines.push(
+        `Templates: ${assertion.passCount}/${assertion.totalExpected} passing` +
+          (assertion.failCount ? ` (${assertion.failCount} failing)` : ""),
+      );
+      const failed = assertion.summary.filter((t) => !t.passed);
+      if (failed.length) {
+        lines.push(`Missing/failed templates: ${failed.map((t) => t.template).join(", ")}`);
+      }
+    }
+    const text = lines.join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Run summary copied to clipboard");
+    } catch {
+      toast.error("Could not copy — clipboard blocked");
+    }
+  };
+
   // ── Trace ID helpers ────────────────────────────────────────────
   // Each E2E run is tagged with a UUID that is echoed in every backend
   // log line (see [e2e-trace:<uuid>] prefix in run-purchase-test). Click
