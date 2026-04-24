@@ -125,6 +125,8 @@ const AdminE2ETest = () => {
   } | null>(null);
   const [assertion, setAssertion] = useState<AssertResult | null>(null);
   const [lastRunAt, setLastRunAt] = useState<number | null>(null);
+  const [traceId, setTraceId] = useState<string | null>(null);
+  const [triggerCalls, setTriggerCalls] = useState<TriggerCall[]>([]);
   const [clearing, setClearing] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const [restoredFromStorage, setRestoredFromStorage] = useState(false);
@@ -152,6 +154,8 @@ const AdminE2ETest = () => {
       setOrderInfo(saved.orderInfo);
       setAssertion(saved.assertion);
       setLastRunAt(saved.lastRunAt ?? null);
+      setTraceId(saved.traceId ?? null);
+      setTriggerCalls(saved.triggerCalls ?? []);
       setRestoredFromStorage(true);
       if (saved.stage === "running") {
         toast.info("Restored test state — your last test was interrupted. Use 'Re-assert' to verify emails.");
@@ -167,12 +171,12 @@ const AdminE2ETest = () => {
       return;
     }
     const payload: PersistedState = {
-      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, savedAt: Date.now(),
+      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, traceId, triggerCalls, savedAt: Date.now(),
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {}
-  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt]);
+  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, traceId, triggerCalls]);
 
   // Stamp lastRunAt whenever a run completes (done or error).
   useEffect(() => {
