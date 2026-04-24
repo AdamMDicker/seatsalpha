@@ -601,7 +601,10 @@ const AdminE2ETest = () => {
                 return (
                   <li
                     key={s.id}
-                    className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
+                    id={`e2e-step-${s.id}`}
+                    className={`flex items-start gap-3 rounded-lg border p-3 transition-all duration-300 ${
+                      flashStepId === s.id ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+                    } ${
                       s.status === "running"
                         ? "border-primary/50 bg-primary/5"
                         : s.status === "failed"
