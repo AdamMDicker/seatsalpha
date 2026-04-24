@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,7 @@ const tabs = [
 const AdminDashboard = () => {
   const { user, isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("events");
   const [serverVerified, setServerVerified] = useState(false);
   const [transferCounts, setTransferCounts] = useState<{ pending: number; disputed: number }>({ pending: 0, disputed: 0 });
@@ -57,6 +58,19 @@ const AdminDashboard = () => {
       navigate("/");
     }
   }, [user, isAdmin, isLoading, navigate]);
+
+  // Auto-open E2E tab when returning from Stripe Checkout (?e2e=success|canceled)
+  useEffect(() => {
+    const e2eParam = searchParams.get("e2e");
+    if (e2eParam === "success" || e2eParam === "canceled") {
+      setActiveTab("e2e");
+      // Preserve the param so AdminE2ETest can react to it, but scroll into view
+      requestAnimationFrame(() => {
+        const el = document.getElementById("admin-e2e-panel");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [searchParams]);
 
   // Server-side admin verification via RPC
   useEffect(() => {
