@@ -292,21 +292,30 @@ const AdminE2ETest = () => {
   const reset = () => {
     setStage("idle");
     setLogs([]);
-    setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: "pending", detail: undefined, startedAt: undefined, endedAt: undefined })));
+    setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: "pending", detail: undefined, startedAt: undefined, endedAt: undefined, traceId: undefined })));
     setCheckoutUrl(null);
     setOrderInfo(null);
     setAssertion(null);
+    setTraceId(null);
+    setTriggerCalls([]);
   };
 
   const runTest = async () => {
     reset();
+    // One trace ID for the entire run — passed to every backend action
+    // and stamped on every console.log in the orchestrator + sub-functions.
+    const runTraceId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `trace-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    setTraceId(runTraceId);
     setStage("running");
-    log("Starting end-to-end test…");
+    log(`Starting end-to-end test… trace=${runTraceId}`);
 
     // ── Step 1: start ──────────────────────────────────────────────
-    updateStep("start", { status: "running" });
+    updateStep("start", { status: "running", traceId: runTraceId });
     const startRes = await supabase.functions.invoke("run-purchase-test", {
-      body: { action: "start", buyerEmail: buyerEmail || undefined },
+      body: { action: "start", buyerEmail: buyerEmail || undefined, traceId: runTraceId },
     });
     if (startRes.error || !startRes.data?.url) {
       const detail = startRes.error?.message || "no URL returned";
@@ -323,17 +332,17 @@ const AdminE2ETest = () => {
       buyerEmail: string;
     };
     setCheckoutUrl(url);
-    updateStep("start", { status: "done", detail: `Event: ${eventTitle} · buyer ${usedEmail}` });
+    updateStep("start", { status: "done", detail: `Event: ${eventTitle} · buyer ${usedEmail}`, traceId: runTraceId });
     log(`✓ Checkout session created for "${eventTitle}" → buyer ${usedEmail}`, "ok");
 
     // ── Step 2: open in new tab ────────────────────────────────────
-    updateStep("open", { status: "running" });
+    updateStep("open", { status: "running", traceId: runTraceId });
     window.open(url, "_blank", "noopener,noreferrer");
-    updateStep("open", { status: "done", detail: "Tab opened — pay the $0.50 charge to continue" });
+    updateStep("open", { status: "done", detail: "Tab opened — pay the $0.50 charge to continue", traceId: runTraceId });
     log("Opened Stripe Checkout in a new tab. Pay the $0.50 charge to continue.", "info");
 
     // ── Step 3: poll ───────────────────────────────────────────────
-    updateStep("poll", { status: "running", detail: "Waiting for webhook…" });
+    updateStep("poll", { status: "running", detail: "Waiting for webhook…", traceId: runTraceId });
     log("Waiting for Stripe webhook to create the order…", "info");
     const start = Date.now();
     let pollAttempts = 0;
@@ -342,9 +351,9 @@ const AdminE2ETest = () => {
       await new Promise((r) => setTimeout(r, 4000));
       pollAttempts++;
       const elapsed = Math.floor((Date.now() - start) / 1000);
-      updateStep("poll", { status: "running", detail: `Attempt ${pollAttempts} · ${elapsed}s elapsed` });
+      updateStep("poll", { status: "running", detail: `Attempt ${pollAttempts} · ${elapsed}s elapsed`, traceId: runTraceId });
       const pollRes = await supabase.functions.invoke("run-purchase-test", {
-        body: { action: "poll" },
+        body: { action: "poll", traceId: runTraceId },
       });
       if (pollRes.error) {
         log(`Poll error: ${pollRes.error.message}`, "warn");
@@ -374,15 +383,17 @@ const AdminE2ETest = () => {
     updateStep("poll", {
       status: "done",
       detail: `Order ${order.orderId.slice(0, 8)}… · alias ${order.transferAlias ?? "n/a"} (after ${pollAttempts} attempt(s))`,
+      traceId: runTraceId,
     });
     log(`✓ Order created: ${order.orderId.slice(0, 8)}… (transfer alias: ${order.transferAlias ?? "n/a"})`, "ok");
 
     // ── Step 4: trigger downstream emails ──────────────────────────
-    updateStep("trigger", { status: "running" });
+    updateStep("trigger", { status: "running", traceId: runTraceId });
     log("Triggering all downstream email paths…", "info");
     const trigRes = await supabase.functions.invoke("run-purchase-test", {
       body: {
         action: "trigger",
+        traceId: runTraceId,
         orderId: order.orderId,
         transferId: order.transferId,
         ticketId: order.ticketId,
@@ -398,15 +409,19 @@ const AdminE2ETest = () => {
       setStage("error");
       return;
     }
-    const triggered: Array<{ template: string; ok: boolean; detail?: string }> =
-      trigRes.data?.triggered ?? [];
+    const triggered: TriggerCall[] = trigRes.data?.triggered ?? [];
+    setTriggerCalls(triggered);
     const okCount = triggered.filter((t) => t.ok).length;
     triggered.forEach((t) =>
-      log(`${t.ok ? "✓" : "✗"} ${t.template}${t.detail ? ` — ${t.detail}` : ""}`, t.ok ? "ok" : "warn")
+      log(
+        `${t.ok ? "✓" : "✗"} ${t.template} [${t.callTraceId?.slice(-8) ?? "?"}]${t.detail ? ` — ${t.detail}` : ""}`,
+        t.ok ? "ok" : "warn"
+      )
     );
     updateStep("trigger", {
       status: okCount === triggered.length ? "done" : "done",
       detail: `${okCount}/${triggered.length} downstream calls succeeded`,
+      traceId: runTraceId,
     });
 
     // ── Step 5: queue wait ─────────────────────────────────────────
