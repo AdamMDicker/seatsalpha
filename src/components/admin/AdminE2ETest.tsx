@@ -494,10 +494,12 @@ const AdminE2ETest = () => {
   };
 
   const reAssert = async () => {
-    updateStep("assert", { status: "running" });
-    log("Re-checking email_send_log…", "info");
+    const tid = traceId ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `trace-${Date.now()}`);
+    if (!traceId) setTraceId(tid);
+    updateStep("assert", { status: "running", traceId: tid });
+    log(`Re-checking email_send_log… trace=${tid}`, "info");
     const r = await supabase.functions.invoke("run-purchase-test", {
-      body: { action: "assert", buyerEmail },
+      body: { action: "assert", buyerEmail, traceId: tid },
     });
     if (r.data) {
       const a = r.data as AssertResult;
@@ -506,6 +508,7 @@ const AdminE2ETest = () => {
       updateStep("assert", {
         status: a.failCount === 0 ? "done" : "failed",
         detail: `${a.passCount}/${a.totalExpected} templates verified`,
+        traceId: tid,
       });
       setStage(a.failCount === 0 ? "done" : "error");
     }
