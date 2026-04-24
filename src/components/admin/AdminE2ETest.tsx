@@ -33,6 +33,14 @@ interface PersistedState {
   savedAt: number;
 }
 
+interface EmailLogRow {
+  recipient: string;
+  status: string;
+  messageId: string | null;
+  loggedAt: string;
+  error: string | null;
+}
+
 interface TemplateResult {
   template: string;
   trigger: string;
@@ -45,6 +53,9 @@ interface TemplateResult {
   recipient: string | null;
   error: string | null;
   loggedAt: string | null;
+  /** All matching email_send_log rows for this template (newest first). */
+  logRows?: EmailLogRow[];
+  rowCount?: number;
 }
 
 interface AssertResult {
