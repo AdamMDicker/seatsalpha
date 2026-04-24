@@ -19,6 +19,8 @@ import {
   Circle,
   History,
   Eye,
+  Send,
+  Mail,
 } from "lucide-react";
 
 const STORAGE_KEY = "admin-e2e-test-state-v1";
@@ -93,6 +95,46 @@ const AdminE2ETest = () => {
   const [clearing, setClearing] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const [restoredFromStorage, setRestoredFromStorage] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareNote, setShareNote] = useState("");
+  const [sharing, setSharing] = useState(false);
+
+  const shareReport = async () => {
+    const trimmed = shareEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    if (stage === "idle") {
+      toast.error("Run a test first — there's nothing to share yet");
+      return;
+    }
+    setSharing(true);
+    try {
+      const { error } = await supabase.functions.invoke("share-e2e-report", {
+        body: {
+          recipientEmail: trimmed,
+          note: shareNote.trim() || null,
+          stage,
+          buyerEmail: buyerEmail || null,
+          orderInfo,
+          steps,
+          assertion,
+          logs: logs.slice(-50),
+          generatedAt: new Date().toISOString(),
+        },
+      });
+      if (error) throw error;
+      toast.success(`Report sent to ${trimmed}`);
+      setShareNote("");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message ?? "Failed to send report");
+    } finally {
+      setSharing(false);
+    }
+  };
+
 
   // ── Persist state across page reloads / auth redirects ─────────
   useEffect(() => {
@@ -728,7 +770,60 @@ const AdminE2ETest = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Share Report — send the current test snapshot to any email address */}
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="font-display text-base flex items-center gap-2">
+            <Mail className="h-4 w-4 text-primary" />
+            Share this report
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Email a formatted snapshot of this test (steps, template coverage, last 50 log lines) to anyone — no account required on their end.
+          </p>
+          <div className="space-y-2">
+            <Label htmlFor="share-email">Recipient email</Label>
+            <Input
+              id="share-email"
+              type="email"
+              placeholder="teammate@example.com"
+              value={shareEmail}
+              onChange={(e) => setShareEmail(e.target.value)}
+              disabled={sharing}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="share-note">Optional note (max 2000 chars)</Label>
+            <textarea
+              id="share-note"
+              rows={3}
+              maxLength={2000}
+              placeholder="Anything you want them to know about this run…"
+              value={shareNote}
+              onChange={(e) => setShareNote(e.target.value)}
+              disabled={sharing}
+              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              onClick={shareReport}
+              disabled={sharing || stage === "idle" || !shareEmail.trim()}
+              className="gap-2"
+            >
+              {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {sharing ? "Sending…" : "Send report"}
+            </Button>
+            {stage === "idle" && (
+              <span className="text-xs text-muted-foreground">Run a test first to enable sharing.</span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
+
   );
 };
 
