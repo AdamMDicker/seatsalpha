@@ -978,6 +978,33 @@ const AdminE2ETest = () => {
                                 <> · <span className="opacity-70">msg_id:</span> {row.messageId}</>
                               )}
                             </div>
+                            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                              {row.messageId && (
+                                <TraceChip
+                                  label="msg_id"
+                                  value={row.messageId}
+                                  fn="process-email-queue"
+                                />
+                              )}
+                              <a
+                                href={queueLogsUrl(row.messageId ?? s.template)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                queue logs
+                              </a>
+                              <a
+                                href={edgeLogsUrl("send-transactional-email", s.template)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                send logs
+                              </a>
+                            </div>
                             {row.error && (
                               <div className="text-destructive mt-0.5 break-all">
                                 error: {row.error}
