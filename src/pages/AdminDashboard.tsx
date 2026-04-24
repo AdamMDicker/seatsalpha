@@ -90,9 +90,20 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-20 container mx-auto px-4 pb-20">
-        <div className="flex items-center gap-3 mb-8">
-          <LayoutDashboard className="h-6 w-6 text-primary" />
-          <h1 className="font-display text-2xl font-bold">Admin Dashboard</h1>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <LayoutDashboard className="h-6 w-6 text-primary" />
+            <h1 className="font-display text-2xl font-bold">Admin Dashboard</h1>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("e2e")}
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:opacity-90"
+          >
+            <PlayCircle className="h-4 w-4" />
+            Open E2E Test
+          </button>
         </div>
 
         <div className="flex gap-2 mb-8 flex-wrap">
