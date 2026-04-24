@@ -20,7 +20,8 @@ import AdminTransfers from "@/components/admin/AdminTransfers";
 import AdminReplayWebhook from "@/components/admin/AdminReplayWebhook";
 import AdminWebhookEvents from "@/components/admin/AdminWebhookEvents";
 import AdminSectionViews from "@/components/admin/AdminSectionViews";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles } from "lucide-react";
+import AdminE2ETest from "@/components/admin/AdminE2ETest";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle } from "lucide-react";
 
 const tabs = [
   { id: "events", label: "Events", icon: Calendar },
@@ -40,6 +41,7 @@ const tabs = [
   { id: "emails", label: "Email Monitor", icon: Activity },
   { id: "webhooks", label: "Webhook Log", icon: Webhook },
   { id: "replay", label: "Replay Webhook", icon: RefreshCw },
+  { id: "e2e", label: "E2E Test", icon: PlayCircle },
 ];
 
 const AdminDashboard = () => {
@@ -132,6 +134,7 @@ const AdminDashboard = () => {
         {activeTab === "emails" && <AdminEmailMonitor />}
         {activeTab === "webhooks" && <AdminWebhookEvents />}
         {activeTab === "replay" && <AdminReplayWebhook />}
+        {activeTab === "e2e" && <AdminE2ETest />}
       </div>
     </div>
   );
