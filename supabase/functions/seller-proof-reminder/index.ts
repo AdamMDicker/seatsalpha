@@ -121,10 +121,17 @@ async function loadContext(supabase: ReturnType<typeof createClient>, t: Transfe
     const { data: reseller } = await supabase
       .from("resellers")
       .select("email, business_name, first_name")
-      .eq("id", t.seller_id)
+      .eq("user_id", t.seller_id)
       .maybeSingle();
-    sellerEmail = reseller?.email ?? null;
-    sellerName = reseller?.first_name || reseller?.business_name || "Seller";
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email, full_name")
+      .eq("user_id", t.seller_id)
+      .maybeSingle();
+
+    sellerEmail = reseller?.email ?? profile?.email ?? null;
+    sellerName = reseller?.first_name || reseller?.business_name || profile?.full_name || "Seller";
   } else {
     sellerEmail = ADMIN_EMAIL;
     sellerName = "LMK";
@@ -297,20 +304,13 @@ async function sendSellerReminder(
 
   // In-app notification (only if seller has a user account)
   if (ctx.sellerUserId) {
-    const { data: reseller } = await supabase
-      .from("resellers")
-      .select("user_id")
-      .eq("id", ctx.sellerUserId)
-      .maybeSingle();
-    if (reseller?.user_id) {
-      await supabase.from("notifications").insert({
-        user_id: reseller.user_id,
+    await supabase.from("notifications").insert({
+        user_id: ctx.sellerUserId,
         type: "transfer_proof_reminder",
         title: `Upload proof — ${ctx.eventTitle}`,
         body: `The Ticketmaster transfer was received over 30 minutes ago. Please upload your proof of transfer to release the accept link to the buyer.`,
         metadata: { transfer_id: t.id, event_title: ctx.eventTitle },
       });
-    }
   }
 }
 
