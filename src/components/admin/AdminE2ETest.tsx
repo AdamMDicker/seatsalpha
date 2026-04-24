@@ -733,12 +733,56 @@ const AdminE2ETest = () => {
                       >
                         {s.status}
                       </Badge>
+                      {typeof s.rowCount === "number" && (
+                        <Badge variant="secondary" className="text-xs">
+                          {s.rowCount} row{s.rowCount === 1 ? "" : "s"}
+                        </Badge>
+                      )}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {s.recipient && <>→ {s.recipient}</>}
-                      {s.loggedAt && <> · logged {new Date(s.loggedAt).toLocaleTimeString()}</>}
-                      {s.error && <span className="text-destructive"> · {s.error}</span>}
-                    </div>
+                    {s.hint && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                        {s.hint}
+                      </p>
+                    )}
+                    {s.logRows && s.logRows.length > 0 ? (
+                      <div className="mt-2 rounded-md border border-border/60 bg-muted/30 divide-y divide-border/40">
+                        {s.logRows.map((row, idx) => (
+                          <div key={`${row.messageId ?? idx}-${row.loggedAt}`} className="px-3 py-2 text-xs font-mono">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge
+                                variant={
+                                  row.status === "sent" ? "default" :
+                                  row.status === "pending" ? "secondary" :
+                                  "destructive"
+                                }
+                                className="text-[10px] uppercase"
+                              >
+                                {row.status}
+                              </Badge>
+                              <span className="text-foreground/90">→ {row.recipient}</span>
+                              <span className="text-muted-foreground">
+                                {new Date(row.loggedAt).toLocaleTimeString()}
+                              </span>
+                            </div>
+                            <div className="text-muted-foreground mt-0.5 break-all">
+                              <span className="opacity-70">template:</span> {s.template}
+                              {row.messageId && (
+                                <> · <span className="opacity-70">msg_id:</span> {row.messageId}</>
+                              )}
+                            </div>
+                            {row.error && (
+                              <div className="text-destructive mt-0.5 break-all">
+                                error: {row.error}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        No email_send_log rows found for this template.
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
