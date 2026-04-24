@@ -38,6 +38,10 @@ interface TemplateResult {
   trigger: string;
   status: string;
   passed: boolean;
+  /** "passed" | "missing" | "failed" — provided by backend, optional for backwards-compat */
+  reason?: "passed" | "missing" | "failed";
+  /** Human-readable hint for why the template did not pass. */
+  hint?: string | null;
   recipient: string | null;
   error: string | null;
   loggedAt: string | null;
@@ -47,6 +51,9 @@ interface AssertResult {
   totalExpected: number;
   passCount: number;
   failCount: number;
+  /** Optional: present on newer backend responses. */
+  missingCount?: number;
+  failedCount?: number;
   summary: TemplateResult[];
 }
 
