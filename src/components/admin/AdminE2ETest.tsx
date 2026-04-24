@@ -18,6 +18,8 @@ import {
   Loader2,
   Circle,
   History,
+  Copy,
+  Search,
 } from "lucide-react";
 
 const STORAGE_KEY = "admin-e2e-test-state-v1";
@@ -31,6 +33,8 @@ interface PersistedState {
   orderInfo: { orderId: string; transferId: string | null; transferAlias: string | null } | null;
   assertion: AssertResult | null;
   lastRunAt: number | null;
+  traceId: string | null;
+  triggerCalls: TriggerCall[];
   savedAt: number;
 }
 
@@ -40,6 +44,15 @@ interface EmailLogRow {
   messageId: string | null;
   loggedAt: string;
   error: string | null;
+}
+
+interface TriggerCall {
+  template: string;
+  fn: string;
+  callTraceId: string;
+  ok: boolean;
+  durationMs: number;
+  detail?: string;
 }
 
 interface TemplateResult {
@@ -67,6 +80,7 @@ interface AssertResult {
   missingCount?: number;
   failedCount?: number;
   summary: TemplateResult[];
+  traceId?: string;
 }
 
 type StepStatus = "pending" | "running" | "done" | "failed" | "skipped";
@@ -79,6 +93,8 @@ interface Step {
   detail?: string;
   startedAt?: number;
   endedAt?: number;
+  /** Trace ID for this step's backend call(s). */
+  traceId?: string;
 }
 
 const INITIAL_STEPS: Step[] = [
@@ -109,6 +125,8 @@ const AdminE2ETest = () => {
   } | null>(null);
   const [assertion, setAssertion] = useState<AssertResult | null>(null);
   const [lastRunAt, setLastRunAt] = useState<number | null>(null);
+  const [traceId, setTraceId] = useState<string | null>(null);
+  const [triggerCalls, setTriggerCalls] = useState<TriggerCall[]>([]);
   const [clearing, setClearing] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const [restoredFromStorage, setRestoredFromStorage] = useState(false);
@@ -136,6 +154,8 @@ const AdminE2ETest = () => {
       setOrderInfo(saved.orderInfo);
       setAssertion(saved.assertion);
       setLastRunAt(saved.lastRunAt ?? null);
+      setTraceId(saved.traceId ?? null);
+      setTriggerCalls(saved.triggerCalls ?? []);
       setRestoredFromStorage(true);
       if (saved.stage === "running") {
         toast.info("Restored test state — your last test was interrupted. Use 'Re-assert' to verify emails.");
@@ -151,12 +171,12 @@ const AdminE2ETest = () => {
       return;
     }
     const payload: PersistedState = {
-      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, savedAt: Date.now(),
+      stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, traceId, triggerCalls, savedAt: Date.now(),
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {}
-  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt]);
+  }, [stage, steps, logs, buyerEmail, checkoutUrl, orderInfo, assertion, lastRunAt, traceId, triggerCalls]);
 
   // Stamp lastRunAt whenever a run completes (done or error).
   useEffect(() => {
@@ -272,21 +292,30 @@ const AdminE2ETest = () => {
   const reset = () => {
     setStage("idle");
     setLogs([]);
-    setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: "pending", detail: undefined, startedAt: undefined, endedAt: undefined })));
+    setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: "pending", detail: undefined, startedAt: undefined, endedAt: undefined, traceId: undefined })));
     setCheckoutUrl(null);
     setOrderInfo(null);
     setAssertion(null);
+    setTraceId(null);
+    setTriggerCalls([]);
   };
 
   const runTest = async () => {
     reset();
+    // One trace ID for the entire run — passed to every backend action
+    // and stamped on every console.log in the orchestrator + sub-functions.
+    const runTraceId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `trace-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    setTraceId(runTraceId);
     setStage("running");
-    log("Starting end-to-end test…");
+    log(`Starting end-to-end test… trace=${runTraceId}`);
 
     // ── Step 1: start ──────────────────────────────────────────────
-    updateStep("start", { status: "running" });
+    updateStep("start", { status: "running", traceId: runTraceId });
     const startRes = await supabase.functions.invoke("run-purchase-test", {
-      body: { action: "start", buyerEmail: buyerEmail || undefined },
+      body: { action: "start", buyerEmail: buyerEmail || undefined, traceId: runTraceId },
     });
     if (startRes.error || !startRes.data?.url) {
       const detail = startRes.error?.message || "no URL returned";
@@ -303,17 +332,17 @@ const AdminE2ETest = () => {
       buyerEmail: string;
     };
     setCheckoutUrl(url);
-    updateStep("start", { status: "done", detail: `Event: ${eventTitle} · buyer ${usedEmail}` });
+    updateStep("start", { status: "done", detail: `Event: ${eventTitle} · buyer ${usedEmail}`, traceId: runTraceId });
     log(`✓ Checkout session created for "${eventTitle}" → buyer ${usedEmail}`, "ok");
 
     // ── Step 2: open in new tab ────────────────────────────────────
-    updateStep("open", { status: "running" });
+    updateStep("open", { status: "running", traceId: runTraceId });
     window.open(url, "_blank", "noopener,noreferrer");
-    updateStep("open", { status: "done", detail: "Tab opened — pay the $0.50 charge to continue" });
+    updateStep("open", { status: "done", detail: "Tab opened — pay the $0.50 charge to continue", traceId: runTraceId });
     log("Opened Stripe Checkout in a new tab. Pay the $0.50 charge to continue.", "info");
 
     // ── Step 3: poll ───────────────────────────────────────────────
-    updateStep("poll", { status: "running", detail: "Waiting for webhook…" });
+    updateStep("poll", { status: "running", detail: "Waiting for webhook…", traceId: runTraceId });
     log("Waiting for Stripe webhook to create the order…", "info");
     const start = Date.now();
     let pollAttempts = 0;
@@ -322,9 +351,9 @@ const AdminE2ETest = () => {
       await new Promise((r) => setTimeout(r, 4000));
       pollAttempts++;
       const elapsed = Math.floor((Date.now() - start) / 1000);
-      updateStep("poll", { status: "running", detail: `Attempt ${pollAttempts} · ${elapsed}s elapsed` });
+      updateStep("poll", { status: "running", detail: `Attempt ${pollAttempts} · ${elapsed}s elapsed`, traceId: runTraceId });
       const pollRes = await supabase.functions.invoke("run-purchase-test", {
-        body: { action: "poll" },
+        body: { action: "poll", traceId: runTraceId },
       });
       if (pollRes.error) {
         log(`Poll error: ${pollRes.error.message}`, "warn");
@@ -354,15 +383,17 @@ const AdminE2ETest = () => {
     updateStep("poll", {
       status: "done",
       detail: `Order ${order.orderId.slice(0, 8)}… · alias ${order.transferAlias ?? "n/a"} (after ${pollAttempts} attempt(s))`,
+      traceId: runTraceId,
     });
     log(`✓ Order created: ${order.orderId.slice(0, 8)}… (transfer alias: ${order.transferAlias ?? "n/a"})`, "ok");
 
     // ── Step 4: trigger downstream emails ──────────────────────────
-    updateStep("trigger", { status: "running" });
+    updateStep("trigger", { status: "running", traceId: runTraceId });
     log("Triggering all downstream email paths…", "info");
     const trigRes = await supabase.functions.invoke("run-purchase-test", {
       body: {
         action: "trigger",
+        traceId: runTraceId,
         orderId: order.orderId,
         transferId: order.transferId,
         ticketId: order.ticketId,
@@ -378,29 +409,29 @@ const AdminE2ETest = () => {
       setStage("error");
       return;
     }
-    const triggered: Array<{ template: string; ok: boolean; detail?: string }> =
-      trigRes.data?.triggered ?? [];
+    const triggered: TriggerCall[] = trigRes.data?.triggered ?? [];
+    setTriggerCalls(triggered);
     const okCount = triggered.filter((t) => t.ok).length;
     triggered.forEach((t) =>
-      log(`${t.ok ? "✓" : "✗"} ${t.template}${t.detail ? ` — ${t.detail}` : ""}`, t.ok ? "ok" : "warn")
+      log(
+        `${t.ok ? "✓" : "✗"} ${t.template} [${t.callTraceId?.slice(-8) ?? "?"}]${t.detail ? ` — ${t.detail}` : ""}`,
+        t.ok ? "ok" : "warn"
+      )
     );
     updateStep("trigger", {
       status: okCount === triggered.length ? "done" : "done",
       detail: `${okCount}/${triggered.length} downstream calls succeeded`,
+      traceId: runTraceId,
     });
 
     // ── Step 5: queue wait ─────────────────────────────────────────
-    updateStep("queue_wait", { status: "running", detail: "Sleeping 8s…" });
+    updateStep("queue_wait", { status: "running", detail: "Sleeping 8s…", traceId: runTraceId });
     log("Waiting 8s for queue dispatcher to process emails…", "info");
     await new Promise((r) => setTimeout(r, 8000));
-    updateStep("queue_wait", { status: "done", detail: "Queue should have drained" });
+    updateStep("queue_wait", { status: "done", detail: "Queue should have drained", traceId: runTraceId });
 
     // ── Step 6: assert (with retry) ────────────────────────────────
-    // The queue dispatcher is async — some templates can take several
-    // seconds to land in email_send_log. We poll the assert endpoint
-    // up to ~60s, only marking step 6 as failed if templates are
-    // still missing or failed after the full window.
-    updateStep("assert", { status: "running", detail: "Verifying email_send_log…" });
+    updateStep("assert", { status: "running", detail: "Verifying email_send_log…", traceId: runTraceId });
     log("Asserting email_send_log entries for each template…", "info");
 
     const ASSERT_MAX_ATTEMPTS = 6;       // 6 attempts
@@ -410,7 +441,7 @@ const AdminE2ETest = () => {
     let lastError: string | null = null;
     for (let attempt = 1; attempt <= ASSERT_MAX_ATTEMPTS; attempt++) {
       const assertRes = await supabase.functions.invoke("run-purchase-test", {
-        body: { action: "assert", buyerEmail: usedEmail },
+        body: { action: "assert", buyerEmail: usedEmail, traceId: runTraceId },
       });
       if (assertRes.error) {
         lastError = assertRes.error.message;
@@ -419,7 +450,7 @@ const AdminE2ETest = () => {
         a = assertRes.data as AssertResult;
         setAssertion(a);
         const detail = `${a.passCount}/${a.totalExpected} verified (attempt ${attempt})`;
-        updateStep("assert", { status: "running", detail });
+        updateStep("assert", { status: "running", detail, traceId: runTraceId });
         if (a.failCount === 0) {
           log(`All templates verified on attempt ${attempt}`, "ok");
           break;
@@ -455,6 +486,7 @@ const AdminE2ETest = () => {
     updateStep("assert", {
       status: a.failCount === 0 ? "done" : "failed",
       detail: assertDetail,
+      traceId: runTraceId,
     });
     setStage(a.failCount === 0 ? "done" : "error");
     if (a.failCount === 0) toast.success(`All ${a.totalExpected} email templates verified ✅`);
@@ -462,10 +494,12 @@ const AdminE2ETest = () => {
   };
 
   const reAssert = async () => {
-    updateStep("assert", { status: "running" });
-    log("Re-checking email_send_log…", "info");
+    const tid = traceId ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `trace-${Date.now()}`);
+    if (!traceId) setTraceId(tid);
+    updateStep("assert", { status: "running", traceId: tid });
+    log(`Re-checking email_send_log… trace=${tid}`, "info");
     const r = await supabase.functions.invoke("run-purchase-test", {
-      body: { action: "assert", buyerEmail },
+      body: { action: "assert", buyerEmail, traceId: tid },
     });
     if (r.data) {
       const a = r.data as AssertResult;
@@ -474,6 +508,7 @@ const AdminE2ETest = () => {
       updateStep("assert", {
         status: a.failCount === 0 ? "done" : "failed",
         detail: `${a.passCount}/${a.totalExpected} templates verified`,
+        traceId: tid,
       });
       setStage(a.failCount === 0 ? "done" : "error");
     }
@@ -543,6 +578,60 @@ const AdminE2ETest = () => {
     return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
   };
 
+  // ── Trace ID helpers ────────────────────────────────────────────
+  // Each E2E run is tagged with a UUID that is echoed in every backend
+  // log line (see [e2e-trace:<uuid>] prefix in run-purchase-test). Click
+  // the search icon to open an analytics query with the trace pre-filled.
+  const PROJECT_REF = "fkcszgrewzhswdtsqpad";
+  const copyTrace = async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      toast.success("Trace ID copied");
+    } catch {
+      toast.error("Could not copy — long-press to select");
+    }
+  };
+  const edgeLogsUrl = (fn: string, traceFragment?: string) => {
+    const base = `https://supabase.com/dashboard/project/${PROJECT_REF}/functions/${fn}/logs`;
+    return traceFragment ? `${base}?search=${encodeURIComponent(traceFragment)}` : base;
+  };
+  const queueLogsUrl = (traceFragment?: string) =>
+    edgeLogsUrl("process-email-queue", traceFragment);
+
+  const TraceChip = ({
+    label,
+    value,
+    fn,
+  }: {
+    label: string;
+    value: string;
+    fn?: string;
+  }) => (
+    <span className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-1.5 py-0.5 text-[10px] font-mono text-foreground/80">
+      <span className="text-muted-foreground">{label}:</span>
+      <span className="truncate max-w-[180px]" title={value}>{value}</span>
+      <button
+        type="button"
+        onClick={() => copyTrace(value)}
+        className="hover:text-primary p-0.5"
+        title="Copy trace ID"
+      >
+        <Copy className="h-3 w-3" />
+      </button>
+      {fn && (
+        <a
+          href={edgeLogsUrl(fn, value)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-primary p-0.5"
+          title={`Open ${fn} logs filtered by this trace`}
+        >
+          <Search className="h-3 w-3" />
+        </a>
+      )}
+    </span>
+  );
+
   return (
     <div className="space-y-6">
       {/* Live status panel — always visible */}
@@ -568,6 +657,9 @@ const AdminE2ETest = () => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-4 text-xs">
+              {traceId && (
+                <TraceChip label="trace" value={traceId} fn="run-purchase-test" />
+              )}
               {assertion && (
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -741,6 +833,44 @@ const AdminE2ETest = () => {
                           {s.detail}
                         </p>
                       )}
+                      {s.traceId && (
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          <TraceChip label="trace" value={s.traceId} fn="run-purchase-test" />
+                        </div>
+                      )}
+                      {s.id === "trigger" && triggerCalls.length > 0 && (
+                        <div className="mt-2 rounded-md border border-border/60 bg-muted/30 divide-y divide-border/40">
+                          {triggerCalls.map((c) => (
+                            <div key={c.callTraceId} className="px-3 py-2 text-xs font-mono">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge
+                                  variant={c.ok ? "default" : "destructive"}
+                                  className="text-[10px] uppercase"
+                                >
+                                  {c.ok ? "ok" : "fail"}
+                                </Badge>
+                                <span className="text-foreground/90">{c.template}</span>
+                                <span className="text-muted-foreground">· {c.durationMs}ms</span>
+                              </div>
+                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                <TraceChip label="call" value={c.callTraceId} fn={c.fn} />
+                                <a
+                                  href={edgeLogsUrl(c.fn)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  {c.fn} logs
+                                </a>
+                              </div>
+                              {c.detail && (
+                                <div className="text-destructive mt-1 break-all">{c.detail}</div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </li>
                 );
@@ -847,6 +977,33 @@ const AdminE2ETest = () => {
                               {row.messageId && (
                                 <> · <span className="opacity-70">msg_id:</span> {row.messageId}</>
                               )}
+                            </div>
+                            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                              {row.messageId && (
+                                <TraceChip
+                                  label="msg_id"
+                                  value={row.messageId}
+                                  fn="process-email-queue"
+                                />
+                              )}
+                              <a
+                                href={queueLogsUrl(row.messageId ?? s.template)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                queue logs
+                              </a>
+                              <a
+                                href={edgeLogsUrl("send-transactional-email", s.template)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                send logs
+                              </a>
                             </div>
                             {row.error && (
                               <div className="text-destructive mt-0.5 break-all">

@@ -78,6 +78,18 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action: string = body.action || "start";
 
+    // ── Trace ID ──────────────────────────────────────────────────
+    // Every E2E run is tagged with a single traceId. The client passes
+    // it on every action call; we echo it back in responses and stamp
+    // every console.log so an admin can grep edge-function logs and
+    // the analytics_query database for the exact run.
+    const traceId: string =
+      typeof body.traceId === "string" && body.traceId.length > 0
+        ? body.traceId
+        : crypto.randomUUID();
+    const trace = (msg: string) => console.log(`[e2e-trace:${traceId}] [${action}] ${msg}`);
+    trace(`begin action=${action}`);
+
     // --- ACTION: start ---
     if (action === "start") {
       const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -138,6 +150,7 @@ Deno.serve(async (req) => {
         cancel_url: `${origin}/admin?e2e=canceled`,
         metadata: {
           test_run: "true",
+          trace_id: traceId,
           event_title: evt.title,
           ticket_quantity: "1",
           ticket_tier: tier,
@@ -149,11 +162,13 @@ Deno.serve(async (req) => {
           membership_amount: "0",
         },
         payment_intent_data: {
-          metadata: { test_run: "true" },
+          metadata: { test_run: "true", trace_id: traceId },
         },
       });
 
+      trace(`stripe session created id=${session.id} ticket=${availableTicket.id}`);
       return jsonResponse({
+        traceId,
         url: session.url,
         sessionId: session.id,
         ticketId: availableTicket.id,
@@ -179,7 +194,10 @@ Deno.serve(async (req) => {
       const order = (orders ?? []).find(
         (o) => Math.abs(Number(o.total_amount) - 0.5) < 0.01
       );
-      if (!order) return jsonResponse({ ready: false });
+      if (!order) {
+        trace("poll not-ready");
+        return jsonResponse({ traceId, ready: false });
+      }
 
       const { data: transfer } = await supabase
         .from("order_transfers")
@@ -187,7 +205,9 @@ Deno.serve(async (req) => {
         .eq("order_id", order.id)
         .maybeSingle();
 
+      trace(`poll ready=${!!order} order=${order?.id ?? "n/a"}`);
       return jsonResponse({
+        traceId,
         ready: true,
         orderId: order.id,
         transferId: transfer?.id ?? null,
@@ -212,20 +232,49 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${serviceKey}`,
         apikey: serviceKey,
+        "x-e2e-trace-id": traceId,
       };
 
-      const triggerLog: Array<{ template: string; ok: boolean; detail?: string }> = [];
-      async function call(label: string, fn: string, payload: unknown) {
+      const triggerLog: Array<{
+        template: string;
+        ok: boolean;
+        detail?: string;
+        fn: string;
+        callTraceId: string;
+        durationMs: number;
+      }> = [];
+      async function call(label: string, fn: string, payload: Record<string, unknown>) {
+        const callTraceId = `${traceId}:${fn}:${crypto.randomUUID().slice(0, 8)}`;
+        const t0 = Date.now();
+        trace(`→ call ${fn} callTrace=${callTraceId}`);
         try {
           const r = await fetch(`${supabaseUrl}/functions/v1/${fn}`, {
             method: "POST",
-            headers,
-            body: JSON.stringify(payload),
+            headers: { ...headers, "x-e2e-call-trace-id": callTraceId },
+            body: JSON.stringify({ ...payload, _e2e_trace_id: traceId, _e2e_call_trace_id: callTraceId }),
           });
           const text = await r.text();
-          triggerLog.push({ template: label, ok: r.ok, detail: r.ok ? undefined : text.slice(0, 200) });
+          const durationMs = Date.now() - t0;
+          trace(`← ${fn} status=${r.status} duration=${durationMs}ms`);
+          triggerLog.push({
+            template: label,
+            fn,
+            callTraceId,
+            ok: r.ok,
+            durationMs,
+            detail: r.ok ? undefined : text.slice(0, 200),
+          });
         } catch (err) {
-          triggerLog.push({ template: label, ok: false, detail: String(err).slice(0, 200) });
+          const durationMs = Date.now() - t0;
+          trace(`✗ ${fn} threw after ${durationMs}ms: ${String(err).slice(0, 100)}`);
+          triggerLog.push({
+            template: label,
+            fn,
+            callTraceId,
+            ok: false,
+            durationMs,
+            detail: String(err).slice(0, 200),
+          });
         }
       }
 
@@ -309,7 +358,8 @@ Deno.serve(async (req) => {
         },
       });
 
-      return jsonResponse({ triggered: triggerLog });
+      trace(`trigger complete count=${triggerLog.length}`);
+      return jsonResponse({ traceId, triggered: triggerLog });
     }
 
     // --- ACTION: assert ---
@@ -370,7 +420,9 @@ Deno.serve(async (req) => {
       const passCount = summary.filter((s) => s.passed).length;
       const missingCount = summary.filter((s) => s.reason === "missing").length;
       const failedCount = summary.filter((s) => s.reason === "failed").length;
+      trace(`assert pass=${passCount}/${summary.length} missing=${missingCount} failed=${failedCount}`);
       return jsonResponse({
+        traceId,
         totalExpected: summary.length,
         passCount,
         failCount: summary.length - passCount,
