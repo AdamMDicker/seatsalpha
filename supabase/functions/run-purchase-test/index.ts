@@ -202,7 +202,9 @@ Deno.serve(async (req) => {
         .eq("order_id", order.id)
         .maybeSingle();
 
+      trace(`poll ready=${!!order} order=${order?.id ?? "n/a"}`);
       return jsonResponse({
+        traceId,
         ready: true,
         orderId: order.id,
         transferId: transfer?.id ?? null,
