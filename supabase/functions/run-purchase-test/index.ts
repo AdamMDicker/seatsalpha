@@ -232,20 +232,49 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${serviceKey}`,
         apikey: serviceKey,
+        "x-e2e-trace-id": traceId,
       };
 
-      const triggerLog: Array<{ template: string; ok: boolean; detail?: string }> = [];
-      async function call(label: string, fn: string, payload: unknown) {
+      const triggerLog: Array<{
+        template: string;
+        ok: boolean;
+        detail?: string;
+        fn: string;
+        callTraceId: string;
+        durationMs: number;
+      }> = [];
+      async function call(label: string, fn: string, payload: Record<string, unknown>) {
+        const callTraceId = `${traceId}:${fn}:${crypto.randomUUID().slice(0, 8)}`;
+        const t0 = Date.now();
+        trace(`→ call ${fn} callTrace=${callTraceId}`);
         try {
           const r = await fetch(`${supabaseUrl}/functions/v1/${fn}`, {
             method: "POST",
-            headers,
-            body: JSON.stringify(payload),
+            headers: { ...headers, "x-e2e-call-trace-id": callTraceId },
+            body: JSON.stringify({ ...payload, _e2e_trace_id: traceId, _e2e_call_trace_id: callTraceId }),
           });
           const text = await r.text();
-          triggerLog.push({ template: label, ok: r.ok, detail: r.ok ? undefined : text.slice(0, 200) });
+          const durationMs = Date.now() - t0;
+          trace(`← ${fn} status=${r.status} duration=${durationMs}ms`);
+          triggerLog.push({
+            template: label,
+            fn,
+            callTraceId,
+            ok: r.ok,
+            durationMs,
+            detail: r.ok ? undefined : text.slice(0, 200),
+          });
         } catch (err) {
-          triggerLog.push({ template: label, ok: false, detail: String(err).slice(0, 200) });
+          const durationMs = Date.now() - t0;
+          trace(`✗ ${fn} threw after ${durationMs}ms: ${String(err).slice(0, 100)}`);
+          triggerLog.push({
+            template: label,
+            fn,
+            callTraceId,
+            ok: false,
+            durationMs,
+            detail: String(err).slice(0, 200),
+          });
         }
       }
 
