@@ -657,6 +657,9 @@ const AdminE2ETest = () => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-4 text-xs">
+              {traceId && (
+                <TraceChip label="trace" value={traceId} fn="run-purchase-test" />
+              )}
               {assertion && (
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
