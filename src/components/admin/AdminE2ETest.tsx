@@ -694,6 +694,13 @@ const AdminE2ETest = () => {
 
   const isRunning = stage === "running";
   const currentStep = steps.find((s) => s.status === "running");
+  const failedSteps = steps.filter((s) => s.status === "failed");
+  const hasUpstreamFailure = failedSteps.some((s) => ["start", "open", "poll"].includes(s.id));
+  const canRetryFailed =
+    !isRunning &&
+    failedSteps.length > 0 &&
+    !hasUpstreamFailure &&
+    !!orderInfo?.orderId;
 
   const stepIcon = (status: StepStatus) => {
     switch (status) {
