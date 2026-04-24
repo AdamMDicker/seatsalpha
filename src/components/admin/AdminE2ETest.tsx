@@ -30,6 +30,7 @@ interface PersistedState {
   checkoutUrl: string | null;
   orderInfo: { orderId: string; transferId: string | null; transferAlias: string | null } | null;
   assertion: AssertResult | null;
+  lastRunAt: number | null;
   savedAt: number;
 }
 
