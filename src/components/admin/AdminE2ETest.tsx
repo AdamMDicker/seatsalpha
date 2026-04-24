@@ -425,17 +425,13 @@ const AdminE2ETest = () => {
     });
 
     // ── Step 5: queue wait ─────────────────────────────────────────
-    updateStep("queue_wait", { status: "running", detail: "Sleeping 8s…" });
+    updateStep("queue_wait", { status: "running", detail: "Sleeping 8s…", traceId: runTraceId });
     log("Waiting 8s for queue dispatcher to process emails…", "info");
     await new Promise((r) => setTimeout(r, 8000));
-    updateStep("queue_wait", { status: "done", detail: "Queue should have drained" });
+    updateStep("queue_wait", { status: "done", detail: "Queue should have drained", traceId: runTraceId });
 
     // ── Step 6: assert (with retry) ────────────────────────────────
-    // The queue dispatcher is async — some templates can take several
-    // seconds to land in email_send_log. We poll the assert endpoint
-    // up to ~60s, only marking step 6 as failed if templates are
-    // still missing or failed after the full window.
-    updateStep("assert", { status: "running", detail: "Verifying email_send_log…" });
+    updateStep("assert", { status: "running", detail: "Verifying email_send_log…", traceId: runTraceId });
     log("Asserting email_send_log entries for each template…", "info");
 
     const ASSERT_MAX_ATTEMPTS = 6;       // 6 attempts
@@ -445,7 +441,7 @@ const AdminE2ETest = () => {
     let lastError: string | null = null;
     for (let attempt = 1; attempt <= ASSERT_MAX_ATTEMPTS; attempt++) {
       const assertRes = await supabase.functions.invoke("run-purchase-test", {
-        body: { action: "assert", buyerEmail: usedEmail },
+        body: { action: "assert", buyerEmail: usedEmail, traceId: runTraceId },
       });
       if (assertRes.error) {
         lastError = assertRes.error.message;
@@ -454,7 +450,7 @@ const AdminE2ETest = () => {
         a = assertRes.data as AssertResult;
         setAssertion(a);
         const detail = `${a.passCount}/${a.totalExpected} verified (attempt ${attempt})`;
-        updateStep("assert", { status: "running", detail });
+        updateStep("assert", { status: "running", detail, traceId: runTraceId });
         if (a.failCount === 0) {
           log(`All templates verified on attempt ${attempt}`, "ok");
           break;
@@ -490,6 +486,7 @@ const AdminE2ETest = () => {
     updateStep("assert", {
       status: a.failCount === 0 ? "done" : "failed",
       detail: assertDetail,
+      traceId: runTraceId,
     });
     setStage(a.failCount === 0 ? "done" : "error");
     if (a.failCount === 0) toast.success(`All ${a.totalExpected} email templates verified ✅`);
