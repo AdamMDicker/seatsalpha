@@ -108,6 +108,7 @@ const AdminE2ETest = () => {
     transferAlias: string | null;
   } | null>(null);
   const [assertion, setAssertion] = useState<AssertResult | null>(null);
+  const [lastRunAt, setLastRunAt] = useState<number | null>(null);
   const [clearing, setClearing] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const [restoredFromStorage, setRestoredFromStorage] = useState(false);
