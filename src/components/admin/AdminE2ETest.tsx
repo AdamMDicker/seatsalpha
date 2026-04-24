@@ -514,7 +514,164 @@ const AdminE2ETest = () => {
     }
   };
 
-  const clearTestData = async () => {
+  /**
+   * Retry only the steps that previously failed in the downstream pipeline
+   * (trigger → queue_wait → assert). Steps 1-3 require a real Stripe payment
+   * and cannot be retried in-place; if they failed, prompt user to start over.
+   * Picks up from the earliest failed/skipped step among {trigger, queue_wait, assert}.
+   */
+  const retryFailedSteps = async () => {
+    const failedIds = steps.filter((s) => s.status === "failed").map((s) => s.id);
+    if (failedIds.length === 0) {
+      toast.info("No failed steps to retry");
+      return;
+    }
+    if (failedIds.includes("start") || failedIds.includes("open") || failedIds.includes("poll")) {
+      toast.error("Steps 1-3 require a fresh Stripe checkout — use 'Run E2E Test' instead.");
+      return;
+    }
+    if (!orderInfo?.orderId) {
+      toast.error("Missing order context — use 'Recover last test' first.");
+      return;
+    }
+
+    const tid =
+      traceId ??
+      (typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `trace-${Date.now()}`);
+    if (!traceId) setTraceId(tid);
+
+    // Determine resume point: earliest failed step in the downstream pipeline.
+    const downstream = ["trigger", "queue_wait", "assert"] as const;
+    const resumeFromIdx = downstream.findIndex((id) => failedIds.includes(id));
+    const resumeFrom = resumeFromIdx === -1 ? "assert" : downstream[resumeFromIdx];
+
+    setStage("running");
+    log(`Retrying failed step(s): ${failedIds.join(", ")} (from "${resumeFrom}") · trace=${tid}`, "info");
+
+    // Reset failed downstream steps to pending so they can run again.
+    setSteps((prev) =>
+      prev.map((s) => {
+        if (!downstream.includes(s.id as typeof downstream[number])) return s;
+        const startIdx = downstream.indexOf(resumeFrom);
+        const sIdx = downstream.indexOf(s.id as typeof downstream[number]);
+        if (sIdx >= startIdx) {
+          return { ...s, status: "pending", detail: undefined, startedAt: undefined, endedAt: undefined };
+        }
+        return s;
+      }),
+    );
+
+    try {
+      // We need ticketId/sellerId for the trigger call. If we don't have them
+      // cached, fetch them from the existing order_transfer row.
+      let ticketId: string | null = null;
+      let sellerId: string | null = null;
+      if (resumeFrom === "trigger" && orderInfo.transferId) {
+        const { data: tRow } = await supabase
+          .from("order_transfers")
+          .select("ticket_id, seller_id")
+          .eq("id", orderInfo.transferId)
+          .maybeSingle();
+        ticketId = tRow?.ticket_id ?? null;
+        sellerId = tRow?.seller_id ?? null;
+      }
+
+      const usedEmail = buyerEmail || (await supabase.auth.getUser()).data.user?.email || "";
+
+      // ── Re-run trigger ─────────────────────────────────────────────
+      if (resumeFrom === "trigger") {
+        updateStep("trigger", { status: "running", traceId: tid });
+        const trigRes = await supabase.functions.invoke("run-purchase-test", {
+          body: {
+            action: "trigger",
+            traceId: tid,
+            orderId: orderInfo.orderId,
+            transferId: orderInfo.transferId,
+            ticketId,
+            sellerId,
+            buyerEmail: usedEmail,
+          },
+        });
+        if (trigRes.error) {
+          const detail = `Trigger error: ${trigRes.error.message}`;
+          log(detail, "err");
+          updateStep("trigger", { status: "failed", detail });
+          setStage("error");
+          return;
+        }
+        const triggered: TriggerCall[] = trigRes.data?.triggered ?? [];
+        setTriggerCalls(triggered);
+        const okCount = triggered.filter((t) => t.ok).length;
+        triggered.forEach((t) =>
+          log(`${t.ok ? "✓" : "✗"} ${t.template} [${t.callTraceId?.slice(-8) ?? "?"}]`, t.ok ? "ok" : "warn"),
+        );
+        updateStep("trigger", {
+          status: "done",
+          detail: `${okCount}/${triggered.length} downstream calls succeeded`,
+          traceId: tid,
+        });
+      }
+
+      // ── Re-run queue wait ──────────────────────────────────────────
+      if (resumeFrom === "trigger" || resumeFrom === "queue_wait") {
+        updateStep("queue_wait", { status: "running", detail: "Sleeping 8s…", traceId: tid });
+        log("Waiting 8s for queue dispatcher…", "info");
+        await new Promise((r) => setTimeout(r, 8000));
+        updateStep("queue_wait", { status: "done", detail: "Queue should have drained", traceId: tid });
+      }
+
+      // ── Re-run assert (with retry) ─────────────────────────────────
+      updateStep("assert", { status: "running", detail: "Verifying email_send_log…", traceId: tid });
+      const ASSERT_MAX_ATTEMPTS = 6;
+      const ASSERT_INTERVAL_MS = 10_000;
+      let a: AssertResult | null = null;
+      let lastError: string | null = null;
+      for (let attempt = 1; attempt <= ASSERT_MAX_ATTEMPTS; attempt++) {
+        const assertRes = await supabase.functions.invoke("run-purchase-test", {
+          body: { action: "assert", buyerEmail: usedEmail, traceId: tid },
+        });
+        if (assertRes.error) {
+          lastError = assertRes.error.message;
+          log(`Assert errored (attempt ${attempt}/${ASSERT_MAX_ATTEMPTS}): ${lastError}`, "warn");
+        } else {
+          a = assertRes.data as AssertResult;
+          setAssertion(a);
+          updateStep("assert", {
+            status: "running",
+            detail: `${a.passCount}/${a.totalExpected} verified (attempt ${attempt})`,
+            traceId: tid,
+          });
+          if (a.failCount === 0) break;
+        }
+        if (attempt < ASSERT_MAX_ATTEMPTS && (a === null || a.failCount > 0)) {
+          await new Promise((r) => setTimeout(r, ASSERT_INTERVAL_MS));
+        }
+      }
+
+      if (!a) {
+        updateStep("assert", { status: "failed", detail: `Assert error: ${lastError ?? "unknown"}` });
+        setStage("error");
+        return;
+      }
+
+      updateStep("assert", {
+        status: a.failCount === 0 ? "done" : "failed",
+        detail: `${a.passCount}/${a.totalExpected} templates verified`,
+        traceId: tid,
+      });
+      setStage(a.failCount === 0 ? "done" : "error");
+      if (a.failCount === 0) toast.success(`Retry succeeded — all ${a.totalExpected} templates verified ✅`);
+      else toast.warning(`${a.failCount} template(s) still failing`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      log(`Retry error: ${msg}`, "err");
+      toast.error(`Retry failed: ${msg}`);
+      setStage("error");
+    }
+  };
+
     if (!confirm("Delete all $0.50 test orders, items and transfers from the last 24h? Email log rows will be retained for audit.")) return;
     setClearing(true);
     const r = await supabase.functions.invoke("clear-test-data", {
