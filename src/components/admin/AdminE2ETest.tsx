@@ -434,6 +434,25 @@ const AdminE2ETest = () => {
 
   const isRunning = stage === "running";
   const currentStep = steps.find((s) => s.status === "running");
+  const focusableStep =
+    currentStep ?? steps.find((s) => s.status === "failed") ?? steps.slice().reverse().find((s) => s.status === "done");
+  const [flashStepId, setFlashStepId] = useState<string | null>(null);
+
+  const viewStepDetails = () => {
+    const target = focusableStep;
+    if (!target) {
+      toast.info("No active step to focus");
+      return;
+    }
+    const el = document.getElementById(`e2e-step-${target.id}`);
+    if (!el) {
+      toast.warning("Step row not visible yet");
+      return;
+    }
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setFlashStepId(target.id);
+    setTimeout(() => setFlashStepId(null), 1800);
+  };
 
   const stepIcon = (status: StepStatus) => {
     switch (status) {
