@@ -16,6 +16,7 @@ import {
   Clock,
   AlertTriangle,
   Loader2,
+  Circle,
 } from "lucide-react";
 
 interface TemplateResult {
@@ -35,18 +36,36 @@ interface AssertResult {
   summary: TemplateResult[];
 }
 
+type StepStatus = "pending" | "running" | "done" | "failed" | "skipped";
+
+interface Step {
+  id: string;
+  label: string;
+  description: string;
+  status: StepStatus;
+  detail?: string;
+  startedAt?: number;
+  endedAt?: number;
+}
+
+const INITIAL_STEPS: Step[] = [
+  { id: "start",       label: "1. Create Stripe Checkout session", description: "Calls run-purchase-test → action:start. Picks a future event + ticket and creates a $0.50 CAD checkout.", status: "pending" },
+  { id: "open",        label: "2. Open Checkout in new tab",       description: "Opens the Stripe-hosted Checkout URL. You complete the real card payment.", status: "pending" },
+  { id: "poll",        label: "3. Poll for webhook-created order", description: "Waits up to 5 min for stripe-webhook to insert orders + order_transfers rows.", status: "pending" },
+  { id: "trigger",     label: "4. Trigger downstream email paths", description: "Calls notify-buyer-transfer (confirm + dispute), resolve-transfer-email, fallback + relay reminders, proof reminder, seller-application.", status: "pending" },
+  { id: "queue_wait",  label: "5. Wait for queue dispatcher",      description: "Sleeps 8s so process-email-queue can drain enqueued emails before assertion.", status: "pending" },
+  { id: "assert",      label: "6. Assert email_send_log coverage", description: "Verifies every expected template logged a row with status sent or pending.", status: "pending" },
+];
+
 type Stage =
   | "idle"
-  | "starting"
-  | "awaiting_payment"
-  | "polling"
-  | "triggering"
-  | "asserting"
+  | "running"
   | "done"
   | "error";
 
 const AdminE2ETest = () => {
   const [stage, setStage] = useState<Stage>("idle");
+  const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS);
   const [logs, setLogs] = useState<Array<{ ts: string; msg: string; kind?: "info" | "ok" | "warn" | "err" }>>([]);
   const [buyerEmail, setBuyerEmail] = useState("");
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
@@ -62,9 +81,33 @@ const AdminE2ETest = () => {
     setLogs((l) => [...l, { ts: new Date().toLocaleTimeString(), msg, kind }]);
   };
 
+  const updateStep = (id: string, patch: Partial<Step>) => {
+    setSteps((prev) =>
+      prev.map((s) => {
+        if (s.id !== id) return s;
+        const next = { ...s, ...patch };
+        if (patch.status === "running" && !s.startedAt) next.startedAt = Date.now();
+        if (patch.status && patch.status !== "running" && !s.endedAt) next.endedAt = Date.now();
+        return next;
+      })
+    );
+  };
+
+  const failRemaining = (fromId: string) => {
+    setSteps((prev) => {
+      let hit = false;
+      return prev.map((s) => {
+        if (s.id === fromId) hit = true;
+        if (hit && s.status === "pending") return { ...s, status: "skipped" };
+        return s;
+      });
+    });
+  };
+
   const reset = () => {
     setStage("idle");
     setLogs([]);
+    setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: "pending", detail: undefined, startedAt: undefined, endedAt: undefined })));
     setCheckoutUrl(null);
     setOrderInfo(null);
     setAssertion(null);
@@ -72,15 +115,19 @@ const AdminE2ETest = () => {
 
   const runTest = async () => {
     reset();
-    setStage("starting");
+    setStage("running");
     log("Starting end-to-end test…");
 
-    // Step 1: start
+    // ── Step 1: start ──────────────────────────────────────────────
+    updateStep("start", { status: "running" });
     const startRes = await supabase.functions.invoke("run-purchase-test", {
       body: { action: "start", buyerEmail: buyerEmail || undefined },
     });
     if (startRes.error || !startRes.data?.url) {
-      log(`Failed to create checkout: ${startRes.error?.message || "no URL"}`, "err");
+      const detail = startRes.error?.message || "no URL returned";
+      log(`Failed to create checkout: ${detail}`, "err");
+      updateStep("start", { status: "failed", detail });
+      failRemaining("open");
       setStage("error");
       toast.error("Could not start test");
       return;
@@ -91,29 +138,46 @@ const AdminE2ETest = () => {
       buyerEmail: string;
     };
     setCheckoutUrl(url);
-    log(`Checkout session created for "${eventTitle}" → buyer ${usedEmail}`, "ok");
-    log("Opening Stripe Checkout in a new tab. Pay the $0.50 charge to continue.", "info");
-    window.open(url, "_blank", "noopener,noreferrer");
-    setStage("awaiting_payment");
+    updateStep("start", { status: "done", detail: `Event: ${eventTitle} · buyer ${usedEmail}` });
+    log(`✓ Checkout session created for "${eventTitle}" → buyer ${usedEmail}`, "ok");
 
-    // Step 2: poll for completed order
-    setStage("polling");
+    // ── Step 2: open in new tab ────────────────────────────────────
+    updateStep("open", { status: "running" });
+    window.open(url, "_blank", "noopener,noreferrer");
+    updateStep("open", { status: "done", detail: "Tab opened — pay the $0.50 charge to continue" });
+    log("Opened Stripe Checkout in a new tab. Pay the $0.50 charge to continue.", "info");
+
+    // ── Step 3: poll ───────────────────────────────────────────────
+    updateStep("poll", { status: "running", detail: "Waiting for webhook…" });
     log("Waiting for Stripe webhook to create the order…", "info");
     const start = Date.now();
+    let pollAttempts = 0;
     let order: { orderId: string; transferId: string | null; transferAlias: string | null; ticketId: string | null; sellerId: string | null } | null = null;
     while (Date.now() - start < 5 * 60 * 1000) {
       await new Promise((r) => setTimeout(r, 4000));
+      pollAttempts++;
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      updateStep("poll", { status: "running", detail: `Attempt ${pollAttempts} · ${elapsed}s elapsed` });
       const pollRes = await supabase.functions.invoke("run-purchase-test", {
         body: { action: "poll" },
       });
+      if (pollRes.error) {
+        log(`Poll error: ${pollRes.error.message}`, "warn");
+        continue;
+      }
       if (pollRes.data?.ready) {
         order = pollRes.data;
         break;
       }
-      log("…still waiting (will time out after 5 min).", "info");
+      if (pollAttempts % 5 === 0) {
+        log(`…still waiting (attempt ${pollAttempts}, ${elapsed}s elapsed).`, "info");
+      }
     }
     if (!order) {
-      log("Timed out waiting for order. Did you complete checkout?", "err");
+      const detail = "Timed out after 5 min. Did you complete checkout? Check stripe_webhook_events for failures.";
+      log(detail, "err");
+      updateStep("poll", { status: "failed", detail });
+      failRemaining("trigger");
       setStage("error");
       return;
     }
@@ -122,10 +186,14 @@ const AdminE2ETest = () => {
       transferId: order.transferId,
       transferAlias: order.transferAlias,
     });
-    log(`✅ Order created: ${order.orderId.slice(0, 8)}… (transfer alias: ${order.transferAlias ?? "n/a"})`, "ok");
+    updateStep("poll", {
+      status: "done",
+      detail: `Order ${order.orderId.slice(0, 8)}… · alias ${order.transferAlias ?? "n/a"} (after ${pollAttempts} attempt(s))`,
+    });
+    log(`✓ Order created: ${order.orderId.slice(0, 8)}… (transfer alias: ${order.transferAlias ?? "n/a"})`, "ok");
 
-    // Step 3: trigger downstream emails
-    setStage("triggering");
+    // ── Step 4: trigger downstream emails ──────────────────────────
+    updateStep("trigger", { status: "running" });
     log("Triggering all downstream email paths…", "info");
     const trigRes = await supabase.functions.invoke("run-purchase-test", {
       body: {
@@ -138,49 +206,72 @@ const AdminE2ETest = () => {
       },
     });
     if (trigRes.error) {
-      log(`Trigger error: ${trigRes.error.message}`, "err");
-    } else {
-      const triggered: Array<{ template: string; ok: boolean; detail?: string }> =
-        trigRes.data?.triggered ?? [];
-      triggered.forEach((t) =>
-        log(`${t.ok ? "✓" : "✗"} ${t.template}${t.detail ? ` — ${t.detail}` : ""}`, t.ok ? "ok" : "warn")
-      );
+      const detail = `Trigger error: ${trigRes.error.message}`;
+      log(detail, "err");
+      updateStep("trigger", { status: "failed", detail });
+      failRemaining("queue_wait");
+      setStage("error");
+      return;
     }
+    const triggered: Array<{ template: string; ok: boolean; detail?: string }> =
+      trigRes.data?.triggered ?? [];
+    const okCount = triggered.filter((t) => t.ok).length;
+    triggered.forEach((t) =>
+      log(`${t.ok ? "✓" : "✗"} ${t.template}${t.detail ? ` — ${t.detail}` : ""}`, t.ok ? "ok" : "warn")
+    );
+    updateStep("trigger", {
+      status: okCount === triggered.length ? "done" : "done",
+      detail: `${okCount}/${triggered.length} downstream calls succeeded`,
+    });
 
-    // Wait briefly for emails to flush through the queue.
+    // ── Step 5: queue wait ─────────────────────────────────────────
+    updateStep("queue_wait", { status: "running", detail: "Sleeping 8s…" });
     log("Waiting 8s for queue dispatcher to process emails…", "info");
     await new Promise((r) => setTimeout(r, 8000));
+    updateStep("queue_wait", { status: "done", detail: "Queue should have drained" });
 
-    // Step 4: assert
-    setStage("asserting");
+    // ── Step 6: assert ─────────────────────────────────────────────
+    updateStep("assert", { status: "running" });
     log("Asserting email_send_log entries for each template…", "info");
     const assertRes = await supabase.functions.invoke("run-purchase-test", {
       body: { action: "assert", buyerEmail: usedEmail },
     });
     if (assertRes.error) {
-      log(`Assert error: ${assertRes.error.message}`, "err");
+      const detail = `Assert error: ${assertRes.error.message}`;
+      log(detail, "err");
+      updateStep("assert", { status: "failed", detail });
       setStage("error");
       return;
     }
     const a = assertRes.data as AssertResult;
     setAssertion(a);
-    log(`Result: ${a.passCount}/${a.totalExpected} templates verified`, a.failCount === 0 ? "ok" : "warn");
-    setStage("done");
+    const assertDetail = `${a.passCount}/${a.totalExpected} templates verified`;
+    log(`Result: ${assertDetail}`, a.failCount === 0 ? "ok" : "warn");
+    updateStep("assert", {
+      status: a.failCount === 0 ? "done" : "failed",
+      detail: assertDetail,
+    });
+    setStage(a.failCount === 0 ? "done" : "error");
     if (a.failCount === 0) toast.success(`All ${a.totalExpected} email templates verified ✅`);
     else toast.warning(`${a.failCount} template(s) missing — see results below`);
   };
 
   const reAssert = async () => {
-    setStage("asserting");
+    updateStep("assert", { status: "running" });
     log("Re-checking email_send_log…", "info");
     const r = await supabase.functions.invoke("run-purchase-test", {
       body: { action: "assert", buyerEmail },
     });
     if (r.data) {
-      setAssertion(r.data as AssertResult);
-      log(`Updated: ${r.data.passCount}/${r.data.totalExpected} verified`, "ok");
+      const a = r.data as AssertResult;
+      setAssertion(a);
+      log(`Updated: ${a.passCount}/${a.totalExpected} verified`, "ok");
+      updateStep("assert", {
+        status: a.failCount === 0 ? "done" : "failed",
+        detail: `${a.passCount}/${a.totalExpected} templates verified`,
+      });
+      setStage(a.failCount === 0 ? "done" : "error");
     }
-    setStage("done");
   };
 
   const clearTestData = async () => {
@@ -200,20 +291,26 @@ const AdminE2ETest = () => {
     );
   };
 
-  const stageLabel = (() => {
-    switch (stage) {
-      case "starting": return "Creating checkout session…";
-      case "awaiting_payment": return "Awaiting payment in new tab…";
-      case "polling": return "Polling for webhook-created order…";
-      case "triggering": return "Triggering downstream emails…";
-      case "asserting": return "Asserting delivery…";
-      case "done": return "Complete";
-      case "error": return "Error";
-      default: return "Ready";
-    }
-  })();
+  const isRunning = stage === "running";
+  const currentStep = steps.find((s) => s.status === "running");
 
-  const isRunning = stage !== "idle" && stage !== "done" && stage !== "error";
+  const stepIcon = (status: StepStatus) => {
+    switch (status) {
+      case "running": return <Loader2 className="h-5 w-5 text-primary animate-spin" />;
+      case "done":    return <CheckCircle2 className="h-5 w-5 text-emerald-500" />;
+      case "failed":  return <XCircle className="h-5 w-5 text-destructive" />;
+      case "skipped": return <Circle className="h-5 w-5 text-muted-foreground/40" />;
+      default:        return <Circle className="h-5 w-5 text-muted-foreground/60" />;
+    }
+  };
+
+  const stepDuration = (s: Step) => {
+    if (!s.startedAt) return null;
+    const end = s.endedAt ?? Date.now();
+    const ms = end - s.startedAt;
+    if (ms < 1000) return `${ms}ms`;
+    return `${(ms / 1000).toFixed(1)}s`;
+  };
 
   return (
     <div className="space-y-6">
@@ -252,15 +349,15 @@ const AdminE2ETest = () => {
           <div className="flex flex-wrap gap-2">
             <Button onClick={runTest} disabled={isRunning} className="gap-2">
               {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
-              {isRunning ? stageLabel : "Run E2E Test"}
+              {isRunning ? (currentStep?.label ?? "Running…") : "Run E2E Test"}
             </Button>
-            {checkoutUrl && stage === "awaiting_payment" && (
+            {checkoutUrl && isRunning && (
               <Button variant="outline" onClick={() => window.open(checkoutUrl, "_blank")} className="gap-2">
                 <ExternalLink className="h-4 w-4" />
                 Re-open Checkout
               </Button>
             )}
-            {stage === "done" && (
+            {(stage === "done" || stage === "error") && orderInfo && (
               <Button variant="outline" onClick={reAssert} className="gap-2">
                 <RefreshCw className="h-4 w-4" />
                 Re-assert
@@ -280,21 +377,84 @@ const AdminE2ETest = () => {
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 text-sm">
-            <Badge variant={stage === "done" ? "default" : stage === "error" ? "destructive" : "secondary"}>
-              {stageLabel}
-            </Badge>
-            {orderInfo && (
-              <span className="text-muted-foreground">
-                · order <code className="px-1 rounded bg-muted">{orderInfo.orderId.slice(0, 8)}</code>
-                {orderInfo.transferAlias && (
-                  <> · alias <code className="px-1 rounded bg-muted">{orderInfo.transferAlias}</code></>
-                )}
-              </span>
-            )}
-          </div>
+          {orderInfo && (
+            <div className="text-sm text-muted-foreground">
+              order <code className="px-1 rounded bg-muted">{orderInfo.orderId.slice(0, 8)}</code>
+              {orderInfo.transferAlias && (
+                <> · alias <code className="px-1 rounded bg-muted">{orderInfo.transferAlias}</code></>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Step-by-step progress tracker — always visible after first run */}
+      {(stage !== "idle") && (
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="font-display text-base flex items-center justify-between">
+              <span>Test Steps</span>
+              <Badge variant={stage === "done" ? "default" : stage === "error" ? "destructive" : "secondary"}>
+                {stage === "done" ? "All steps complete" : stage === "error" ? "Failed" : "Running…"}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ol className="space-y-3">
+              {steps.map((s) => {
+                const dur = stepDuration(s);
+                return (
+                  <li
+                    key={s.id}
+                    className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
+                      s.status === "running"
+                        ? "border-primary/50 bg-primary/5"
+                        : s.status === "failed"
+                        ? "border-destructive/50 bg-destructive/5"
+                        : s.status === "done"
+                        ? "border-emerald-500/30 bg-emerald-500/5"
+                        : "border-border"
+                    }`}
+                  >
+                    <div className="pt-0.5">{stepIcon(s.status)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-sm font-semibold ${s.status === "skipped" ? "text-muted-foreground/60" : ""}`}>
+                          {s.label}
+                        </span>
+                        <Badge
+                          variant={
+                            s.status === "done" ? "default" :
+                            s.status === "failed" ? "destructive" :
+                            s.status === "running" ? "secondary" :
+                            "outline"
+                          }
+                          className="text-[10px] uppercase tracking-wide"
+                        >
+                          {s.status}
+                        </Badge>
+                        {dur && (
+                          <span className="text-xs text-muted-foreground">· {dur}</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{s.description}</p>
+                      {s.detail && (
+                        <p
+                          className={`text-xs mt-1 font-mono ${
+                            s.status === "failed" ? "text-destructive" : "text-foreground/70"
+                          }`}
+                        >
+                          {s.detail}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </CardContent>
+        </Card>
+      )}
 
       {logs.length > 0 && (
         <Card className="border-primary/20">
