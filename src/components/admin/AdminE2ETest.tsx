@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,21 @@ import {
   AlertTriangle,
   Loader2,
   Circle,
+  History,
 } from "lucide-react";
+
+const STORAGE_KEY = "admin-e2e-test-state-v1";
+
+interface PersistedState {
+  stage: Stage;
+  steps: Step[];
+  logs: Array<{ ts: string; msg: string; kind?: "info" | "ok" | "warn" | "err" }>;
+  buyerEmail: string;
+  checkoutUrl: string | null;
+  orderInfo: { orderId: string; transferId: string | null; transferAlias: string | null } | null;
+  assertion: AssertResult | null;
+  savedAt: number;
+}
 
 interface TemplateResult {
   template: string;
