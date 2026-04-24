@@ -484,9 +484,19 @@ const AdminE2ETest = () => {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={runTest} disabled={isRunning} className="gap-2">
+            <Button onClick={runTest} disabled={isRunning || recovering} className="gap-2">
               {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
               {isRunning ? (currentStep?.label ?? "Running…") : "Run E2E Test"}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={recoverLastTest}
+              disabled={isRunning || recovering}
+              className="gap-2"
+              title="Find your most recent $0.50 test order and re-run the email assertion (use this after a logout/redirect)"
+            >
+              {recovering ? <Loader2 className="h-4 w-4 animate-spin" /> : <History className="h-4 w-4" />}
+              Recover Last Test
             </Button>
             {checkoutUrl && isRunning && (
               <Button variant="outline" onClick={() => window.open(checkoutUrl, "_blank")} className="gap-2">
@@ -513,6 +523,14 @@ const AdminE2ETest = () => {
               Clear Test Data
             </Button>
           </div>
+
+          {restoredFromStorage && stage !== "idle" && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
+              <strong>Restored from previous session.</strong> Your last test state was recovered from local storage.
+              {stage === "error" && " The test was interrupted (likely by a logout/redirect) — click 'Recover Last Test' to verify the order's emails actually went out."}
+            </div>
+          )}
+
 
           {orderInfo && (
             <div className="text-sm text-muted-foreground">
