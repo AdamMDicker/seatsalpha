@@ -33,6 +33,8 @@ interface PersistedState {
   orderInfo: { orderId: string; transferId: string | null; transferAlias: string | null } | null;
   assertion: AssertResult | null;
   lastRunAt: number | null;
+  traceId: string | null;
+  triggerCalls: TriggerCall[];
   savedAt: number;
 }
 
@@ -42,6 +44,15 @@ interface EmailLogRow {
   messageId: string | null;
   loggedAt: string;
   error: string | null;
+}
+
+interface TriggerCall {
+  template: string;
+  fn: string;
+  callTraceId: string;
+  ok: boolean;
+  durationMs: number;
+  detail?: string;
 }
 
 interface TemplateResult {
@@ -69,6 +80,7 @@ interface AssertResult {
   missingCount?: number;
   failedCount?: number;
   summary: TemplateResult[];
+  traceId?: string;
 }
 
 type StepStatus = "pending" | "running" | "done" | "failed" | "skipped";
@@ -81,6 +93,8 @@ interface Step {
   detail?: string;
   startedAt?: number;
   endedAt?: number;
+  /** Trace ID for this step's backend call(s). */
+  traceId?: string;
 }
 
 const INITIAL_STEPS: Step[] = [
