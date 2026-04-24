@@ -23,6 +23,7 @@ import AdminWebhookEvents from "@/components/admin/AdminWebhookEvents";
 import AdminSectionViews from "@/components/admin/AdminSectionViews";
 import AdminE2ETest from "@/components/admin/AdminE2ETest";
 import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle } from "lucide-react";
+import { toast } from "sonner";
 
 const tabs = [
   { id: "e2e", label: "E2E Test", icon: PlayCircle },
@@ -64,13 +65,21 @@ const AdminDashboard = () => {
     const e2eParam = searchParams.get("e2e");
     if (e2eParam === "success" || e2eParam === "canceled") {
       setActiveTab("e2e");
-      // Preserve the param so AdminE2ETest can react to it, but scroll into view
+      if (e2eParam === "success") {
+        toast.success("Payment complete — showing E2E test results");
+      } else {
+        toast.info("Checkout canceled — E2E test paused");
+      }
+      // Clean the URL so a refresh doesn't re-trigger the toast
+      const next = new URLSearchParams(searchParams);
+      next.delete("e2e");
+      setSearchParams(next, { replace: true });
       requestAnimationFrame(() => {
         const el = document.getElementById("admin-e2e-panel");
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
-  }, [searchParams]);
+  }, [searchParams, setSearchParams]);
 
   // Server-side admin verification via RPC
   useEffect(() => {
