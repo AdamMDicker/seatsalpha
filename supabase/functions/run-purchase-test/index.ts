@@ -358,7 +358,8 @@ Deno.serve(async (req) => {
         },
       });
 
-      return jsonResponse({ triggered: triggerLog });
+      trace(`trigger complete count=${triggerLog.length}`);
+      return jsonResponse({ traceId, triggered: triggerLog });
     }
 
     // --- ACTION: assert ---
