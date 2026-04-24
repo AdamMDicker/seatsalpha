@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import { Button } from "@/components/ui/button";
 import AdminEvents from "@/components/admin/AdminEvents";
 import AdminTickets from "@/components/admin/AdminTickets";
 import AdminResellers from "@/components/admin/AdminResellers";
@@ -24,6 +25,7 @@ import AdminE2ETest from "@/components/admin/AdminE2ETest";
 import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle } from "lucide-react";
 
 const tabs = [
+  { id: "e2e", label: "E2E Test", icon: PlayCircle },
   { id: "events", label: "Events", icon: Calendar },
   { id: "tickets", label: "Tickets", icon: Ticket },
   { id: "import", label: "CSV Import", icon: Upload },
@@ -41,7 +43,6 @@ const tabs = [
   { id: "emails", label: "Email Monitor", icon: Activity },
   { id: "webhooks", label: "Webhook Log", icon: Webhook },
   { id: "replay", label: "Replay Webhook", icon: RefreshCw },
-  { id: "e2e", label: "E2E Test", icon: PlayCircle },
 ];
 
 const AdminDashboard = () => {
@@ -96,14 +97,14 @@ const AdminDashboard = () => {
             <h1 className="font-display text-2xl font-bold">Admin Dashboard</h1>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="hero"
             onClick={() => setActiveTab("e2e")}
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:opacity-90"
           >
             <PlayCircle className="h-4 w-4" />
             Open E2E Test
-          </button>
+          </Button>
         </div>
 
         <div className="flex gap-2 mb-8 flex-wrap">
