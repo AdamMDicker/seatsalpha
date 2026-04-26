@@ -1,6 +1,6 @@
 import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 // deno-lint-ignore no-explicit-any
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabaseClient = any
 
