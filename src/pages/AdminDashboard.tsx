@@ -22,13 +22,15 @@ import AdminReplayWebhook from "@/components/admin/AdminReplayWebhook";
 import AdminWebhookEvents from "@/components/admin/AdminWebhookEvents";
 import AdminSectionViews from "@/components/admin/AdminSectionViews";
 import AdminE2ETest from "@/components/admin/AdminE2ETest";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle } from "lucide-react";
+import AdminInventoryHealth from "@/components/admin/AdminInventoryHealth";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle, HeartPulse } from "lucide-react";
 import { toast } from "sonner";
 
 const tabs = [
   { id: "e2e", label: "E2E Test", icon: PlayCircle },
   { id: "events", label: "Events", icon: Calendar },
   { id: "tickets", label: "Tickets", icon: Ticket },
+  { id: "inventory-health", label: "Inventory Health", icon: HeartPulse },
   { id: "import", label: "CSV Import", icon: Upload },
   { id: "reseller-import", label: "Reseller Import", icon: FileUp },
   { id: "resellers", label: "Resellers", icon: Users },
@@ -154,6 +156,7 @@ const AdminDashboard = () => {
 
         {activeTab === "events" && <AdminEvents />}
         {activeTab === "tickets" && <AdminTickets />}
+        {activeTab === "inventory-health" && <AdminInventoryHealth />}
         {activeTab === "import" && <AdminCsvImport />}
         {activeTab === "reseller-import" && <AdminResellerImport />}
         {activeTab === "resellers" && <AdminResellers />}
