@@ -294,9 +294,29 @@ const EditTicketDialog = ({
             <div className="space-y-2"><Label>Seat #</Label><Input value={editForm.seat_number} onChange={(e) => setEditForm({ ...editForm, seat_number: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2"><Label>Price ($)</Label><Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Quantity</Label><Input type="number" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Price ($)</Label><Input type="number" min="0" step="0.01" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} /></div>
+            <div className="space-y-2">
+              <Label>Quantity</Label>
+              <Input
+                type="number"
+                min={editing?.quantity_sold ?? 1}
+                step="1"
+                value={editForm.quantity}
+                onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })}
+              />
+              {editing && editing.quantity_sold > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {editing.quantity_sold} already sold — minimum allowed: {editing.quantity_sold}
+                </p>
+              )}
+            </div>
           </div>
+
+          {editError && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {editError}
+            </div>
+          )}
 
           {/* Seat images */}
           <div className="space-y-2">
