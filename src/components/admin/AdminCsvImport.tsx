@@ -46,6 +46,7 @@ const AdminCsvImport = () => {
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [results, setResults] = useState<{ success: number; errors: number } | null>(null);
+  const [errorLog, setErrorLog] = useState<ImportError[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
