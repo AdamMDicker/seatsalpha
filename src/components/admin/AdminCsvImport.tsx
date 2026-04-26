@@ -205,7 +205,23 @@ const AdminCsvImport = () => {
     setCsvData([]);
     setFileName("");
     setResults(null);
+    setErrorLog([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const downloadErrorLog = () => {
+    if (errorLog.length === 0) return;
+    const header = "row,title,reason";
+    const escape = (s: string) => `"${(s || "").replace(/"/g, '""')}"`;
+    const lines = errorLog.map((e) => [e.rowNumber, escape(e.title), escape(e.reason)].join(","));
+    const csv = [header, ...lines].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `import_errors_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const [syncing, setSyncing] = useState(false);
