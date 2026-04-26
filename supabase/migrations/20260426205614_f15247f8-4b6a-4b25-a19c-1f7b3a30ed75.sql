@@ -1,0 +1,1 @@
+DELETE FROM public.tickets t USING public.events e WHERE t.event_id=e.id AND e.title ILIKE 'Toronto Blue Jays%' AND t.is_reseller_ticket = false AND t.quantity_sold = 0;
