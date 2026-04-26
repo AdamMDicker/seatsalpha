@@ -430,4 +430,4 @@ INSERT INTO public.tickets (event_id, section, row_name, price, quantity, quanti
 ('b43ae4c9-048b-49f0-9ce2-34e16f6efcdf', '221B', '3', 457.5, 4, 0, false, 'c0768913-3e54-476a-b4b2-8a0051b087ed', 'Fan Appreciation Weekend', true, false),
 ('b43ae4c9-048b-49f0-9ce2-34e16f6efcdf', '24', '4', 350.0, 4, 0, false, 'c0768913-3e54-476a-b4b2-8a0051b087ed', 'Fan Appreciation Weekend', true, false),
 ('b43ae4c9-048b-49f0-9ce2-34e16f6efcdf', '26', '1', 425.0, 2, 0, false, 'c0768913-3e54-476a-b4b2-8a0051b087ed', 'Fan Appreciation Weekend', true, false),
-('b43ae4c9-048b-49f0-9ce2-34e16f6efcdf', '3', '2', 1500.0, 2, 0, false, 'c0768913-3e54-476a-b4b2-8a0051b087ed', 'Fan Appreciation Weekend', true, false) ON CONFLICT (event_id, section, COALESCE(row_name, ''::text), price) DO NOTHING;
+('b43ae4c9-048b-49f0-9ce2-34e16f6efcdf', '3', '2', 1500.0, 2, 0, false, 'c0768913-3e54-476a-b4b2-8a0051b087ed', 'Fan Appreciation Weekend', true, false);

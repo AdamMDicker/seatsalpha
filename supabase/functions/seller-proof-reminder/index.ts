@@ -113,7 +113,7 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-async function loadContext(supabase: ReturnType<typeof createClient>, t: TransferRow) {
+async function loadContext(supabase: any /* SupabaseClient */, t: TransferRow) {
   // Seller (admin/LMK if seller_id is null)
   let sellerEmail: string | null = null;
   let sellerName = "Seller";
@@ -213,7 +213,7 @@ function formatEventDateET(raw: string): string {
 }
 
 async function enqueueEmail(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any /* SupabaseClient */,
   opts: { to: string; subject: string; html: string; text: string; label: string }
 ) {
   const messageId = crypto.randomUUID();
@@ -247,7 +247,7 @@ async function enqueueEmail(
 }
 
 async function sendSellerReminder(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any /* SupabaseClient */,
   t: TransferRow,
   ctx: Awaited<ReturnType<typeof loadContext>>
 ) {
@@ -315,7 +315,7 @@ async function sendSellerReminder(
 }
 
 async function sendAdminEscalation(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any /* SupabaseClient */,
   t: TransferRow,
   ctx: Awaited<ReturnType<typeof loadContext>>
 ) {

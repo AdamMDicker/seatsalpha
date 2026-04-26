@@ -10,7 +10,7 @@ const logStep = (step: string, details?: unknown) => {
   }
 };
 
-async function safe<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
+async function safe<T>(label: string, fn: () => Promise<T> | PromiseLike<T>): Promise<T | null> {
   try {
     return await fn();
   } catch (err) {
@@ -19,8 +19,9 @@ async function safe<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
   }
 }
 
+// deno-lint-ignore no-explicit-any
 async function logSellerWebhookEvent(
-  client: ReturnType<typeof createClient>,
+  client: any,
   args: {
     stripeEventId: string;
     eventType: string;
@@ -267,11 +268,12 @@ serve(async (req) => {
             .maybeSingle();
 
           if (reseller) {
-            const { count } = await supabase
+            // deno-lint-ignore no-explicit-any
+            const { count } = await (supabase
               .from("tickets")
               .update({ is_active: false })
               .eq("seller_id", reseller.user_id)
-              .eq("is_reseller_ticket", true)
+              .eq("is_reseller_ticket", true) as any)
               .select("id", { count: "exact", head: true });
 
             logStep("Tickets delisted due to payment failure", {

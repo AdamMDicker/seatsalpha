@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "npm:stripe@14.21.0";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -71,7 +71,7 @@ serve(async (req) => {
         }
       }
     } catch (stripeErr) {
-      console.warn("Stripe check failed, falling back to memberships table:", stripeErr.message);
+      console.warn("Stripe check failed, falling back to memberships table:", (stripeErr instanceof Error ? stripeErr.message : String(stripeErr)));
     }
 
     // Fallback: check local memberships table
@@ -100,8 +100,8 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error("check-subscription error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("check-subscription error:", (error instanceof Error ? error.message : String(error)));
+    return new Response(JSON.stringify({ error: (error instanceof Error ? error.message : String(error)) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

@@ -22,7 +22,7 @@ const logStep = (step: string, details?: unknown) => {
 };
 
 // --- Best-effort wrapper: never let side effects bubble ---
-async function safe<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
+async function safe<T>(label: string, fn: () => Promise<T> | PromiseLike<T>): Promise<T | null> {
   try {
     return await fn();
   } catch (err) {

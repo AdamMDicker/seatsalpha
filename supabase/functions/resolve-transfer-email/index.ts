@@ -794,7 +794,7 @@ function buildSellerAlertEmail(): string {
 }
 
 async function queueEmail(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any /* SupabaseClient */,
   to: string,
   subject: string,
   html: string,
