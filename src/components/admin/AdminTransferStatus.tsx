@@ -233,6 +233,64 @@ const AdminTransferStatus = () => {
     }
   };
 
+  const lookupManualTransfer = async (rawId: string) => {
+    const id = rawId.trim();
+    if (!id) {
+      setManualLookup(null);
+      return;
+    }
+    const { data, error } = await supabase
+      .from("order_transfers")
+      .select("id, status, seller_reminder_sent_at, seller_id")
+      .eq("id", id)
+      .maybeSingle();
+    if (error || !data) {
+      setManualLookup({ found: false, sellerEmail: null, lastSentAt: null, status: null });
+      return;
+    }
+    let sellerEmail: string | null = null;
+    if (data.seller_id) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("user_id", data.seller_id)
+        .maybeSingle();
+      sellerEmail = prof?.email ?? null;
+    }
+    setManualLookup({
+      found: true,
+      sellerEmail,
+      lastSentAt: data.seller_reminder_sent_at,
+      status: data.status,
+    });
+  };
+
+  const sendManualReminder = async () => {
+    const id = manualId.trim();
+    if (!id) {
+      toast.error("Enter a transfer ID first");
+      return;
+    }
+    setManualBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("seller-proof-reminder", {
+        body: { transfer_id: id, force: true },
+      });
+      if (error) throw error;
+      if (data?.ok) {
+        toast.success(`Reminder sent to ${data.sent_to}`);
+      } else {
+        toast.warning(data?.reason ?? "Could not send reminder");
+      }
+      await Promise.all([fetchTransfers(), lookupManualTransfer(id)]);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message ?? "Failed to send reminder");
+    } finally {
+      setManualBusy(false);
+    }
+  };
+
   const renderStatusBadge = (r: TransferRow) => {
     if (r.status === "completed" || r.confirmed_at) {
       return (
