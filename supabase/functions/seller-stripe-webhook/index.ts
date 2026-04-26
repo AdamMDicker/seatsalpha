@@ -273,7 +273,8 @@ serve(async (req) => {
               .update({ is_active: false })
               .eq("seller_id", reseller.user_id)
               .eq("is_reseller_ticket", true)
-              .select("id", { count: "exact", head: true });
+              // deno-lint-ignore no-explicit-any
+              .select("id", { count: "exact", head: true } as any);
 
             logStep("Tickets delisted due to payment failure", {
               subscriptionId,
