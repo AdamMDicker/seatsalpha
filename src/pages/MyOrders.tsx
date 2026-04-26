@@ -6,11 +6,12 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Package, Calendar, ChevronRight, ShoppingBag, AlertTriangle } from "lucide-react";
+import { Package, Calendar, ShoppingBag, AlertTriangle, CreditCard, HelpCircle } from "lucide-react";
 import { format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 import { useResellerAccount } from "@/hooks/useResellerAccount";
 import FulfillmentIssueBanner from "@/components/FulfillmentIssueBanner";
+import DeliveryStatusInfo, { type TransferStatusRow } from "@/components/DeliveryStatusInfo";
 
 const STUCK_AFTER_MS = 5 * 60 * 1000; // 5 minutes
 
