@@ -22,7 +22,8 @@ import AdminReplayWebhook from "@/components/admin/AdminReplayWebhook";
 import AdminWebhookEvents from "@/components/admin/AdminWebhookEvents";
 import AdminSectionViews from "@/components/admin/AdminSectionViews";
 import AdminE2ETest from "@/components/admin/AdminE2ETest";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle } from "lucide-react";
+import AdminInventoryHealth from "@/components/admin/AdminInventoryHealth";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle, HeartPulse } from "lucide-react";
 import { toast } from "sonner";
 
 const tabs = [
