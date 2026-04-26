@@ -168,9 +168,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
             <p className="text-sm text-emerald-400 font-semibold">From ${cheapestAny} CAD</p>
             <p className="text-[9px] text-emerald-400">Members enjoy LCC-included pricing</p>
           </>
-        ) : (
-          <p className="text-sm text-muted-foreground">Tickets coming soon</p>
-        )}
+        ) : null}
       </div>
     </button>
   );
