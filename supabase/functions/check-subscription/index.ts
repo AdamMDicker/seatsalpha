@@ -71,7 +71,7 @@ serve(async (req) => {
         }
       }
     } catch (stripeErr) {
-      console.warn("Stripe check failed, falling back to memberships table:", stripeErr.message);
+      console.warn("Stripe check failed, falling back to memberships table:", (stripeErr instanceof Error ? stripeErr.message : String(stripeErr)));
     }
 
     // Fallback: check local memberships table
@@ -100,8 +100,8 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error("check-subscription error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("check-subscription error:", (error instanceof Error ? error.message : String(error)));
+    return new Response(JSON.stringify({ error: (error instanceof Error ? error.message : String(error)) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

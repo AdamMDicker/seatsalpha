@@ -136,8 +136,8 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error("create-payment error:", error.message, error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("create-payment error:", (error instanceof Error ? error.message : String(error)), error);
+    return new Response(JSON.stringify({ error: (error instanceof Error ? error.message : String(error)) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
