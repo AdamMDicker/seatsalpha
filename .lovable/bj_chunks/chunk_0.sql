@@ -1,5 +1,3 @@
-DELETE FROM public.tickets t USING public.events e WHERE t.event_id=e.id AND e.title ILIKE 'Toronto Blue Jays%' AND t.is_reseller_ticket = false AND t.quantity_sold = 0;
-
 INSERT INTO public.tickets (event_id, section, row_name, price, quantity, quantity_sold, is_reseller_ticket, seller_id, seat_notes, is_active, hide_seat_numbers) VALUES
 ('e42c337a-e4e0-4342-903a-e270ad7d97de', '4', '5', 800.0, 2, 0, false, 'c0768913-3e54-476a-b4b2-8a0051b087ed', 'Angry Bird Replica Jersey Giveaway', true, false),
 ('99d82b80-3e7d-49b3-b12e-12a165a4fabc', '125', '1', 330.0, 2, 0, false, 'c0768913-3e54-476a-b4b2-8a0051b087ed', 'Reversible Barbie Blue/Pink Buckethat Giveaway', true, false),
