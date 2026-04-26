@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Tables } from "@/integrations/supabase/types";
 import { TEAMS_VENUES, LEAGUES_LIST } from "@/data/teamsVenues";
+import {
+  validateTicketQuantityUpdate,
+  validateTicketPrice,
+  validateTicketSection,
+} from "@/utils/ticketValidation";
 
 type TicketWithEvent = Tables<"tickets"> & { events?: { title: string; city: string; venue: string } | null };
 
