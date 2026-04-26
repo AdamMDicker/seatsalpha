@@ -6,11 +6,12 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Package, Calendar, ChevronRight, ShoppingBag, AlertTriangle } from "lucide-react";
+import { Package, Calendar, ShoppingBag, AlertTriangle, CreditCard, HelpCircle } from "lucide-react";
 import { format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 import { useResellerAccount } from "@/hooks/useResellerAccount";
 import FulfillmentIssueBanner from "@/components/FulfillmentIssueBanner";
+import DeliveryStatusInfo, { type TransferStatusRow } from "@/components/DeliveryStatusInfo";
 
 const STUCK_AFTER_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -36,6 +37,7 @@ const MyOrders = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { hasResellerAccount, isLoading: resellerLoading } = useResellerAccount();
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
+  const [transfersByOrder, setTransfersByOrder] = useState<Record<string, TransferStatusRow[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,7 +48,21 @@ const MyOrders = () => {
         .select("*, order_items(*, tickets(section, row_name, events(title, venue, event_date, city)))")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
-      setOrders((data as OrderWithItems[]) || []);
+      const list = (data as OrderWithItems[]) || [];
+      setOrders(list);
+
+      if (list.length > 0) {
+        const { data: transfers } = await supabase
+          .from("order_transfers")
+          .select("order_id, status, uploaded_at, confirmed_at, forward_sent_at, created_at")
+          .in("order_id", list.map((o) => o.id));
+        const grouped: Record<string, TransferStatusRow[]> = {};
+        (transfers || []).forEach((t: any) => {
+          (grouped[t.order_id] ||= []).push(t);
+        });
+        setTransfersByOrder(grouped);
+      }
+
       setLoading(false);
     };
     fetchOrders();
@@ -58,14 +74,6 @@ const MyOrders = () => {
   if (hasResellerAccount && !loading && orders.length === 0) {
     return <Navigate to="/reseller" replace />;
   }
-
-  const statusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "default";
-      case "pending": return "secondary";
-      default: return "destructive";
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -94,22 +102,37 @@ const MyOrders = () => {
             {orders.some(isStuck) && (
               <FulfillmentIssueBanner variant="pending" />
             )}
+
+            {/* Help / explainer card */}
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-4 flex items-start gap-3">
+                <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-foreground/80 leading-relaxed">
+                  <p className="font-semibold text-foreground mb-1">Two things happen after you order:</p>
+                  <p>
+                    <span className="font-medium text-foreground">1. Payment</span> is confirmed instantly when your card is charged.{" "}
+                    <span className="font-medium text-foreground">2. Ticket delivery</span> happens separately — your seller transfers the seats through Ticketmaster, which is typically completed within a few hours and up to 24 hours before the event.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
             {orders.map((order) => {
               const firstItem = order.order_items[0];
               const event = firstItem?.tickets?.events;
               const stuck = isStuck(order);
+              const transfers = transfersByOrder[order.id] || [];
+              const paymentLabel =
+                order.status === "completed"
+                  ? "Paid"
+                  : order.status === "pending"
+                  ? "Processing payment"
+                  : order.status;
               return (
                 <Link key={order.id} to={`/notifications/${order.id}`} className="block">
                   <Card className={`transition-colors ${stuck ? "border-destructive/50 hover:border-destructive" : "hover:border-primary/40"}`}>
-                    <CardContent className="p-5">
-                      {stuck && (
-                        <div className="flex items-start gap-2 mb-3 pb-3 border-b border-destructive/30 text-destructive">
-                          <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                          <p className="text-xs font-semibold leading-snug">
-                            Fulfillment delayed — tap to view details and contact support if needed.
-                          </p>
-                        </div>
-                      )}
+                    <CardContent className="p-5 space-y-4">
+                      {/* Top row: event + amount */}
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-foreground truncate">
@@ -131,8 +154,7 @@ const MyOrders = () => {
                             ))}
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2 shrink-0">
-                          <Badge variant={statusColor(order.status)}>{order.status}</Badge>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
                           <p className="font-semibold text-foreground">${Number(order.total_amount).toFixed(2)}</p>
                           <p className="text-xs text-muted-foreground">
                             {format(new Date(order.created_at), "MMM d, yyyy")}
@@ -142,8 +164,32 @@ const MyOrders = () => {
                           )}
                         </div>
                       </div>
+
+                      {/* Payment status pill */}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            order.status === "completed"
+                              ? "bg-emerald-500/10 text-emerald-500"
+                              : order.status === "pending"
+                              ? "bg-amber-500/10 text-amber-500"
+                              : "bg-destructive/10 text-destructive"
+                          }`}
+                        >
+                          <CreditCard className="h-3 w-3" />
+                          {paymentLabel}
+                        </span>
+                      </div>
+
+                      {/* Delivery status — separate track */}
+                      <DeliveryStatusInfo
+                        orderStatus={order.status}
+                        orderCreatedAt={order.created_at}
+                        transfers={transfers}
+                      />
+
                       {(order.uber_added || order.hotel_added || order.flight_added) && (
-                        <div className="flex gap-3 mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
+                        <div className="flex gap-3 pt-2 border-t border-border/50 text-xs text-muted-foreground">
                           {order.uber_added && <span>🚗 Uber</span>}
                           {order.hotel_added && <span>🏨 Hotel</span>}
                           {order.flight_added && <span>✈️ Flight</span>}
