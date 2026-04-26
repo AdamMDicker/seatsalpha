@@ -8,7 +8,7 @@
 //
 // Uses the existing email queue + notifications table.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = "noreply@seats.ca";

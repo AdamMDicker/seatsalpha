@@ -1,7 +1,7 @@
 // Send an E2E test report to an arbitrary email address (admin only).
 // Enqueues through the Lovable Emails pipeline (pgmq `transactional_emails` queue)
 // so sends use the project's verified sender domain (notify.seats.ca).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = "noreply@seats.ca";
 

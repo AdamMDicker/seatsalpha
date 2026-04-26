@@ -1,6 +1,6 @@
 // Daily admin digest of Stripe webhook errors from the last 24 hours.
 // Scheduled via pg_cron. Sends one email per admin via the queued email pipeline.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
