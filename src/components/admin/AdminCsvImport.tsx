@@ -104,7 +104,18 @@ const AdminCsvImport = () => {
           }
         }
         if (eventId && row.section && row.price) {
-          const { error } = await supabase.from("tickets").insert({ event_id: eventId, section: row.section, row_name: row.row || null, seat_number: row.seat || null, price: parseFloat(row.price), quantity: parseInt(row.quantity || "1"), seller_id: "c0768913-3e54-476a-b4b2-8a0051b087ed" });
+          const hideSeats = (row.hide_seat_numbers || "").trim().toLowerCase();
+          const { error } = await supabase.from("tickets").insert({
+            event_id: eventId,
+            section: row.section,
+            row_name: row.row || null,
+            seat_number: row.seat || null,
+            price: parseFloat(row.price),
+            quantity: parseInt(row.quantity || "1"),
+            seat_notes: row.notes || null,
+            hide_seat_numbers: hideSeats === "yes" || hideSeats === "true" || hideSeats === "1",
+            seller_id: "c0768913-3e54-476a-b4b2-8a0051b087ed",
+          });
           if (error) errors++; else success++;
         } else if (eventId) { success++; } else { errors++; }
       } catch { errors++; }
