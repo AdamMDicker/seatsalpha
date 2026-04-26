@@ -83,6 +83,16 @@ const AdminTransferStatus = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "disputed" | "completed">("pending");
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  // Manual resend by transfer ID
+  const [manualId, setManualId] = useState("");
+  const [manualLookup, setManualLookup] = useState<{
+    found: boolean;
+    sellerEmail: string | null;
+    lastSentAt: string | null;
+    status: string | null;
+  } | null>(null);
+  const [manualBusy, setManualBusy] = useState(false);
+
   const fetchTransfers = async () => {
     setLoading(true);
     try {
@@ -223,6 +233,64 @@ const AdminTransferStatus = () => {
     }
   };
 
+  const lookupManualTransfer = async (rawId: string) => {
+    const id = rawId.trim();
+    if (!id) {
+      setManualLookup(null);
+      return;
+    }
+    const { data, error } = await supabase
+      .from("order_transfers")
+      .select("id, status, seller_reminder_sent_at, seller_id")
+      .eq("id", id)
+      .maybeSingle();
+    if (error || !data) {
+      setManualLookup({ found: false, sellerEmail: null, lastSentAt: null, status: null });
+      return;
+    }
+    let sellerEmail: string | null = null;
+    if (data.seller_id) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("user_id", data.seller_id)
+        .maybeSingle();
+      sellerEmail = prof?.email ?? null;
+    }
+    setManualLookup({
+      found: true,
+      sellerEmail,
+      lastSentAt: data.seller_reminder_sent_at,
+      status: data.status,
+    });
+  };
+
+  const sendManualReminder = async () => {
+    const id = manualId.trim();
+    if (!id) {
+      toast.error("Enter a transfer ID first");
+      return;
+    }
+    setManualBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("seller-proof-reminder", {
+        body: { transfer_id: id, force: true },
+      });
+      if (error) throw error;
+      if (data?.ok) {
+        toast.success(`Reminder sent to ${data.sent_to}`);
+      } else {
+        toast.warning(data?.reason ?? "Could not send reminder");
+      }
+      await Promise.all([fetchTransfers(), lookupManualTransfer(id)]);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message ?? "Failed to send reminder");
+    } finally {
+      setManualBusy(false);
+    }
+  };
+
   const renderStatusBadge = (r: TransferRow) => {
     if (r.status === "completed" || r.confirmed_at) {
       return (
@@ -329,6 +397,76 @@ const AdminTransferStatus = () => {
           <div className="text-2xl font-bold mt-1 text-destructive">{counts.disputed}</div>
         </Card>
       </div>
+
+      {/* Manual resend by transfer ID */}
+      <Card className="p-4 border-primary/30 bg-primary/5">
+        <div className="flex items-start gap-2 mb-3">
+          <Send className="h-4 w-4 text-primary mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold">Manual: resend seller upload-proof email</h3>
+            <p className="text-xs text-muted-foreground">
+              Paste a transfer ID to look it up and re-send the upload-proof reminder, bypassing timing gates.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 items-center">
+          <Input
+            value={manualId}
+            onChange={(e) => {
+              setManualId(e.target.value);
+              setManualLookup(null);
+            }}
+            placeholder="Transfer ID (e.g. bcbbfbdd-aab0-4985-81f5-1cd9547acb4a)"
+            className="flex-1 min-w-[280px] font-mono text-xs"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => lookupManualTransfer(manualId)}
+            disabled={!manualId.trim() || manualBusy}
+          >
+            <Search className="h-3.5 w-3.5 mr-1.5" /> Look up
+          </Button>
+          <Button
+            size="sm"
+            onClick={sendManualReminder}
+            disabled={!manualId.trim() || manualBusy}
+          >
+            <Mail className="h-3.5 w-3.5 mr-1.5" />
+            {manualBusy ? "Sending…" : manualLookup?.lastSentAt ? "Resend reminder" : "Send reminder"}
+          </Button>
+        </div>
+
+        {manualLookup && (
+          <div className="mt-3 text-xs">
+            {!manualLookup.found ? (
+              <div className="text-destructive">No transfer found with that ID.</div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
+                <span>
+                  <span className="font-medium text-foreground">Status:</span>{" "}
+                  {manualLookup.status ?? "unknown"}
+                </span>
+                <span>
+                  <span className="font-medium text-foreground">Seller:</span>{" "}
+                  {manualLookup.sellerEmail ?? <em>no email on file</em>}
+                </span>
+                <span>
+                  <span className="font-medium text-foreground">Last reminder sent:</span>{" "}
+                  {manualLookup.lastSentAt ? (
+                    <>
+                      {formatDateTime(manualLookup.lastSentAt)}{" "}
+                      <span className="opacity-60">· {formatRelative(manualLookup.lastSentAt)}</span>
+                    </>
+                  ) : (
+                    <em>never</em>
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
 
       {/* Filters */}
       <div className="flex gap-2 flex-wrap items-center">
