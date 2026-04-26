@@ -43,14 +43,36 @@ const AdminTickets = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleSave = async () => {
-    if (!form.event_id || !form.section || !form.price) {
-      toast({ title: "Error", description: "Fill required fields", variant: "destructive" });
+    if (!form.event_id) {
+      toast({ title: "Error", description: "Select an event", variant: "destructive" });
+      return;
+    }
+    const sectionCheck = validateTicketSection(form.section);
+    if (!sectionCheck.ok) {
+      toast({ title: "Invalid section", description: sectionCheck.error, variant: "destructive" });
+      return;
+    }
+    const priceCheck = validateTicketPrice(form.price);
+    if (!priceCheck.ok) {
+      toast({ title: "Invalid price", description: priceCheck.error, variant: "destructive" });
+      return;
+    }
+    // New tickets have 0 sold, so no oversell risk yet — but still validate the integer range.
+    const qtyCheck = validateTicketQuantityUpdate({
+      rawQuantity: form.quantity,
+      currentQuantitySold: 0,
+    });
+    if (!qtyCheck.ok) {
+      toast({ title: "Invalid quantity", description: qtyCheck.error, variant: "destructive" });
       return;
     }
     const { error } = await supabase.from("tickets").insert({
-      event_id: form.event_id, section: form.section,
-      row_name: form.row_name || null, seat_number: form.seat_number || null,
-      price: parseFloat(form.price), quantity: parseInt(form.quantity),
+      event_id: form.event_id,
+      section: sectionCheck.section,
+      row_name: form.row_name || null,
+      seat_number: form.seat_number || null,
+      price: priceCheck.price,
+      quantity: qtyCheck.quantity,
       seller_id: "c0768913-3e54-476a-b4b2-8a0051b087ed",
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
@@ -62,6 +84,7 @@ const AdminTickets = () => {
 
   const openEdit = (ticket: TicketWithEvent) => {
     setEditing(ticket);
+    setEditError(null);
     setEditForm({
       section: ticket.section, row_name: ticket.row_name || "",
       seat_number: ticket.seat_number || "", price: String(ticket.price),
@@ -71,12 +94,39 @@ const AdminTickets = () => {
 
   const saveEdit = async () => {
     if (!editing) return;
+    setEditError(null);
+
+    const sectionCheck = validateTicketSection(editForm.section);
+    if (!sectionCheck.ok) {
+      setEditError(sectionCheck.error);
+      return;
+    }
+    const priceCheck = validateTicketPrice(editForm.price);
+    if (!priceCheck.ok) {
+      setEditError(priceCheck.error);
+      return;
+    }
+    const qtyCheck = validateTicketQuantityUpdate({
+      rawQuantity: editForm.quantity,
+      currentQuantitySold: editing.quantity_sold,
+    });
+    if (!qtyCheck.ok) {
+      setEditError(qtyCheck.error);
+      return;
+    }
+
     const { error } = await supabase.from("tickets").update({
-      section: editForm.section, row_name: editForm.row_name || null,
-      seat_number: editForm.seat_number || null, price: parseFloat(editForm.price),
-      quantity: parseInt(editForm.quantity),
+      section: sectionCheck.section,
+      row_name: editForm.row_name || null,
+      seat_number: editForm.seat_number || null,
+      price: priceCheck.price,
+      quantity: qtyCheck.quantity,
     }).eq("id", editing.id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    if (error) {
+      // Server-side oversell trigger or any other DB constraint
+      setEditError(error.message);
+      return;
+    }
     toast({ title: "Ticket updated!" });
     setEditing(null);
     fetchData();
