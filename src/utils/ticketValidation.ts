@@ -27,8 +27,8 @@ export const ticketSectionSchema = z
   .max(50, { message: "Section must be 50 characters or fewer" });
 
 export type QuantityValidationResult =
-  | { ok: true; quantity: number }
-  | { ok: false; error: string };
+  | { ok: true; quantity: number; error?: undefined }
+  | { ok: false; quantity?: undefined; error: string };
 
 export function validateTicketQuantityUpdate(params: {
   rawQuantity: string | number;
@@ -55,8 +55,8 @@ export function validateTicketQuantityUpdate(params: {
 }
 
 export type PriceValidationResult =
-  | { ok: true; price: number }
-  | { ok: false; error: string };
+  | { ok: true; price: number; error?: undefined }
+  | { ok: false; price?: undefined; error: string };
 
 export function validateTicketPrice(rawPrice: string | number): PriceValidationResult {
   const num = typeof rawPrice === "number" ? rawPrice : Number(rawPrice);
@@ -68,8 +68,8 @@ export function validateTicketPrice(rawPrice: string | number): PriceValidationR
 }
 
 export type SectionValidationResult =
-  | { ok: true; section: string }
-  | { ok: false; error: string };
+  | { ok: true; section: string; error?: undefined }
+  | { ok: false; section?: undefined; error: string };
 
 export function validateTicketSection(rawSection: string): SectionValidationResult {
   const parsed = ticketSectionSchema.safeParse(rawSection);
