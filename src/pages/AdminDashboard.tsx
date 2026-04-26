@@ -39,6 +39,7 @@ const tabs = [
   { id: "customers", label: "Customers", icon: UserCheck },
   { id: "orders", label: "Orders", icon: ShoppingCart },
   { id: "transfers", label: "Transfers", icon: ArrowRightLeft },
+  { id: "transfer-status", label: "Transfer Status", icon: ListChecks },
   { id: "banned", label: "Banned", icon: Ban },
   { id: "visibility", label: "Visibility", icon: Eye },
   { id: "hero", label: "Hero Image", icon: Image },
