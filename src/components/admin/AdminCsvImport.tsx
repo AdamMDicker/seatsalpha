@@ -9,6 +9,11 @@ import {
   ADMIN_COLUMN_DESCRIPTIONS as COLUMN_DESCRIPTIONS,
   downloadAdminCsvTemplate as downloadAdminTemplate,
 } from "@/utils/adminCsvTemplate";
+import {
+  validateTicketQuantityUpdate,
+  validateTicketPrice,
+  validateTicketSection,
+} from "@/utils/ticketValidation";
 
 interface CsvRow {
   title?: string;
@@ -25,6 +30,12 @@ interface CsvRow {
   notes?: string;
   hide_seat_numbers?: string;
   [key: string]: string | undefined;
+}
+
+interface ImportError {
+  rowNumber: number;
+  title: string;
+  reason: string;
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
