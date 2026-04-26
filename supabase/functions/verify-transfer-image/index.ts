@@ -608,12 +608,93 @@ If all the core details (teams, date, section, row, email, quantity) refer to th
         },
       });
 
+      // ── 2b) DISPUTED — seller email with mismatch details ──
+      if (sellerProfile?.email) {
+        const disputeSellerHtml = premiumWrapper(
+          "linear-gradient(90deg,#dc2626,#b91c1c,#dc2626)",
+          `<h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;letter-spacing:-0.5px;">⚠️ Transfer Verification Failed</h1>
+<p style="margin:0 0 20px;font-size:14px;color:#dc2626;font-weight:600;font-family:'Space Grotesk',Arial,sans-serif;">Order #${orderRef} — action required</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
+  <tr><td style="padding:16px;background:#fafafa;">
+    <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${eventTitle}</p>
+    ${(section || rowName) ? `<p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">${section ? `Section ${section}` : ""}${section && rowName ? " · " : ""}${rowName ? `Row ${rowName}` : ""}</p>` : ""}
+  </td></tr>
+</table>
+<p style="margin:0 0 16px;color:#52525b;font-size:15px;line-height:1.6;font-family:'Space Grotesk',Arial,sans-serif;">
+  Your uploaded screenshot didn't match the expected order details. Mismatched fields: <strong style="color:#dc2626;">${mismatchDetails || "unknown"}</strong>.
+</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 12px;border-radius:12px;overflow:hidden;border-left:4px solid #dc2626;background:#fef2f2;">
+  <tr><td style="padding:16px 20px;">
+    <p style="margin:0 0 8px;color:#991b1b;font-size:13px;font-weight:700;font-family:'Space Grotesk',Arial,sans-serif;">Expected</p>
+    <p style="margin:0;color:#991b1b;font-size:12px;line-height:1.8;font-family:'Space Grotesk',Arial,sans-serif;">
+      Email: ${expectedData.transferEmail}<br>
+      Event: ${expectedData.eventTitle}<br>
+      Section: ${expectedData.section} · Row: ${expectedData.rowName}<br>
+      Qty: ${expectedData.quantity}
+    </p>
+  </td></tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;border-radius:12px;overflow:hidden;border-left:4px solid #3b82f6;background:#eff6ff;">
+  <tr><td style="padding:16px 20px;">
+    <p style="margin:0 0 8px;color:#1e40af;font-size:13px;font-weight:700;font-family:'Space Grotesk',Arial,sans-serif;">What we extracted from your screenshot</p>
+    <p style="margin:0;color:#1e40af;font-size:12px;line-height:1.8;font-family:'Space Grotesk',Arial,sans-serif;">
+      Email: ${verificationResult.extracted?.email || "N/A"}<br>
+      Event: ${verificationResult.extracted?.event || "N/A"}<br>
+      Section: ${verificationResult.extracted?.section || "N/A"} · Row: ${verificationResult.extracted?.row || "N/A"}<br>
+      Qty: ${verificationResult.extracted?.quantity || "N/A"}
+    </p>
+  </td></tr>
+</table>
+${verificationResult.notes ? `<p style="margin:0 0 12px;color:#71717a;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;"><strong>Note:</strong> ${verificationResult.notes}</p>` : ""}
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;border-radius:12px;overflow:hidden;border-left:4px solid #f59e0b;background:#fef3c7;">
+  <tr><td style="padding:16px 20px;">
+    <p style="margin:0 0 8px;color:#92400e;font-size:13px;font-weight:700;font-family:'Space Grotesk',Arial,sans-serif;">📋 What To Do</p>
+    <ol style="margin:0;padding-left:20px;color:#92400e;font-size:13px;line-height:1.8;font-family:'Space Grotesk',Arial,sans-serif;">
+      <li>Re-check that you transferred to <strong>${expectedData.transferEmail}</strong></li>
+      <li>Open your seller dashboard and re-upload a clearer screenshot showing the correct details</li>
+      <li>If the transfer was correct, our team will review and reach out — no further action needed</li>
+    </ol>
+  </td></tr>
+</table>
+<p style="margin:0;color:#a1a1aa;font-size:13px;font-family:'Space Grotesk',Arial,sans-serif;">
+  Questions? Email <a href="mailto:support@seats.ca" style="color:#C41E3A;text-decoration:none;font-weight:600;">support@seats.ca</a>.
+</p>`
+        );
+
+        const disSellerMsgId = crypto.randomUUID();
+        const disSellerUnsub = crypto.randomUUID();
+        await supabase.from("email_unsubscribe_tokens").insert({ email: sellerProfile.email, token: disSellerUnsub });
+        await supabase.from("email_send_log").insert({
+          message_id: disSellerMsgId,
+          template_name: "seller-transfer-disputed",
+          recipient_email: sellerProfile.email,
+          status: "pending",
+        });
+        await supabase.rpc("enqueue_email", {
+          queue_name: "transactional_emails",
+          payload: {
+            message_id: disSellerMsgId,
+            to: sellerProfile.email,
+            from: `seats.ca <${FROM_EMAIL}>`,
+            sender_domain: SENDER_DOMAIN,
+            subject: `⚠️ Verification Failed — Order #${orderRef} (${eventTitle})`,
+            html: disputeSellerHtml,
+            text: `Your transfer for Order #${orderRef} (${eventTitle}) failed verification. Mismatched: ${mismatchDetails}. Re-upload a clearer screenshot from your seller dashboard.`,
+            purpose: "transactional",
+            idempotency_key: `seller-disputed-${transfer_id}-${transfer.uploaded_at || ""}`,
+            unsubscribe_token: disSellerUnsub,
+            label: "seller-transfer-disputed",
+            queued_at: new Date().toISOString(),
+          },
+        });
+      }
+
       // In-app notification to seller
       await supabase.from("notifications").insert({
         user_id: transfer.seller_id,
         type: "transfer_disputed",
         title: `⚠️ Transfer Issue — ${eventTitle}`,
-        body: `Your transfer proof for Order #${orderRef} could not be verified. Our team has been notified and will review. Mismatched: ${mismatchDetails}.`,
+        body: `Your transfer proof for Order #${orderRef} could not be verified. Mismatched: ${mismatchDetails}. Please re-upload from your seller dashboard.`,
         metadata: { event_title: eventTitle, transfer_id, mismatched_fields: mismatchDetails },
       });
     }
