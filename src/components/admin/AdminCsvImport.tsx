@@ -4,6 +4,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileSpreadsheet, Check, AlertCircle, Download, HelpCircle, X, RefreshCw } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  ADMIN_CSV_HEADERS,
+  ADMIN_COLUMN_DESCRIPTIONS as COLUMN_DESCRIPTIONS,
+  downloadAdminCsvTemplate as downloadAdminTemplate,
+} from "@/utils/adminCsvTemplate";
 
 interface CsvRow {
   title?: string;
@@ -17,55 +22,13 @@ interface CsvRow {
   seat?: string;
   price?: string;
   quantity?: string;
+  notes?: string;
+  hide_seat_numbers?: string;
   [key: string]: string | undefined;
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ROWS = 1000;
-
-const COLUMN_DESCRIPTIONS: Record<string, string> = {
-  title: "Full event title, e.g. 'Toronto Blue Jays vs Yankees'. Must match or create an event.",
-  venue: "Venue name, e.g. 'Rogers Centre', 'Scotiabank Arena'. Used to match existing events.",
-  city: "City where the event takes place, e.g. 'Toronto'. Required for new events.",
-  province: "Province or state code, e.g. 'ON', 'BC', 'NY'. Required for new events.",
-  event_date: "Date and time in ISO format: YYYY-MM-DDTHH:MM or YYYY-MM-DD HH:MM. e.g. '2026-06-15T19:07'.",
-  category: "Event category. Options: sports, concerts, theatre. Defaults to 'sports' if blank.",
-  section: "Seating section number or name, e.g. '118', 'W11', 'GA'. Required for ticket rows.",
-  row: "Row within the section, e.g. '5', 'A', 'AA'. Optional.",
-  seat: "Seat number(s), e.g. '1-4', '12'. Optional — leave blank for GA.",
-  price: "Ticket price per seat in CAD, e.g. '85.00'. Must be a positive number.",
-  quantity: "Number of tickets available, e.g. '2'. Defaults to 1 if blank.",
-};
-
-const ADMIN_CSV_HEADERS = ["title", "venue", "city", "province", "event_date", "category", "section", "row", "seat", "price", "quantity"];
-
-function generateAdminCsvTemplate(): string {
-  const example = [
-    "Toronto Blue Jays vs Yankees",
-    "Rogers Centre",
-    "Toronto",
-    "ON",
-    "2026-06-15T19:07",
-    "sports",
-    "118",
-    "5",
-    "1-2",
-    "85.00",
-    "2",
-  ];
-  return [ADMIN_CSV_HEADERS.join(","), example.join(",")].join("\n");
-}
-
-function downloadAdminTemplate() {
-  const csv = generateAdminCsvTemplate();
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "seats_ca_admin_import_template.csv";
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 const AdminCsvImport = () => {
   const [csvData, setCsvData] = useState<CsvRow[]>([]);
