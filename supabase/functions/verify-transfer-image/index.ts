@@ -126,6 +126,85 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── Fetch seller profile + event title up front so we can notify the seller
+    //    at three checkpoints (received → verified | disputed)
+    const { data: sellerProfile } = await supabase
+      .from("profiles")
+      .select("email, full_name")
+      .eq("user_id", transfer.seller_id)
+      .single();
+
+    const { data: ticketForEvent } = await supabase
+      .from("tickets")
+      .select("event_id, section, row_name, events(title)")
+      .eq("id", transfer.ticket_id)
+      .single();
+
+    const sellerEventTitle = (ticketForEvent?.events as any)?.title || "Your Event";
+    const sellerSection = (ticketForEvent as any)?.section || "";
+    const sellerRow = (ticketForEvent as any)?.row_name || "";
+    const sellerOrderRef = transfer.transfer_email_alias
+      ? transfer.transfer_email_alias.replace("order-", "").replace("@inbound.seats.ca", "").toUpperCase()
+      : transfer.order_id.slice(0, 8).toUpperCase();
+
+    // ── 1) UPLOAD RECEIVED — seller email + in-app notification ──
+    if (sellerProfile?.email) {
+      const receivedHtml = premiumWrapper(
+        "linear-gradient(90deg,#3b82f6,#1d4ed8,#3b82f6)",
+        `<h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;letter-spacing:-0.5px;">📥 Upload Received</h1>
+<p style="margin:0 0 20px;font-size:14px;color:#1d4ed8;font-weight:600;font-family:'Space Grotesk',Arial,sans-serif;">Order #${sellerOrderRef} — verification in progress</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
+  <tr><td style="padding:16px;background:#fafafa;">
+    <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${sellerEventTitle}</p>
+    ${(sellerSection || sellerRow) ? `<p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">${sellerSection ? `Section ${sellerSection}` : ""}${sellerSection && sellerRow ? " · " : ""}${sellerRow ? `Row ${sellerRow}` : ""}</p>` : ""}
+  </td></tr>
+</table>
+<p style="margin:0 0 16px;color:#52525b;font-size:15px;line-height:1.6;font-family:'Space Grotesk',Arial,sans-serif;">
+  We've received your transfer screenshot. Our AI is verifying it now — you'll get another email within a minute with the result.
+</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 8px;border-radius:12px;overflow:hidden;border-left:4px solid #3b82f6;background:#eff6ff;">
+  <tr><td style="padding:14px 18px;">
+    <p style="margin:0;color:#1e40af;font-size:13px;line-height:1.6;font-family:'Space Grotesk',Arial,sans-serif;">No action needed right now. We'll alert you immediately if anything looks off.</p>
+  </td></tr>
+</table>`
+      );
+
+      const receivedMsgId = crypto.randomUUID();
+      const receivedUnsub = crypto.randomUUID();
+      await supabase.from("email_unsubscribe_tokens").insert({ email: sellerProfile.email, token: receivedUnsub });
+      await supabase.from("email_send_log").insert({
+        message_id: receivedMsgId,
+        template_name: "seller-upload-received",
+        recipient_email: sellerProfile.email,
+        status: "pending",
+      });
+      await supabase.rpc("enqueue_email", {
+        queue_name: "transactional_emails",
+        payload: {
+          message_id: receivedMsgId,
+          to: sellerProfile.email,
+          from: `seats.ca <${FROM_EMAIL}>`,
+          sender_domain: SENDER_DOMAIN,
+          subject: `📥 Upload Received — Order #${sellerOrderRef} (${sellerEventTitle})`,
+          html: receivedHtml,
+          text: `We've received your transfer screenshot for Order #${sellerOrderRef} (${sellerEventTitle}). AI verification in progress.`,
+          purpose: "transactional",
+          idempotency_key: `seller-upload-received-${transfer_id}-${transfer.uploaded_at || ""}`,
+          unsubscribe_token: receivedUnsub,
+          label: "seller-upload-received",
+          queued_at: new Date().toISOString(),
+        },
+      });
+
+      await supabase.from("notifications").insert({
+        user_id: transfer.seller_id,
+        type: "transfer_upload_received",
+        title: `📥 Upload Received — ${sellerEventTitle}`,
+        body: `We've received your transfer proof for Order #${sellerOrderRef}. Verification is in progress.`,
+        metadata: { event_title: sellerEventTitle, transfer_id, order_ref: sellerOrderRef },
+      });
+    }
+
     // Get expected details from order
     const { data: orderItem } = await supabase
       .from("order_items")
