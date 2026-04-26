@@ -224,8 +224,9 @@ const AdminTickets = () => {
         editing={editing}
         editForm={editForm}
         setEditForm={setEditForm}
-        onClose={() => setEditing(null)}
+        onClose={() => { setEditing(null); setEditError(null); }}
         onSave={() => { saveEdit(); }}
+        editError={editError}
       />
     </div>
   );
@@ -233,13 +234,14 @@ const AdminTickets = () => {
 
 // Seat image upload + edit dialog
 const EditTicketDialog = ({
-  editing, editForm, setEditForm, onClose, onSave,
+  editing, editForm, setEditForm, onClose, onSave, editError,
 }: {
   editing: TicketWithEvent | null;
   editForm: { section: string; row_name: string; seat_number: string; price: string; quantity: string };
   setEditForm: (f: any) => void;
   onClose: () => void;
   onSave: () => void;
+  editError: string | null;
 }) => {
   const [seatImages, setSeatImages] = useState<{ id: string; image_url: string; caption: string | null }[]>([]);
   const [uploading, setUploading] = useState(false);
