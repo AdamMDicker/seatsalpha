@@ -37,6 +37,7 @@ const MyOrders = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { hasResellerAccount, isLoading: resellerLoading } = useResellerAccount();
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
+  const [transfersByOrder, setTransfersByOrder] = useState<Record<string, TransferStatusRow[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,7 +48,21 @@ const MyOrders = () => {
         .select("*, order_items(*, tickets(section, row_name, events(title, venue, event_date, city)))")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
-      setOrders((data as OrderWithItems[]) || []);
+      const list = (data as OrderWithItems[]) || [];
+      setOrders(list);
+
+      if (list.length > 0) {
+        const { data: transfers } = await supabase
+          .from("order_transfers")
+          .select("order_id, status, uploaded_at, confirmed_at, forward_sent_at, created_at")
+          .in("order_id", list.map((o) => o.id));
+        const grouped: Record<string, TransferStatusRow[]> = {};
+        (transfers || []).forEach((t: any) => {
+          (grouped[t.order_id] ||= []).push(t);
+        });
+        setTransfersByOrder(grouped);
+      }
+
       setLoading(false);
     };
     fetchOrders();
@@ -59,14 +74,6 @@ const MyOrders = () => {
   if (hasResellerAccount && !loading && orders.length === 0) {
     return <Navigate to="/reseller" replace />;
   }
-
-  const statusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "default";
-      case "pending": return "secondary";
-      default: return "destructive";
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
