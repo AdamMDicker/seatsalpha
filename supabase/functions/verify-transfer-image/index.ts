@@ -476,6 +476,64 @@ If all the core details (teams, date, section, row, email, quantity) refer to th
           metadata: { event_title: eventTitle, venue, transfer_id },
         });
       }
+
+      // ── 2a) VERIFIED — seller email + in-app notification ──
+      if (sellerProfile?.email) {
+        const verifiedSellerHtml = premiumWrapper(
+          "linear-gradient(90deg,#059669,#047857,#059669)",
+          `<h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;letter-spacing:-0.5px;">✅ Transfer Verified</h1>
+<p style="margin:0 0 20px;font-size:14px;color:#059669;font-weight:600;font-family:'Space Grotesk',Arial,sans-serif;">Order #${sellerOrderRef} — payout on track</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
+  <tr><td style="padding:16px;background:#fafafa;">
+    <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#18181b;font-family:'Space Grotesk',Arial,sans-serif;">${sellerEventTitle}</p>
+    ${(sellerSection || sellerRow) ? `<p style="margin:0;font-size:13px;color:#71717a;font-family:'Space Grotesk',Arial,sans-serif;">${sellerSection ? `Section ${sellerSection}` : ""}${sellerSection && sellerRow ? " · " : ""}${sellerRow ? `Row ${sellerRow}` : ""}</p>` : ""}
+  </td></tr>
+</table>
+<p style="margin:0 0 16px;color:#52525b;font-size:15px;line-height:1.6;font-family:'Space Grotesk',Arial,sans-serif;">
+  Your transfer screenshot passed AI verification. The buyer has been notified and will accept the transfer in their Ticketmaster account.
+</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 8px;border-radius:12px;overflow:hidden;border-left:4px solid #059669;background:#f0fdf4;">
+  <tr><td style="padding:14px 18px;">
+    <p style="margin:0;color:#047857;font-size:13px;line-height:1.6;font-family:'Space Grotesk',Arial,sans-serif;">No further action needed. You're done with this order.</p>
+  </td></tr>
+</table>`
+        );
+
+        const verSellerMsgId = crypto.randomUUID();
+        const verSellerUnsub = crypto.randomUUID();
+        await supabase.from("email_unsubscribe_tokens").insert({ email: sellerProfile.email, token: verSellerUnsub });
+        await supabase.from("email_send_log").insert({
+          message_id: verSellerMsgId,
+          template_name: "seller-transfer-verified",
+          recipient_email: sellerProfile.email,
+          status: "pending",
+        });
+        await supabase.rpc("enqueue_email", {
+          queue_name: "transactional_emails",
+          payload: {
+            message_id: verSellerMsgId,
+            to: sellerProfile.email,
+            from: `seats.ca <${FROM_EMAIL}>`,
+            sender_domain: SENDER_DOMAIN,
+            subject: `✅ Transfer Verified — Order #${sellerOrderRef} (${sellerEventTitle})`,
+            html: verifiedSellerHtml,
+            text: `Your transfer for Order #${sellerOrderRef} (${sellerEventTitle}) was verified. The buyer has been notified.`,
+            purpose: "transactional",
+            idempotency_key: `seller-verified-${transfer_id}`,
+            unsubscribe_token: verSellerUnsub,
+            label: "seller-transfer-verified",
+            queued_at: new Date().toISOString(),
+          },
+        });
+
+        await supabase.from("notifications").insert({
+          user_id: transfer.seller_id,
+          type: "transfer_verified_seller",
+          title: `✅ Transfer Verified — ${sellerEventTitle}`,
+          body: `Your transfer proof for Order #${sellerOrderRef} passed verification. The buyer has been notified.`,
+          metadata: { event_title: sellerEventTitle, transfer_id, order_ref: sellerOrderRef },
+        });
+      }
     } else {
       // DISPUTED - alert admin
       const mismatchDetails = Object.entries(verificationResult.matches || {})
