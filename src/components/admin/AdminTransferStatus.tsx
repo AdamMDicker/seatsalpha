@@ -83,6 +83,16 @@ const AdminTransferStatus = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "disputed" | "completed">("pending");
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  // Manual resend by transfer ID
+  const [manualId, setManualId] = useState("");
+  const [manualLookup, setManualLookup] = useState<{
+    found: boolean;
+    sellerEmail: string | null;
+    lastSentAt: string | null;
+    status: string | null;
+  } | null>(null);
+  const [manualBusy, setManualBusy] = useState(false);
+
   const fetchTransfers = async () => {
     setLoading(true);
     try {
