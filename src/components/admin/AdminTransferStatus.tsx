@@ -398,6 +398,76 @@ const AdminTransferStatus = () => {
         </Card>
       </div>
 
+      {/* Manual resend by transfer ID */}
+      <Card className="p-4 border-primary/30 bg-primary/5">
+        <div className="flex items-start gap-2 mb-3">
+          <Send className="h-4 w-4 text-primary mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold">Manual: resend seller upload-proof email</h3>
+            <p className="text-xs text-muted-foreground">
+              Paste a transfer ID to look it up and re-send the upload-proof reminder, bypassing timing gates.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 items-center">
+          <Input
+            value={manualId}
+            onChange={(e) => {
+              setManualId(e.target.value);
+              setManualLookup(null);
+            }}
+            placeholder="Transfer ID (e.g. bcbbfbdd-aab0-4985-81f5-1cd9547acb4a)"
+            className="flex-1 min-w-[280px] font-mono text-xs"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => lookupManualTransfer(manualId)}
+            disabled={!manualId.trim() || manualBusy}
+          >
+            <Search className="h-3.5 w-3.5 mr-1.5" /> Look up
+          </Button>
+          <Button
+            size="sm"
+            onClick={sendManualReminder}
+            disabled={!manualId.trim() || manualBusy}
+          >
+            <Mail className="h-3.5 w-3.5 mr-1.5" />
+            {manualBusy ? "Sending…" : manualLookup?.lastSentAt ? "Resend reminder" : "Send reminder"}
+          </Button>
+        </div>
+
+        {manualLookup && (
+          <div className="mt-3 text-xs">
+            {!manualLookup.found ? (
+              <div className="text-destructive">No transfer found with that ID.</div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
+                <span>
+                  <span className="font-medium text-foreground">Status:</span>{" "}
+                  {manualLookup.status ?? "unknown"}
+                </span>
+                <span>
+                  <span className="font-medium text-foreground">Seller:</span>{" "}
+                  {manualLookup.sellerEmail ?? <em>no email on file</em>}
+                </span>
+                <span>
+                  <span className="font-medium text-foreground">Last reminder sent:</span>{" "}
+                  {manualLookup.lastSentAt ? (
+                    <>
+                      {formatDateTime(manualLookup.lastSentAt)}{" "}
+                      <span className="opacity-60">· {formatRelative(manualLookup.lastSentAt)}</span>
+                    </>
+                  ) : (
+                    <em>never</em>
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
+
       {/* Filters */}
       <div className="flex gap-2 flex-wrap items-center">
         <div className="relative flex-1 min-w-[240px]">
