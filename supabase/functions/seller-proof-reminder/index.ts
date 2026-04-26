@@ -39,7 +39,49 @@ Deno.serve(async (req) => {
   const thirtyMinAgo = new Date(now - 30 * 60 * 1000).toISOString();
   const twoHoursAgo = new Date(now - 2 * 60 * 60 * 1000).toISOString();
 
+  // Optional manual trigger: POST { transfer_id, force?: boolean } sends the
+  // seller reminder for one specific transfer regardless of timing gates.
+  let manualTransferId: string | null = null;
+  let manualForce = false;
+  if (req.method === "POST") {
+    try {
+      const body = await req.json();
+      if (body && typeof body.transfer_id === "string") {
+        manualTransferId = body.transfer_id;
+        manualForce = body.force === true;
+      }
+    } catch {
+      // ignore — empty body means cron invocation
+    }
+  }
+
   try {
+    if (manualTransferId) {
+      const { data: row, error: rowError } = await supabase
+        .from("order_transfers")
+        .select("id, order_id, ticket_id, seller_id, accept_link_extracted_at, seller_reminder_sent_at, admin_escalation_sent_at")
+        .eq("id", manualTransferId)
+        .maybeSingle();
+
+      if (rowError || !row) {
+        return jsonResponse({ error: rowError?.message ?? "Transfer not found" }, 404);
+      }
+      if (row.seller_reminder_sent_at && !manualForce) {
+        return jsonResponse({ ok: false, reason: "already_sent", seller_reminder_sent_at: row.seller_reminder_sent_at });
+      }
+
+      const ctx = await loadContext(supabase, row as TransferRow);
+      if (!ctx.sellerEmail) {
+        return jsonResponse({ ok: false, reason: "no_seller_email" }, 400);
+      }
+      await sendSellerReminder(supabase, row as TransferRow, ctx);
+      await supabase
+        .from("order_transfers")
+        .update({ seller_reminder_sent_at: new Date().toISOString() })
+        .eq("id", row.id);
+      return jsonResponse({ ok: true, sent_to: ctx.sellerEmail, transfer_id: row.id });
+    }
+
     // Pull all transfers where TM email arrived but no proof yet.
     const { data: transfers, error } = await supabase
       .from("order_transfers")
