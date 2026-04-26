@@ -36,6 +36,7 @@ const tabs = [
   { id: "import", label: "CSV Import", icon: Upload },
   { id: "reseller-import", label: "Reseller Import", icon: FileUp },
   { id: "resellers", label: "Resellers", icon: Users },
+  { id: "inventory-visibility", label: "Inventory Visibility", icon: BarChart3 },
   { id: "seller-codes", label: "Seller Codes", icon: Tag },
   { id: "customers", label: "Customers", icon: UserCheck },
   { id: "orders", label: "Orders", icon: ShoppingCart },
