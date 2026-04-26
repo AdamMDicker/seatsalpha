@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Tables } from "@/integrations/supabase/types";
 import { TEAMS_VENUES, LEAGUES_LIST } from "@/data/teamsVenues";
+import {
+  validateTicketQuantityUpdate,
+  validateTicketPrice,
+  validateTicketSection,
+} from "@/utils/ticketValidation";
 
 type TicketWithEvent = Tables<"tickets"> & { events?: { title: string; city: string; venue: string } | null };
 
@@ -22,6 +27,7 @@ const AdminTickets = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterLeague, setFilterLeague] = useState("all");
   const [filterCity, setFilterCity] = useState("all");
+  const [editError, setEditError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -37,14 +43,36 @@ const AdminTickets = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleSave = async () => {
-    if (!form.event_id || !form.section || !form.price) {
-      toast({ title: "Error", description: "Fill required fields", variant: "destructive" });
+    if (!form.event_id) {
+      toast({ title: "Error", description: "Select an event", variant: "destructive" });
+      return;
+    }
+    const sectionCheck = validateTicketSection(form.section);
+    if (!sectionCheck.ok) {
+      toast({ title: "Invalid section", description: sectionCheck.error, variant: "destructive" });
+      return;
+    }
+    const priceCheck = validateTicketPrice(form.price);
+    if (!priceCheck.ok) {
+      toast({ title: "Invalid price", description: priceCheck.error, variant: "destructive" });
+      return;
+    }
+    // New tickets have 0 sold, so no oversell risk yet — but still validate the integer range.
+    const qtyCheck = validateTicketQuantityUpdate({
+      rawQuantity: form.quantity,
+      currentQuantitySold: 0,
+    });
+    if (!qtyCheck.ok) {
+      toast({ title: "Invalid quantity", description: qtyCheck.error, variant: "destructive" });
       return;
     }
     const { error } = await supabase.from("tickets").insert({
-      event_id: form.event_id, section: form.section,
-      row_name: form.row_name || null, seat_number: form.seat_number || null,
-      price: parseFloat(form.price), quantity: parseInt(form.quantity),
+      event_id: form.event_id,
+      section: sectionCheck.section,
+      row_name: form.row_name || null,
+      seat_number: form.seat_number || null,
+      price: priceCheck.price,
+      quantity: qtyCheck.quantity,
       seller_id: "c0768913-3e54-476a-b4b2-8a0051b087ed",
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
@@ -56,6 +84,7 @@ const AdminTickets = () => {
 
   const openEdit = (ticket: TicketWithEvent) => {
     setEditing(ticket);
+    setEditError(null);
     setEditForm({
       section: ticket.section, row_name: ticket.row_name || "",
       seat_number: ticket.seat_number || "", price: String(ticket.price),
@@ -65,12 +94,39 @@ const AdminTickets = () => {
 
   const saveEdit = async () => {
     if (!editing) return;
+    setEditError(null);
+
+    const sectionCheck = validateTicketSection(editForm.section);
+    if (!sectionCheck.ok) {
+      setEditError(sectionCheck.error);
+      return;
+    }
+    const priceCheck = validateTicketPrice(editForm.price);
+    if (!priceCheck.ok) {
+      setEditError(priceCheck.error);
+      return;
+    }
+    const qtyCheck = validateTicketQuantityUpdate({
+      rawQuantity: editForm.quantity,
+      currentQuantitySold: editing.quantity_sold,
+    });
+    if (!qtyCheck.ok) {
+      setEditError(qtyCheck.error);
+      return;
+    }
+
     const { error } = await supabase.from("tickets").update({
-      section: editForm.section, row_name: editForm.row_name || null,
-      seat_number: editForm.seat_number || null, price: parseFloat(editForm.price),
-      quantity: parseInt(editForm.quantity),
+      section: sectionCheck.section,
+      row_name: editForm.row_name || null,
+      seat_number: editForm.seat_number || null,
+      price: priceCheck.price,
+      quantity: qtyCheck.quantity,
     }).eq("id", editing.id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    if (error) {
+      // Server-side oversell trigger or any other DB constraint
+      setEditError(error.message);
+      return;
+    }
     toast({ title: "Ticket updated!" });
     setEditing(null);
     fetchData();
@@ -168,8 +224,9 @@ const AdminTickets = () => {
         editing={editing}
         editForm={editForm}
         setEditForm={setEditForm}
-        onClose={() => setEditing(null)}
+        onClose={() => { setEditing(null); setEditError(null); }}
         onSave={() => { saveEdit(); }}
+        editError={editError}
       />
     </div>
   );
@@ -177,13 +234,14 @@ const AdminTickets = () => {
 
 // Seat image upload + edit dialog
 const EditTicketDialog = ({
-  editing, editForm, setEditForm, onClose, onSave,
+  editing, editForm, setEditForm, onClose, onSave, editError,
 }: {
   editing: TicketWithEvent | null;
   editForm: { section: string; row_name: string; seat_number: string; price: string; quantity: string };
   setEditForm: (f: any) => void;
   onClose: () => void;
   onSave: () => void;
+  editError: string | null;
 }) => {
   const [seatImages, setSeatImages] = useState<{ id: string; image_url: string; caption: string | null }[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -236,9 +294,29 @@ const EditTicketDialog = ({
             <div className="space-y-2"><Label>Seat #</Label><Input value={editForm.seat_number} onChange={(e) => setEditForm({ ...editForm, seat_number: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2"><Label>Price ($)</Label><Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Quantity</Label><Input type="number" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Price ($)</Label><Input type="number" min="0" step="0.01" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} /></div>
+            <div className="space-y-2">
+              <Label>Quantity</Label>
+              <Input
+                type="number"
+                min={editing?.quantity_sold ?? 1}
+                step="1"
+                value={editForm.quantity}
+                onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })}
+              />
+              {editing && editing.quantity_sold > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {editing.quantity_sold} already sold — minimum allowed: {editing.quantity_sold}
+                </p>
+              )}
+            </div>
           </div>
+
+          {editError && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {editError}
+            </div>
+          )}
 
           {/* Seat images */}
           <div className="space-y-2">
