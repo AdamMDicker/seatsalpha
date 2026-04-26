@@ -268,13 +268,13 @@ serve(async (req) => {
             .maybeSingle();
 
           if (reseller) {
-            const { count } = await supabase
+            // deno-lint-ignore no-explicit-any
+            const { count } = await (supabase
               .from("tickets")
               .update({ is_active: false })
               .eq("seller_id", reseller.user_id)
-              .eq("is_reseller_ticket", true)
-              // deno-lint-ignore no-explicit-any
-              .select("id", { count: "exact", head: true } as any);
+              .eq("is_reseller_ticket", true) as any)
+              .select("id", { count: "exact", head: true });
 
             logStep("Tickets delisted due to payment failure", {
               subscriptionId,
