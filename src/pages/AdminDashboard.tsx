@@ -30,6 +30,7 @@ const tabs = [
   { id: "e2e", label: "E2E Test", icon: PlayCircle },
   { id: "events", label: "Events", icon: Calendar },
   { id: "tickets", label: "Tickets", icon: Ticket },
+  { id: "inventory-health", label: "Inventory Health", icon: HeartPulse },
   { id: "import", label: "CSV Import", icon: Upload },
   { id: "reseller-import", label: "Reseller Import", icon: FileUp },
   { id: "resellers", label: "Resellers", icon: Users },
