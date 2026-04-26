@@ -389,13 +389,49 @@ const AdminCsvImport = () => {
         )}
 
         {results && (
-          <div className="flex gap-4">
-            <div className="flex items-center gap-2 text-sm text-green-500">
-              <Check className="h-4 w-4" /> {results.success} imported
+          <div className="space-y-3">
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2 text-sm text-green-500">
+                <Check className="h-4 w-4" /> {results.success} imported
+              </div>
+              {results.errors > 0 && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4" /> {results.errors} errors
+                </div>
+              )}
             </div>
-            {results.errors > 0 && (
-              <div className="flex items-center gap-2 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4" /> {results.errors} errors
+
+            {errorLog.length > 0 && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-destructive uppercase tracking-wider">
+                    Import error log ({errorLog.length})
+                  </p>
+                  <Button size="sm" variant="ghost" onClick={downloadErrorLog}>
+                    <Download className="h-3.5 w-3.5" />
+                    Download CSV
+                  </Button>
+                </div>
+                <div className="max-h-64 overflow-y-auto rounded border border-border bg-background">
+                  <table className="w-full text-xs">
+                    <thead className="bg-secondary/60">
+                      <tr className="text-left">
+                        <th className="px-2 py-1.5 font-medium text-muted-foreground w-16">Row</th>
+                        <th className="px-2 py-1.5 font-medium text-muted-foreground">Event</th>
+                        <th className="px-2 py-1.5 font-medium text-muted-foreground">Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {errorLog.map((e, i) => (
+                        <tr key={i} className="border-t border-border/40">
+                          <td className="px-2 py-1.5 font-mono text-muted-foreground">{e.rowNumber}</td>
+                          <td className="px-2 py-1.5 text-foreground truncate max-w-[180px]" title={e.title}>{e.title}</td>
+                          <td className="px-2 py-1.5 text-destructive">{e.reason}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
