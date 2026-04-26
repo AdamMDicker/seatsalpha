@@ -23,7 +23,8 @@ import AdminWebhookEvents from "@/components/admin/AdminWebhookEvents";
 import AdminSectionViews from "@/components/admin/AdminSectionViews";
 import AdminE2ETest from "@/components/admin/AdminE2ETest";
 import AdminInventoryHealth from "@/components/admin/AdminInventoryHealth";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle, HeartPulse } from "lucide-react";
+import AdminTransferStatus from "@/components/admin/AdminTransferStatus";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle, HeartPulse, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 
 const tabs = [
@@ -38,6 +39,7 @@ const tabs = [
   { id: "customers", label: "Customers", icon: UserCheck },
   { id: "orders", label: "Orders", icon: ShoppingCart },
   { id: "transfers", label: "Transfers", icon: ArrowRightLeft },
+  { id: "transfer-status", label: "Transfer Status", icon: ListChecks },
   { id: "banned", label: "Banned", icon: Ban },
   { id: "visibility", label: "Visibility", icon: Eye },
   { id: "hero", label: "Hero Image", icon: Image },
@@ -164,6 +166,7 @@ const AdminDashboard = () => {
         {activeTab === "customers" && <AdminCustomers />}
         {activeTab === "orders" && <AdminOrders />}
         {activeTab === "transfers" && <AdminTransfers />}
+        {activeTab === "transfer-status" && <AdminTransferStatus />}
         {activeTab === "banned" && <AdminBannedUsers />}
         {activeTab === "visibility" && <AdminLeagueVisibility />}
         {activeTab === "hero" && <AdminHeroImage />}
