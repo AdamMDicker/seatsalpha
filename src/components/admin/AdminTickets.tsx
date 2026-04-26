@@ -27,6 +27,7 @@ const AdminTickets = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterLeague, setFilterLeague] = useState("all");
   const [filterCity, setFilterCity] = useState("all");
+  const [editError, setEditError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchData = async () => {
