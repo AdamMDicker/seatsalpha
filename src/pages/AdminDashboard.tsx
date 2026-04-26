@@ -24,7 +24,8 @@ import AdminSectionViews from "@/components/admin/AdminSectionViews";
 import AdminE2ETest from "@/components/admin/AdminE2ETest";
 import AdminInventoryHealth from "@/components/admin/AdminInventoryHealth";
 import AdminTransferStatus from "@/components/admin/AdminTransferStatus";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle, HeartPulse, ListChecks } from "lucide-react";
+import AdminInventoryVisibility from "@/components/admin/AdminInventoryVisibility";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle, HeartPulse, ListChecks, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
 const tabs = [
@@ -35,6 +36,7 @@ const tabs = [
   { id: "import", label: "CSV Import", icon: Upload },
   { id: "reseller-import", label: "Reseller Import", icon: FileUp },
   { id: "resellers", label: "Resellers", icon: Users },
+  { id: "inventory-visibility", label: "Inventory Visibility", icon: BarChart3 },
   { id: "seller-codes", label: "Seller Codes", icon: Tag },
   { id: "customers", label: "Customers", icon: UserCheck },
   { id: "orders", label: "Orders", icon: ShoppingCart },
@@ -162,6 +164,7 @@ const AdminDashboard = () => {
         {activeTab === "import" && <AdminCsvImport />}
         {activeTab === "reseller-import" && <AdminResellerImport />}
         {activeTab === "resellers" && <AdminResellers />}
+        {activeTab === "inventory-visibility" && <AdminInventoryVisibility />}
         {activeTab === "seller-codes" && <AdminSellerCodes />}
         {activeTab === "customers" && <AdminCustomers />}
         {activeTab === "orders" && <AdminOrders />}
