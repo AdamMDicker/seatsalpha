@@ -109,7 +109,9 @@ export function useTeamGames(searchTerm: string | undefined) {
               (a, b) => (a.is_reseller_ticket ? 1 : 0) - (b.is_reseller_ticket ? 1 : 0)
             );
             return { ...game, tickets } as GameEvent;
-          });
+          })
+          // Hide dates entirely when no live inventory exists for them.
+          .filter((game) => game.tickets.some((t) => t.quantity > t.quantity_sold));
 
         setGames(gamesWithTickets);
         const gameParam = searchParams.get("game");
