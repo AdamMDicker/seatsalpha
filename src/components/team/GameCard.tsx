@@ -96,9 +96,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
               <span className="text-sm text-emerald-400 font-semibold">From ${cheapestPaid} CAD</span>
             ) : cheapestAny !== null ? (
               <span className="text-sm text-emerald-400 font-semibold">From ${cheapestAny} CAD</span>
-            ) : (
-              <span className="text-xs text-muted-foreground">Tickets coming soon</span>
-            )}
+            ) : null}
           </div>
         </div>
       </button>
@@ -170,9 +168,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
             <p className="text-sm text-emerald-400 font-semibold">From ${cheapestAny} CAD</p>
             <p className="text-[9px] text-emerald-400">Members enjoy LCC-included pricing</p>
           </>
-        ) : (
-          <p className="text-sm text-muted-foreground">Tickets coming soon</p>
-        )}
+        ) : null}
       </div>
     </button>
   );
