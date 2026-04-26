@@ -96,9 +96,7 @@ const GameCard = ({ game, isSelected, onClick, teamLogo }: GameCardProps) => {
               <span className="text-sm text-emerald-400 font-semibold">From ${cheapestPaid} CAD</span>
             ) : cheapestAny !== null ? (
               <span className="text-sm text-emerald-400 font-semibold">From ${cheapestAny} CAD</span>
-            ) : (
-              <span className="text-xs text-muted-foreground">Tickets coming soon</span>
-            )}
+            ) : null}
           </div>
         </div>
       </button>
