@@ -166,6 +166,7 @@ const AdminDashboard = () => {
         {activeTab === "customers" && <AdminCustomers />}
         {activeTab === "orders" && <AdminOrders />}
         {activeTab === "transfers" && <AdminTransfers />}
+        {activeTab === "transfer-status" && <AdminTransferStatus />}
         {activeTab === "banned" && <AdminBannedUsers />}
         {activeTab === "visibility" && <AdminLeagueVisibility />}
         {activeTab === "hero" && <AdminHeroImage />}
