@@ -102,39 +102,103 @@ const AdminCsvImport = () => {
   const handleImport = async () => {
     if (csvData.length === 0) return;
     setImporting(true);
+    setErrorLog([]);
     let success = 0, errors = 0;
-    for (const row of csvData) {
+    const log: ImportError[] = [];
+
+    const recordError = (idx: number, row: CsvRow, reason: string) => {
+      errors++;
+      log.push({
+        rowNumber: idx + 2, // header is line 1, first data row is line 2
+        title: row.title || "(no title)",
+        reason,
+      });
+    };
+
+    for (let i = 0; i < csvData.length; i++) {
+      const row = csvData[i];
       try {
-        let eventId: string | null = null;
-        if (row.title && row.venue) {
-          const { data: existing } = await supabase.from("events").select("id").eq("title", row.title).eq("venue", row.venue || "").maybeSingle();
-          if (existing) { eventId = existing.id; }
-          else {
-            const { data: newEvent, error } = await supabase.from("events").insert({ title: row.title, venue: row.venue || "", city: row.city || "", province: row.province || "", event_date: row.event_date || new Date().toISOString(), category: row.category || "sports" }).select("id").single();
-            if (error) { errors++; continue; }
-            eventId = newEvent.id;
-          }
+        // ------- field-level validation BEFORE hitting the DB -------
+        if (!row.title || !row.venue) {
+          recordError(i, row, "Missing title or venue");
+          continue;
         }
-        if (eventId && row.section && row.price) {
-          const hideSeats = (row.hide_seat_numbers || "").trim().toLowerCase();
-          const { error } = await supabase.from("tickets").insert({
-            event_id: eventId,
-            section: row.section,
-            row_name: row.row || null,
-            seat_number: row.seat || null,
-            price: parseFloat(row.price),
-            quantity: parseInt(row.quantity || "1"),
-            seat_notes: row.notes || null,
-            hide_seat_numbers: hideSeats === "yes" || hideSeats === "true" || hideSeats === "1",
-            seller_id: "c0768913-3e54-476a-b4b2-8a0051b087ed",
-          });
-          if (error) errors++; else success++;
-        } else if (eventId) { success++; } else { errors++; }
-      } catch { errors++; }
+        const sectionCheck = validateTicketSection(row.section || "");
+        if (!sectionCheck.ok) {
+          recordError(i, row, `Section: ${sectionCheck.error}`);
+          continue;
+        }
+        const priceCheck = validateTicketPrice(row.price || "");
+        if (!priceCheck.ok) {
+          recordError(i, row, `Price: ${priceCheck.error}`);
+          continue;
+        }
+        const qtyCheck = validateTicketQuantityUpdate({
+          rawQuantity: row.quantity || "1",
+          currentQuantitySold: 0,
+        });
+        if (!qtyCheck.ok) {
+          recordError(i, row, `Quantity: ${qtyCheck.error}`);
+          continue;
+        }
+
+        // ------- find or create event -------
+        let eventId: string | null = null;
+        const { data: existing } = await supabase
+          .from("events")
+          .select("id")
+          .eq("title", row.title)
+          .eq("venue", row.venue)
+          .maybeSingle();
+        if (existing) {
+          eventId = existing.id;
+        } else {
+          const { data: newEvent, error } = await supabase.from("events").insert({
+            title: row.title,
+            venue: row.venue,
+            city: row.city || "",
+            province: row.province || "",
+            event_date: row.event_date || new Date().toISOString(),
+            category: row.category || "sports",
+          }).select("id").single();
+          if (error || !newEvent) {
+            recordError(i, row, `Event create failed: ${error?.message || "unknown"}`);
+            continue;
+          }
+          eventId = newEvent.id;
+        }
+
+        // ------- insert ticket (DB triggers will catch oversell as a final guard) -------
+        const hideSeats = (row.hide_seat_numbers || "").trim().toLowerCase();
+        const { error } = await supabase.from("tickets").insert({
+          event_id: eventId,
+          section: sectionCheck.section,
+          row_name: row.row || null,
+          seat_number: row.seat || null,
+          price: priceCheck.price,
+          quantity: qtyCheck.quantity,
+          seat_notes: row.notes || null,
+          hide_seat_numbers: hideSeats === "yes" || hideSeats === "true" || hideSeats === "1",
+          seller_id: "c0768913-3e54-476a-b4b2-8a0051b087ed",
+        });
+        if (error) {
+          recordError(i, row, `DB rejected: ${error.message}`);
+        } else {
+          success++;
+        }
+      } catch (err: any) {
+        recordError(i, row, `Unexpected error: ${err?.message || String(err)}`);
+      }
     }
+
     setResults({ success, errors });
+    setErrorLog(log);
     setImporting(false);
-    toast({ title: `Import complete: ${success} succeeded, ${errors} failed` });
+    toast({
+      title: `Import complete: ${success} succeeded, ${errors} failed`,
+      description: errors > 0 ? "See the error log below for per-row details." : undefined,
+      variant: errors > 0 ? "destructive" : "default",
+    });
   };
 
   const clearFile = () => {
