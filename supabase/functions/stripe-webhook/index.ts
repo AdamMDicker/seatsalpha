@@ -262,7 +262,7 @@ serve(async (req) => {
             user_id: meta.user_id,
             type: "seller",
             title: "Sign-Up Fee Paid",
-            body: "Your $100 seller sign-up fee has been processed. You can now set up your weekly membership.",
+            body: "Your seller sign-up fee has been processed. You can now set up your weekly membership.",
           })
         );
       }
@@ -393,6 +393,27 @@ serve(async (req) => {
             logStep("ERROR: failed to create order_transfer", { error: transferErr.message });
           } else {
             logStep("Order transfer created", { orderId, sellerId: effectiveSellerId, alias: transferEmailAlias });
+          }
+
+          // --- Seller membership-referral bonus ($20) ---
+          // When a buyer adds the membership upgrade at checkout AND the ticket
+          // belongs to a real seller (not the platform/admin fulfillment user),
+          // credit that seller $20.
+          const membershipPaid = parseFloat(meta.membership_amount || "0") > 0;
+          const realSellerId = ticketForTransfer?.seller_id;
+          if (membershipPaid && realSellerId && realSellerId !== ADMIN_USER_ID) {
+            const { error: creditErr } = await supabase.from("seller_credits").insert({
+              seller_id: realSellerId,
+              order_id: orderId,
+              amount: 20,
+              reason: "membership_referral",
+              status: "pending",
+            });
+            if (creditErr) {
+              logStep("ERROR: failed to insert seller_credit", { error: creditErr.message });
+            } else {
+              logStep("Seller membership-referral credit created", { sellerId: realSellerId, orderId });
+            }
           }
         }
       }
