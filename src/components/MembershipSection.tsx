@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Crown, Check, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  MEMBERSHIP_PRICE,
+  MEMBERSHIP_PRICE_ORIGINAL,
+  MEMBERSHIP_DISCOUNT_PCT,
+} from "@/config/pricing";
 
 const benefits = [
   "LCC inclusive ticket pricing for 12 months",
@@ -32,7 +37,7 @@ const MembershipSection = () => {
                 </h2>
 
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Join for just $49.95/year and never pay LCC on tickets again. Most members save over $200 in their first year.
+                  Join for just <span className="line-through text-muted-foreground/70">${MEMBERSHIP_PRICE_ORIGINAL.toFixed(2)}</span> <strong className="text-gold">${MEMBERSHIP_PRICE.toFixed(2)}</strong>/year and never pay LCC on tickets again. Most members save over $200 in their first year.
                 </p>
 
                 <ul className="space-y-3">
@@ -47,14 +52,16 @@ const MembershipSection = () => {
                 <Link to="/membership" className="block">
                   <Button variant="gold" size="lg" className="w-full sm:w-auto min-h-[52px]">
                     <Zap className="h-4 w-4" />
-                    Learn More — $49.95/year
+                    Learn More — ${MEMBERSHIP_PRICE.toFixed(2)}/year
                   </Button>
                 </Link>
               </div>
 
               <div className="flex-shrink-0 text-center hidden sm:block">
                 <div className="w-44 h-44 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center glow-gold">
-                  <span className="font-display text-3xl md:text-4xl font-bold text-gold">$49.95 CAD</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gold/70">{MEMBERSHIP_DISCOUNT_PCT}% OFF</span>
+                  <span className="line-through text-muted-foreground/70 text-sm mt-0.5">${MEMBERSHIP_PRICE_ORIGINAL.toFixed(2)}</span>
+                  <span className="font-display text-2xl md:text-3xl font-bold text-gold">${MEMBERSHIP_PRICE.toFixed(2)} CAD</span>
                   <span className="text-sm text-muted-foreground mt-1">per year</span>
                   <span className="text-xs text-gold/70 mt-0.5">Save $200+ avg</span>
                 </div>
