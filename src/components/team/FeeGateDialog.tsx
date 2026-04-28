@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import { format } from "date-fns";
 import { MEMBERSHIP_PRICE, MEMBERSHIP_PRICE_ORIGINAL, MEMBERSHIP_DISCOUNT_PCT } from "@/config/pricing";
+import ContactInfoGate from "./ContactInfoGate";
 
 interface FeeGateDialogProps {
   open: boolean;
@@ -99,6 +100,8 @@ const FeeGateDialog = ({
   const [membershipLoading, setMembershipLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [contactGateOpen, setContactGateOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const isOddFullSet = availableQuantity % 2 !== 0;
@@ -185,23 +188,65 @@ const FeeGateDialog = ({
     }
   };
 
-  const handleProceed = () => {
-    if (isMember || selectedOption === "hst") {
-      if (isMember) {
-        onProceedNoFees?.(quantity);
-      } else {
-        onProceedWithFees(quantity);
-      }
-    } else {
-      handleBuyMembership();
+  const ensureContactInfoThen = async (action: () => void) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      action();
+      return;
     }
+    setCurrentUserId(user.id);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("phone, address_line1, city, province, postal_code")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const complete =
+      !!profile?.phone?.trim() &&
+      !!profile?.address_line1?.trim() &&
+      !!profile?.city?.trim() &&
+      !!profile?.province?.trim() &&
+      !!profile?.postal_code?.trim();
+    if (!complete) {
+      setContactGateOpen(true);
+      return;
+    }
+    action();
+  };
+
+  const handleProceed = () => {
+    const action = () => {
+      if (isMember || selectedOption === "hst") {
+        if (isMember) {
+          onProceedNoFees?.(quantity);
+        } else {
+          onProceedWithFees(quantity);
+        }
+      } else {
+        handleBuyMembership();
+      }
+    };
+    ensureContactInfoThen(action);
   };
 
   const isLoading = selectedOption === "membership" ? membershipLoading : loading;
 
+  const contactGate = currentUserId ? (
+    <ContactInfoGate
+      open={contactGateOpen}
+      onOpenChange={setContactGateOpen}
+      userId={currentUserId}
+      onComplete={() => {
+        setContactGateOpen(false);
+        setTimeout(() => handleProceed(), 50);
+      }}
+    />
+  ) : null;
+
   // --- MEMBER FAST-PATH: skip pricing options entirely ---
   if (isMember) {
     return (
+      <>
+      {contactGate}
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md p-0 overflow-hidden max-h-[90vh] flex flex-col">
           <div className="bg-gradient-to-r from-gold/10 to-gold/5 border-b border-border px-4 pt-3 pb-2 flex-shrink-0">
@@ -286,11 +331,14 @@ const FeeGateDialog = ({
           </div>
         </DialogContent>
       </Dialog>
+      </>
     );
   }
 
   // --- NON-MEMBER / ADMIN FULL DIALOG ---
   return (
+    <>
+    {contactGate}
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-4 pt-2.5 pb-1.5 flex-shrink-0">
@@ -521,6 +569,7 @@ const FeeGateDialog = ({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
 
