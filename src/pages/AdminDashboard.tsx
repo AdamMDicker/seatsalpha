@@ -25,7 +25,8 @@ import AdminE2ETest from "@/components/admin/AdminE2ETest";
 import AdminInventoryHealth from "@/components/admin/AdminInventoryHealth";
 import AdminTransferStatus from "@/components/admin/AdminTransferStatus";
 import AdminInventoryVisibility from "@/components/admin/AdminInventoryVisibility";
-import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle, HeartPulse, ListChecks, BarChart3 } from "lucide-react";
+import AdminSellerCredits from "@/components/admin/AdminSellerCredits";
+import { LayoutDashboard, Calendar, Ticket, Users, UserCheck, ShoppingCart, Upload, Ban, Eye, Image, Mail, Activity, FileUp, Tag, ArrowRightLeft, RefreshCw, Webhook, Sparkles, PlayCircle, HeartPulse, ListChecks, BarChart3, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 
 const tabs = [
@@ -38,6 +39,7 @@ const tabs = [
   { id: "resellers", label: "Resellers", icon: Users },
   { id: "inventory-visibility", label: "Inventory Visibility", icon: BarChart3 },
   { id: "seller-codes", label: "Seller Codes", icon: Tag },
+  { id: "seller-credits", label: "Seller Credits", icon: DollarSign },
   { id: "customers", label: "Customers", icon: UserCheck },
   { id: "orders", label: "Orders", icon: ShoppingCart },
   { id: "transfers", label: "Transfers", icon: ArrowRightLeft },
@@ -165,6 +167,7 @@ const AdminDashboard = () => {
         {activeTab === "reseller-import" && <AdminResellerImport />}
         {activeTab === "resellers" && <AdminResellers />}
         {activeTab === "inventory-visibility" && <AdminInventoryVisibility />}
+        {activeTab === "seller-credits" && <AdminSellerCredits />}
         {activeTab === "seller-codes" && <AdminSellerCodes />}
         {activeTab === "customers" && <AdminCustomers />}
         {activeTab === "orders" && <AdminOrders />}

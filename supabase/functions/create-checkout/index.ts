@@ -48,7 +48,7 @@ serve(async (req) => {
     // Build line items: always include membership subscription
     const lineItems: any[] = [
       {
-        price: "price_1TKTCMBgGwQ8YCQeW2OAT6Vh",
+        price: "price_1TRE2cBgGwQ8YCQeKeM8skAM",
         quantity: 1,
       },
     ];
@@ -123,7 +123,7 @@ serve(async (req) => {
           ticket_id: ticketInfo.ticketId || "",
           service_fee: "0",
           ticket_unit_price: String(ticketInfo.ticketAmount / ticketQty),
-          membership_amount: "49.95",
+          membership_amount: "59.99",
         },
       } : {}),
     });

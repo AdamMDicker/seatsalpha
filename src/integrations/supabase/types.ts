@@ -761,6 +761,39 @@ export type Database = {
           },
         ]
       }
+      seller_credits: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          order_id: string | null
+          paid_at: string | null
+          reason: string
+          seller_id: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          paid_at?: string | null
+          reason: string
+          seller_id: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          paid_at?: string | null
+          reason?: string
+          seller_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       seller_discount_codes: {
         Row: {
           code: string

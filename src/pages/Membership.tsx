@@ -14,6 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { MEMBERSHIP_PRICE, MEMBERSHIP_PRICE_ORIGINAL, MEMBERSHIP_DISCOUNT_PCT } from "@/config/pricing";
 
 const competitorFees = [
   { platform: "Ticketmaster", fee: "Service Fee", percent: "20–30%", example: "$30–$45 on a $150 ticket" },
@@ -40,7 +41,7 @@ const savingsExamples = [
 const buyerFaqs = [
   { q: "Do I need an account to buy tickets?", a: "Yes, you'll need to create a free account to complete a purchase. This allows us to deliver your tickets and provide buyer protection." },
   { q: "Do I need a membership to buy tickets?", a: "No. Anyone can browse and purchase tickets. However, non-members will pay standard service fees and LCC at checkout." },
-  { q: "What is included with my seats.ca membership?", a: "Your $49.95/year membership eliminates all service fees and LCC is included on every ticket you purchase. You also get access to bundle savings on travel and ride packages." },
+  { q: "What is included with my seats.ca membership?", a: `Your $${MEMBERSHIP_PRICE.toFixed(2)}/year membership (regular $${MEMBERSHIP_PRICE_ORIGINAL.toFixed(2)} — currently ${MEMBERSHIP_DISCOUNT_PCT}% off) eliminates all service fees and LCC is included on every ticket you purchase. You also get access to bundle savings on travel and ride packages.` },
   { q: "How much will I actually save?", a: "The average Canadian fan pays $300+ per year in hidden ticketing fees. Most members save 10–20x their membership cost in the first year alone." },
   { q: "Are there any hidden fees at checkout?", a: "Absolutely not. With a seats.ca membership, the price you see is the price you pay. No service fees, no processing fees, no facility charges." },
   { q: "Doesn't this site just build fees into the ticket price like everyone else?", a: "Absolutely NOT — many platforms advertise 'no fees' but simply inflate the ticket's listed price. At seats.ca, our prices reflect the actual ticket value." },
@@ -152,7 +153,7 @@ const Membership = () => {
     ) : (
       <Button variant="gold" size="lg" onClick={handleJoin} disabled={loading} className={className}>
         <Zap className="h-5 w-5" />
-        {loading ? "Loading..." : "Join for $49.95/year"}
+        {loading ? "Loading..." : `Join for $${MEMBERSHIP_PRICE.toFixed(2)}/year`}
       </Button>
     );
 
@@ -172,7 +173,7 @@ const Membership = () => {
             Stop Paying <span className="text-gold">Ridiculous Fees</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
-            For just <strong className="text-foreground">$49.95/year</strong>, eliminate every service fee on your ticket purchases.
+            For just <span className="line-through text-muted-foreground/70">${MEMBERSHIP_PRICE_ORIGINAL.toFixed(2)}</span> <strong className="text-foreground">${MEMBERSHIP_PRICE.toFixed(2)}/year</strong> <span className="inline-block text-xs font-bold uppercase tracking-wide bg-gold/15 text-gold px-2 py-0.5 rounded ml-1">{MEMBERSHIP_DISCOUNT_PCT}% off</span>, eliminate every service fee on your ticket purchases.
           </p>
           <p className="text-muted-foreground max-w-xl mx-auto mb-4">
             Non-members pay fees and standard LCC at checkout.
@@ -193,7 +194,7 @@ const Membership = () => {
           <div className="max-w-3xl mx-auto bg-card border border-border rounded-2xl p-8 md:p-12 shadow-lg">
             <div className="flex flex-col md:flex-row gap-10 items-center">
               <div className="flex-1 space-y-6">
-                <h2 className="font-display text-3xl font-bold">Everything You Get for <span className="text-gold">$49.95/year</span></h2>
+                <h2 className="font-display text-3xl font-bold">Everything You Get for <span className="text-gold">${MEMBERSHIP_PRICE.toFixed(2)}/year</span></h2>
                 <ul className="space-y-4">
                   {memberBenefits.map((b, i) => (
                     <li key={i} className="flex items-start gap-3">
@@ -205,8 +206,10 @@ const Membership = () => {
                 <JoinButton className="w-full sm:w-auto" />
               </div>
               <div className="flex-shrink-0">
-                <div className="w-44 h-44 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center text-center glow-gold">
-                  <span className="font-display text-3xl font-bold text-gold leading-tight">$49.95</span>
+                <div className="w-44 h-44 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex flex-col items-center justify-center text-center glow-gold px-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gold/80">{MEMBERSHIP_DISCOUNT_PCT}% OFF</span>
+                  <span className="line-through text-muted-foreground/70 text-sm">${MEMBERSHIP_PRICE_ORIGINAL.toFixed(2)}</span>
+                  <span className="font-display text-3xl font-bold text-gold leading-tight">${MEMBERSHIP_PRICE.toFixed(2)}</span>
                   <span className="text-xs font-semibold text-gold/70 mt-0.5">CAD</span>
                   <span className="text-sm text-muted-foreground mt-1">per year</span>
                 </div>
@@ -287,8 +290,8 @@ const Membership = () => {
           <div className="text-center bg-card border border-border rounded-2xl p-8 max-w-md mx-auto shadow-lg glow-gold">
             <p className="text-sm text-muted-foreground mb-1">Total annual savings on just 4 events</p>
             <p className="font-display text-5xl font-bold text-gold">${totalSaved}</p>
-            <p className="text-sm text-muted-foreground mt-2">Membership cost: <strong className="text-foreground">$49.95</strong></p>
-            <p className="text-primary font-semibold mt-1">That's a {Math.round(totalSaved / 49.95)}x return</p>
+            <p className="text-sm text-muted-foreground mt-2">Membership cost: <span className="line-through text-muted-foreground/60 mr-1">${MEMBERSHIP_PRICE_ORIGINAL.toFixed(2)}</span><strong className="text-foreground">${MEMBERSHIP_PRICE.toFixed(2)}</strong></p>
+            <p className="text-primary font-semibold mt-1">That's a {Math.round(totalSaved / MEMBERSHIP_PRICE)}x return</p>
           </div>
         </div>
       </section>
@@ -308,7 +311,7 @@ const Membership = () => {
               ["Processing Fees", "None", "$5–$10"],
               ["Facility Charges", "None", "$3–$5"],
               ["Hidden Checkout Fees", "Never", "Common"],
-              ["Membership Cost", "$49.95/yr", "N/A"],
+              ["Membership Cost", `$${MEMBERSHIP_PRICE.toFixed(2)}/yr`, "N/A"],
               ["Guaranteed Authentic", "Always", "Varies"],
               ["Travel Bundles", "Included", "Rare"],
             ].map(([feature, us, them], i) => (

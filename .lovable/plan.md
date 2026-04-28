@@ -1,35 +1,108 @@
+## Goal
 
+Update all pricing across site + Stripe to:
 
-## Fix Stripe Seller Webhook — Stop 45 Failed Deliveries
+| Item | Current | New regular | Promo (shown) |
+|---|---|---|---|
+| Buyer Membership | $49.95/yr | **$99.99/yr** (strikethrough) | **$59.99/yr** (40% off) |
+| Seller Sign-Up Fee | $100 (one-time) | **$199.99** (strikethrough) | **$99.99** (50% off) |
 
-### Root cause
-Stripe's email reports 45 failed deliveries to `/functions/v1/seller-stripe-webhook` since April 16. Our DB only logged 2 successful events in that window, meaning the other 43 never reached business logic.
+Plus: when a buyer purchases a membership at checkout that's bundled with a ticket from a specific seller, credit that seller **$20**.
 
-The function currently returns **HTTP 400** in three cases:
-1. Missing `stripe-signature` header
-2. Failed signature verification
-3. Missing env vars (returns 500)
+---
 
-Stripe's message is explicit: *"You need to return any status code between HTTP 200 to 299 for Stripe to consider the webhook event successfully delivered."* Every 4xx/5xx triggers a retry storm and the impending April 25 disable deadline.
+## 1. Stripe products & prices
 
-The most likely trigger: signature mismatches from rotated secrets, Connect account events, or events from a sibling webhook misrouted to this URL. Either way, the fix is to **always 200** Stripe, and log the failure for our own visibility.
+Create new prices via Stripe MCP (keep old prices archived in case of replay):
 
-### Changes to `supabase/functions/seller-stripe-webhook/index.ts`
+- **Buyer Membership (recurring, yearly, CAD)**
+  - Promo price: **$59.99 CAD/year** (`recurring_interval: year`) → save new price ID
+  - Strikethrough price ($99.99) is **display-only**, not billed.
+- **Seller Sign-Up Fee (one-time, CAD)**
+  - Promo price: **$99.99 CAD** one-time → save new price ID
+  - Strikethrough ($199.99) is display-only.
 
-1. **Missing signature** → return **200** with `{ received: true, ignored: "no_signature" }` (was 400). Log to `stripe_webhook_events` as `ignored_no_signature`.
-2. **Signature verification failure** → return **200** with `{ received: true, signature_failed: true }` (was 400). Log to `stripe_webhook_events` with status `signature_failed` and the error message, plus the raw event ID if parseable from the body. This is critical: Stripe stops retrying, but we still see the problem in Admin → Webhook Events.
-3. **Missing env vars** → return **200** with `{ received: true, misconfigured: true }` (was 500). Log a `console.error` so it surfaces in function logs.
-4. Keep all existing post-verification logic (HANDLED set, processing_error 200 ack) untouched — that part is already correct.
+Both new price IDs will be hardcoded into:
+- `supabase/functions/create-checkout/index.ts` → replace `price_1TKTCMBgGwQ8YCQeW2OAT6Vh`
+- `supabase/functions/create-seller-signup-fee/index.ts` → replace the dynamically-created $100 price (also clear the cached `seller_signup_fee_price_id` row in `site_settings` so the new hardcoded ID takes over)
 
-### Admin visibility
-The existing `AdminWebhookEvents.tsx` table already renders `error_message` and a status badge — new `signature_failed` and `ignored_no_signature` statuses will appear automatically. No UI work required, but we'll add `signature_failed` to the `STATUS_STYLES` map so it gets a red/destructive badge instead of falling back to the default.
+---
 
-### Files touched
-- `supabase/functions/seller-stripe-webhook/index.ts` — change three response paths from 4xx/5xx to 200, add audit logging on signature failure
-- `src/components/admin/AdminWebhookEvents.tsx` — add `signature_failed` to status styles map
+## 2. Frontend pricing display
 
-### Outcome
-- Stripe receives 2xx for every delivery → retry storm stops, April 25 disable threat removed
-- Real signature problems now surface in Admin → Webhook Events with full error message instead of being invisible
-- No risk to legitimate events: the existing signature-verified branch is unchanged
+Centralize pricing in a new `src/config/pricing.ts`:
+```
+MEMBERSHIP_PRICE = 59.99
+MEMBERSHIP_PRICE_ORIGINAL = 99.99
+MEMBERSHIP_DISCOUNT_PCT = 40
+SELLER_SIGNUP_PRICE = 99.99
+SELLER_SIGNUP_PRICE_ORIGINAL = 199.99
+SELLER_SIGNUP_DISCOUNT_PCT = 50
+SELLER_MEMBERSHIP_REFERRAL_BONUS = 20
+```
 
+Replace every hardcoded `$49.95` / `49.95` / `$100` in:
+- `src/components/MembershipSection.tsx` — show strikethrough $99.99 + promo $59.99 + "40% OFF" badge
+- `src/components/SolutionSection.tsx`
+- `src/components/team/FeeGateDialog.tsx` (lines 150, 413, 451 — also the membership math)
+- `src/pages/Membership.tsx` (~10 occurrences, including the savings ROI math `totalSaved / 49.95`)
+- `src/pages/About.tsx`
+- `src/pages/TermsOfService.tsx` (membership amount mention)
+- `src/components/reseller/SellerSignupFee.tsx` — show strikethrough $199.99 + promo $99.99 + "50% OFF" badge
+- `supabase/functions/chat-support/index.ts` — system prompt mentions $49.95
+- `supabase/functions/stripe-webhook/index.ts` line 265 — "$100 seller sign-up fee" copy
+- `supabase/functions/create-checkout/index.ts` line 126 — `membership_amount: "49.95"` → `"59.99"`
+- `src/test/iphone-purchase-flow.test.tsx` — update `MEMBERSHIP_PRICE` constant + breakeven thresholds
+
+Visual treatment for strikethrough/promo:
+```
+<span class="line-through text-muted-foreground">$99.99</span>
+<span class="text-gold font-bold">$59.99</span>
+<Badge>40% OFF</Badge>
+```
+
+---
+
+## 3. Seller $20 referral credit
+
+When a buyer pays via the **bundled membership + ticket** checkout (already exists in `create-checkout`), and the ticket has a `seller_id`, credit that seller $20.
+
+**Database (migration):**
+```sql
+CREATE TABLE public.seller_credits (
+  id uuid PK default gen_random_uuid(),
+  seller_id uuid not null,
+  order_id uuid,
+  amount numeric not null,
+  reason text not null,             -- 'membership_referral'
+  status text not null default 'pending',  -- pending | paid
+  created_at timestamptz default now(),
+  paid_at timestamptz
+);
+-- RLS: admins manage all; sellers SELECT own
+```
+
+**Webhook logic** (`supabase/functions/stripe-webhook/index.ts`, in the must-succeed block where `order_transfers` is created):
+- Detect membership bundle: `meta.membership_amount` present AND parseFloat > 0.
+- Look up the ticket's `seller_id`. If it exists and is **not** the admin fulfillment user, insert into `seller_credits` (amount=20, reason='membership_referral', order_id, seller_id).
+- Skip if seller_id is the admin user (no self-credit on platform-owned tickets).
+
+**Admin UI:** New "Seller Credits" tab in `AdminDashboard.tsx` (small table) listing pending credits with a "Mark Paid" action that updates `status='paid'` + `paid_at`. Out-of-scope: actual Stripe Connect transfer — credits are tracked manually for now and reconciled with the existing 2-week post-event payout cycle. (Easy to extend later to auto-transfer.)
+
+**Seller dashboard:** add a small "Bonus Credits" summary card on `ResellerDashboard.tsx` showing total pending + paid bonus credits.
+
+---
+
+## 4. Memory updates
+
+Update `mem://business-logic/membership-model` and the Core memory line:
+> Pricing model: ~~$49.95/yr~~ **$59.99/yr (promo, regular $99.99)** membership for $0 fees. Non-members pay LCC (13%). Sellers earn $20 referral credit when a buyer adds membership at checkout on their ticket.
+
+Update `mem://business-logic/seller-payouts` to mention the $20 referral credit.
+
+---
+
+## Out of scope
+- Automatic Stripe Connect transfers for the $20 credit (admin marks paid manually for now).
+- Migrating existing $49.95 active subscriptions — they stay grandfathered at their current price; only new signups get the new pricing.
+- Promo end-date logic (the discount is presented as ongoing; no countdown timer).

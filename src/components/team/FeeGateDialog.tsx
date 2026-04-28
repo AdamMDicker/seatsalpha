@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import { format } from "date-fns";
+import { MEMBERSHIP_PRICE, MEMBERSHIP_PRICE_ORIGINAL, MEMBERSHIP_DISCOUNT_PCT } from "@/config/pricing";
 
 interface FeeGateDialogProps {
   open: boolean;
@@ -147,7 +148,7 @@ const FeeGateDialog = ({
   const subtotal = Math.round(ticketPrice * quantity * 100) / 100;
   const hstAmount = Math.round(subtotal * 0.13 * 100) / 100;
   const totalWithHST = Math.round((subtotal + hstAmount) * 100) / 100;
-  const totalWithMembership = Math.round((subtotal + 49.95) * 100) / 100;
+  const totalWithMembership = Math.round((subtotal + MEMBERSHIP_PRICE) * 100) / 100;
 
   const currentTotal = selectedOption === "hst" ? totalWithHST : totalWithMembership;
 
@@ -408,9 +409,12 @@ const FeeGateDialog = ({
                       <span className="text-muted-foreground">Tickets ({quantity}× ${ticketPrice.toFixed(2)}, no fees, no LCC)</span>
                       <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">+ Annual membership</span>
-                      <span className="text-foreground font-medium">$49.95/yr</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">+ Annual membership <span className="text-[8px] font-bold bg-gold/20 text-gold px-1 py-0.5 rounded uppercase tracking-wide ml-0.5">{MEMBERSHIP_DISCOUNT_PCT}% OFF</span></span>
+                      <span className="text-foreground font-medium">
+                        <span className="line-through text-muted-foreground/60 text-[9px] mr-1">${MEMBERSHIP_PRICE_ORIGINAL.toFixed(2)}</span>
+                        ${MEMBERSHIP_PRICE.toFixed(2)}/yr
+                      </span>
                     </div>
                     <div className="border-t border-dashed border-muted-foreground/30 my-0.5" />
                     <div className="flex justify-between font-bold text-foreground text-xs">
@@ -448,7 +452,7 @@ const FeeGateDialog = ({
                         ))}
                       </ul>
                       <p className="text-[9px] text-muted-foreground/70 pt-1 border-t border-border">
-                        One payment of $49.95/year. Pays for itself in 1–2 purchases.
+                        One payment of ${MEMBERSHIP_PRICE.toFixed(2)}/year (regular ${MEMBERSHIP_PRICE_ORIGINAL.toFixed(2)}). Pays for itself in 1–2 purchases.
                       </p>
                     </div>
                   </PopoverContent>
