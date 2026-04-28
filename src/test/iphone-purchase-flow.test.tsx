@@ -27,7 +27,7 @@ beforeEach(() => {
 
 // ---------- Pricing helpers (mirror FeeGateDialog logic) ----------
 const LCC_RATE = 0.13;
-const MEMBERSHIP_PRICE = 49.95;
+const MEMBERSHIP_PRICE = 59.99;
 
 function calcNonMemberTotal(unitPrice: number, qty: number) {
   const subtotal = unitPrice * qty;
@@ -135,13 +135,13 @@ describe("Flow 2 — Member fee-gate fast-path (no fees)", () => {
     expect(total).toBe(170);
   });
 
-  it("non-member can opt for membership bundle (saves on 4+ tickets)", () => {
-    // Single ticket: LCC ($11.05) cheaper than membership ($49.95)
+  it("non-member can opt for membership bundle (saves on enough tickets)", () => {
+    // Single ticket: LCC ($11.05) cheaper than membership ($59.99)
     const single = calcNonMemberTotal(85, 1);
     const singleWithMembership = calcMembershipBundleTotal(85, 1);
     expect(single.total).toBeLessThan(singleWithMembership.total);
 
-    // 6 tickets: LCC ($66.30) > membership ($49.95)
+    // 6 tickets: LCC ($66.30) > membership ($59.99)
     const six = calcNonMemberTotal(85, 6);
     const sixWithMembership = calcMembershipBundleTotal(85, 6);
     expect(sixWithMembership.total).toBeLessThan(six.total);
