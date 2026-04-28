@@ -248,7 +248,6 @@ const FeeGateDialog = ({
       <>
       {contactGate}
       <Dialog open={open} onOpenChange={onOpenChange}>
-      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md p-0 overflow-hidden max-h-[90vh] flex flex-col">
           <div className="bg-gradient-to-r from-gold/10 to-gold/5 border-b border-border px-4 pt-3 pb-2 flex-shrink-0">
             <DialogHeader>
