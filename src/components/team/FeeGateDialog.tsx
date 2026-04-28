@@ -331,11 +331,14 @@ const FeeGateDialog = ({
           </div>
         </DialogContent>
       </Dialog>
+      </>
     );
   }
 
   // --- NON-MEMBER / ADMIN FULL DIALOG ---
   return (
+    <>
+    {contactGate}
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border px-4 pt-2.5 pb-1.5 flex-shrink-0">
