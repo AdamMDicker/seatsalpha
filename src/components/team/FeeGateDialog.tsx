@@ -100,6 +100,8 @@ const FeeGateDialog = ({
   const [membershipLoading, setMembershipLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [contactGateOpen, setContactGateOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const isOddFullSet = availableQuantity % 2 !== 0;
