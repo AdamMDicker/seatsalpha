@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { redirectToStripeCheckout } from "@/utils/redirectToStripeCheckout";
 import { format } from "date-fns";
 import { MEMBERSHIP_PRICE, MEMBERSHIP_PRICE_ORIGINAL, MEMBERSHIP_DISCOUNT_PCT } from "@/config/pricing";
+import ContactInfoGate from "./ContactInfoGate";
 
 interface FeeGateDialogProps {
   open: boolean;
