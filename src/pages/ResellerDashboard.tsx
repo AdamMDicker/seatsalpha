@@ -67,7 +67,7 @@ const ResellerDashboard = () => {
       toast({ title: "Subscription Active!", description: "Your seller membership is now active." });
     }
     if (signupParam === "success") {
-      toast({ title: "Sign-Up Fee Paid!", description: "Your $100 sign-up fee has been processed. Now set up your weekly membership." });
+      toast({ title: "Sign-Up Fee Paid!", description: "Your $99.99 sign-up fee has been processed. Now set up your weekly membership." });
     }
     if (connectParam === "success") {
       toast({ title: "Payout Account Connected!", description: "Your payout account is being set up." });
