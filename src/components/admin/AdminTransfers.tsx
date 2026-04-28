@@ -370,7 +370,7 @@ const AdminTransfers = () => {
                               <CheckCircle className="h-3 w-3 mr-1" /> Confirm
                             </Button>
                           )}
-                          {t.status !== "disputed" && t.status !== "pending" && (
+                          {t.status !== "disputed" && (
                             <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={() => setConfirmDialog({ open: true, transfer: t, action: "dispute" })}>
                               <ShieldAlert className="h-3 w-3 mr-1" /> Dispute
                             </Button>
