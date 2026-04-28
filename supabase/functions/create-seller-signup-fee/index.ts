@@ -8,7 +8,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SIGNUP_FEE_PRICE_KEY = "seller_signup_fee_price_id";
+// Hardcoded promo price ID — $99.99 CAD one-time (regular $199.99, 50% off)
+const SIGNUP_FEE_PRICE_ID = "price_1TRE2dBgGwQ8YCQeC7oD4S6s";
 
 const logStep = (step: string, details?: unknown) => {
   console.log(`[CREATE-SELLER-SIGNUP-FEE] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
@@ -54,45 +55,8 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    // Get or create the one-time signup fee price
-    let priceId: string | null = null;
-    const { data: setting } = await supabaseClient
-      .from("site_settings")
-      .select("value")
-      .eq("key", SIGNUP_FEE_PRICE_KEY)
-      .single();
-
-    if (setting?.value) {
-      try {
-        const existingPrice = await stripe.prices.retrieve(setting.value);
-        if (!("deleted" in existingPrice)) {
-          priceId = existingPrice.id;
-          logStep("Using cached signup fee price ID", { priceId });
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        logStep("Cached signup fee price invalid, recreating", { priceId: setting.value, message });
-      }
-    }
-
-    if (!priceId) {
-      const product = await stripe.products.create({
-        name: "Seller Sign-Up Fee",
-        description: "One-time sign-up fee for seats.ca seller marketplace access",
-      });
-      const price = await stripe.prices.create({
-        product: product.id,
-        unit_amount: 10000,
-        currency: "cad",
-      });
-      priceId = price.id;
-      logStep("Created Stripe signup fee price", { priceId, productId: product.id });
-
-      await supabaseClient.from("site_settings").upsert({
-        key: SIGNUP_FEE_PRICE_KEY,
-        value: priceId,
-      });
-    }
+    const priceId = SIGNUP_FEE_PRICE_ID;
+    logStep("Using hardcoded signup fee price ID", { priceId });
 
     // Get or create Stripe customer
     let customerId = reseller.stripe_customer_id;
