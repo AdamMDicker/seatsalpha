@@ -188,16 +188,44 @@ const FeeGateDialog = ({
     }
   };
 
-  const handleProceed = () => {
-    if (isMember || selectedOption === "hst") {
-      if (isMember) {
-        onProceedNoFees?.(quantity);
-      } else {
-        onProceedWithFees(quantity);
-      }
-    } else {
-      handleBuyMembership();
+  const ensureContactInfoThen = async (action: () => void) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      action();
+      return;
     }
+    setCurrentUserId(user.id);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("phone, address_line1, city, province, postal_code")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const complete =
+      !!profile?.phone?.trim() &&
+      !!profile?.address_line1?.trim() &&
+      !!profile?.city?.trim() &&
+      !!profile?.province?.trim() &&
+      !!profile?.postal_code?.trim();
+    if (!complete) {
+      setContactGateOpen(true);
+      return;
+    }
+    action();
+  };
+
+  const handleProceed = () => {
+    const action = () => {
+      if (isMember || selectedOption === "hst") {
+        if (isMember) {
+          onProceedNoFees?.(quantity);
+        } else {
+          onProceedWithFees(quantity);
+        }
+      } else {
+        handleBuyMembership();
+      }
+    };
+    ensureContactInfoThen(action);
   };
 
   const isLoading = selectedOption === "membership" ? membershipLoading : loading;
