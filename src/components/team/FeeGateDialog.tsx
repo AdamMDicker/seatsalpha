@@ -569,6 +569,7 @@ const FeeGateDialog = ({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
 
