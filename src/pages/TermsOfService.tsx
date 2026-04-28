@@ -153,7 +153,7 @@ const TermsOfService = () => {
 
           <section id="lcc">
             <h2 className="text-lg font-semibold text-foreground mb-2">20. Local Consumption Charge (LCC)</h2>
-            <p className="mb-3">seats.ca applies a Local Consumption Charge ("LCC") of 13% to all ticket purchases made by non-member users. The LCC is a platform consumption charge applied at checkout to cover local regulatory, compliance, and operational costs associated with facilitating secondary ticket transactions in Ontario. The LCC is not a government-imposed tax and is distinct from any applicable Harmonized Sales Tax (HST), Goods and Services Tax (GST), or Provincial Sales Tax (PST). Members who hold an active seats.ca annual membership ($49.95/year) are exempt from the LCC on all purchases for the duration of their membership.</p>
+            <p className="mb-3">seats.ca applies a Local Consumption Charge ("LCC") of 13% to all ticket purchases made by non-member users. The LCC is a platform consumption charge applied at checkout to cover local regulatory, compliance, and operational costs associated with facilitating secondary ticket transactions in Ontario. The LCC is not a government-imposed tax and is distinct from any applicable Harmonized Sales Tax (HST), Goods and Services Tax (GST), or Provincial Sales Tax (PST). Members who hold an active seats.ca annual membership ($59.99/year, regular $99.99) are exempt from the LCC on all purchases for the duration of their membership.</p>
           </section>
 
           <section>

@@ -45,7 +45,7 @@ const SolutionSection = () => {
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-5 py-1.5 rounded-full shadow-lg shadow-primary/25">
               Seats.ca Member
             </span>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 sm:mb-6">$49.95/yr membership</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 sm:mb-6">$59.99/yr membership <span className="text-gold/80 font-bold">(40% off)</span></p>
             <p className="font-display text-5xl sm:text-6xl font-bold text-foreground mb-3 sm:mb-4">$100</p>
             <div className="space-y-2 text-sm text-muted-foreground">
               {["No service fees", "LCC included", "What you see = what you pay"].map((text) => (
