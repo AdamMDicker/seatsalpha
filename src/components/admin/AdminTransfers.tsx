@@ -44,6 +44,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   pending: { label: "Upload Needed", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
   uploaded: { label: "Analyzing...", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
   confirmed: { label: "Verified ✓", className: "bg-green-100 text-green-800 border-green-300" },
+  completed: { label: "Completed ✓", className: "bg-green-100 text-green-900 border-green-400" },
   disputed: { label: "Error — Mismatch", className: "bg-red-100 text-red-800 border-red-300" },
 };
 
