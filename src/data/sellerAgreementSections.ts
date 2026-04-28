@@ -9,7 +9,7 @@ export const AGREEMENT_SECTIONS = [
   },
   {
     title: "3. Fees & Payment Terms",
-    content: `• Annual Membership Fee: $100 (non-refundable)\n• Weekly Card Validation Fee: $0.50/week to maintain an active seller account\n\nYou agree to maintain a valid credit card on file at all times.\n\nFailed Payments\n\nIf your weekly charge fails, Seats.ca reserves the right to:\n• Automatically remove or suspend your listings\n• Pause your selling privileges\n• Charge a reactivation fee to restore your account`,
+    content: `• One-Time Seller Sign-Up Fee: $99.99 CAD (regular $199.99 — currently 50% off, non-refundable)\n• Weekly Card Validation Fee: $0.50/week to maintain an active seller account\n\nYou agree to maintain a valid credit card on file at all times.\n\nFailed Payments\n\nIf your weekly charge fails, Seats.ca reserves the right to:\n• Automatically remove or suspend your listings\n• Pause your selling privileges\n• Charge a reactivation fee to restore your account`,
   },
   {
     title: "4. Seller Payouts & Funds",
