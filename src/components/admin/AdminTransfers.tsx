@@ -295,7 +295,8 @@ const AdminTransfers = () => {
               </TableHeader>
               <TableBody>
                 {paged.map((t) => {
-                  const cfg = statusConfig[t.status] || statusConfig.pending;
+                  const isCompleted = t.status === "confirmed" && !!t.forward_sent_at;
+                  const cfg = isCompleted ? statusConfig.completed : (statusConfig[t.status] || statusConfig.pending);
                   const vr = t.verification_result as any;
                   return (
                     <TableRow key={t.id}>
