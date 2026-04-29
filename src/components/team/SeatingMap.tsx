@@ -157,6 +157,8 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
               src={venueMap}
               alt={`${displayName} Seating Chart`}
               className="w-full rounded-lg cursor-pointer"
+              loading="lazy"
+              decoding="async"
               onClick={() => setMapZoomed(true)}
             />
             <button
@@ -226,7 +228,7 @@ const SeatingMap = ({ availableSections, selectedSection, setSelectedSection, ga
           <button className="absolute top-4 right-4 bg-card/80 border border-border rounded-full p-2 hover:bg-card transition-colors z-10" onClick={() => setMapZoomed(false)}>
             <X className="h-6 w-6 text-foreground" />
           </button>
-          <img src={venueMap} alt={`${displayName} Seating Chart - Full Size`} className="max-w-full max-h-[90vh] object-contain rounded-xl" onClick={(e) => e.stopPropagation()} />
+          <img src={venueMap} alt={`${displayName} Seating Chart - Full Size`} className="max-w-full max-h-[90vh] object-contain rounded-xl" loading="lazy" decoding="async" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
         </>

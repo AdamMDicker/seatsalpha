@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Mail, MessageSquare, Clock, Send } from "lucide-react";
+import { Mail, MessageSquare, Clock, Send, Phone } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,13 @@ import { z } from "zod";
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be under 100 characters"),
   email: z.string().trim().email("Please enter a valid email address").max(255),
+  phone: z.string().trim().max(20, "Phone number must be under 20 characters").optional().or(z.literal("")),
   subject: z.string().trim().max(200).optional(),
   message: z.string().trim().min(1, "Message is required").max(5000, "Message must be under 5000 characters"),
 });
 
 const Contact = () => {
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const { toast } = useToast();
@@ -47,7 +48,7 @@ const Contact = () => {
       });
       if (error) throw error;
       setStatus("sent");
-      setForm({ name: "", email: "", subject: "", message: "" });
+      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
       toast({ title: "Message sent! ✉️", description: "We'll get back to you within 24 hours." });
     } catch (err: any) {
       setStatus("idle");
@@ -103,20 +104,38 @@ const Contact = () => {
                       {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
                     </div>
 
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
-                        Email Address <span className="text-destructive">*</span>
-                      </label>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={form.email}
-                        onChange={handleChange}
-                        placeholder="john@example.com"
-                        className={`w-full px-4 py-3 rounded-lg bg-background border ${errors.email ? "border-destructive" : "border-border"} text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm`}
-                      />
-                      {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
+                          Email Address <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={form.email}
+                          onChange={handleChange}
+                          placeholder="john@example.com"
+                          className={`w-full px-4 py-3 rounded-lg bg-background border ${errors.email ? "border-destructive" : "border-border"} text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm`}
+                        />
+                        {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
+                      </div>
+
+                      <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-1.5">
+                          Phone Number
+                        </label>
+                        <input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          value={form.phone}
+                          onChange={handleChange}
+                          placeholder="+1 (416) 555-0123"
+                          className={`w-full px-4 py-3 rounded-lg bg-background border ${errors.phone ? "border-destructive" : "border-border"} text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm`}
+                        />
+                        {errors.phone && <p className="text-xs text-destructive mt-1">{errors.phone}</p>}
+                      </div>
                     </div>
 
                     <div>

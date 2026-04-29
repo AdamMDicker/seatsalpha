@@ -423,7 +423,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
                     onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
                     className="relative group flex-shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all"
                   >
-                    <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" />
+                    <img src={img.image_url} alt={img.caption || "Seat view"} className="w-24 h-16 object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
                       <Camera className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
@@ -512,7 +512,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
                     onClick={(e) => { e.stopPropagation(); openLightbox(images, idx); }}
                     className="relative group flex-shrink-0 rounded overflow-hidden border border-border hover:border-primary/40 transition-all"
                   >
-                    <img src={img.image_url} alt={img.caption || "Seat view"} className="w-20 h-14 object-cover" />
+                    <img src={img.image_url} alt={img.caption || "Seat view"} className="w-20 h-14 object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
                       <Camera className="h-3 w-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
@@ -871,7 +871,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
                         idx === lightboxIndex ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
                       }`}
                     >
-                      <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                      <img src={img.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     </button>
                   ))}
                 </div>

@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, subject, message } = await req.json();
+    const { name, email, phone, subject, message } = await req.json();
 
     // Validate inputs
     if (!name || !email || !message) {
@@ -29,6 +29,13 @@ serve(async (req) => {
       );
     }
 
+    if (phone && phone.length > 20) {
+      return new Response(
+        JSON.stringify({ error: "Phone number exceeds maximum length." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return new Response(
@@ -37,18 +44,17 @@ serve(async (req) => {
       );
     }
 
-    const subjectLine = subject ? `[seats.ca Contact] ${subject}` : `[seats.ca Contact] New message from ${name}`;
+    const subjectLine = subject ? `Seats.ca - ${subject}` : `Seats.ca - New Request from ${name}`;
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // Use Lovable AI to format a nice plain-text summary, then we'll construct the email body
     const emailBody = `
 New Contact Form Submission
 ============================
 
 Name: ${name}
-Email: ${email}
+Email: ${email}${phone ? `\nPhone: ${phone}` : ""}
 Subject: ${subject || "General Inquiry"}
 
 Message:
@@ -58,9 +64,7 @@ ${message}
 Sent from seats.ca contact form
     `.trim();
 
-    // For now, store the submission and log it. 
-    // Email delivery would require an email service integration.
-    // We'll use the Supabase service role to store the submission.
+    // Store the submission in the database
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -76,6 +80,7 @@ Sent from seats.ca contact form
         body: JSON.stringify({
           name,
           email,
+          phone: phone || null,
           subject: subject || "General Inquiry",
           message,
         }),
