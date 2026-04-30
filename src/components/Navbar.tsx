@@ -370,6 +370,9 @@ const Navbar = () => {
                     Seller Portal
                   </Link>
                 )}
+                <Link to="/account" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]">
+                  My Account
+                </Link>
                 <Link to="/my-orders" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]">
                   My Orders
                 </Link>
