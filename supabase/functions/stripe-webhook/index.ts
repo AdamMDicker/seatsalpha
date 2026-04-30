@@ -63,26 +63,25 @@ const SENDER_DOMAIN = "notify.seats.ca";
 const FROM_EMAIL = "noreply@seats.ca";
 const LOGO_URL = "https://fkcszgrewzhswdtsqpad.supabase.co/storage/v1/object/public/email-assets/seats-logo-horizontal.png";
 
-// --- Date formatting helper ---
+// --- Date formatting helper (uses Intl for correct EST/EDT handling) ---
 function formatEventDateET(raw: string): string {
   if (!raw) return "";
   try {
     const d = new Date(raw);
     if (isNaN(d.getTime())) return raw;
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const estOffset = -5 * 60;
-    const utc = d.getTime() + d.getTimezoneOffset() * 60000;
-    const est = new Date(utc + estOffset * 60000);
-    const day = days[est.getDay()];
-    const month = months[est.getMonth()];
-    const date = est.getDate();
-    const year = est.getFullYear();
-    let hours = est.getHours();
-    const minutes = est.getMinutes().toString().padStart(2, "0");
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12 || 12;
-    return `${day}, ${month} ${date}, ${year} · ${hours}:${minutes} ${ampm} ET`;
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Toronto",
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const parts = fmt.formatToParts(d);
+    const get = (t: string) => parts.find((p) => p.type === t)?.value || "";
+    return `${get("weekday")}, ${get("month")} ${get("day")}, ${get("year")} · ${get("hour")}:${get("minute")} ${get("dayPeriod")} ET`;
   } catch {
     return raw;
   }
@@ -93,11 +92,12 @@ function shortDateForSubject(raw: string): string {
   try {
     const d = new Date(raw);
     if (isNaN(d.getTime())) return "";
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const estOffset = -5 * 60;
-    const utc = d.getTime() + d.getTimezoneOffset() * 60000;
-    const est = new Date(utc + estOffset * 60000);
-    return `${months[est.getMonth()]} ${est.getDate()}`;
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Toronto",
+      month: "short",
+      day: "numeric",
+    });
+    return fmt.format(d);
   } catch {
     return "";
   }
