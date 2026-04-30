@@ -1,51 +1,35 @@
 
-# Import Manus Fixes into Seats.ca
+# Applicable Fixes from Manus TODO List
 
-Manus rebuilt the site on a separate Express/tRPC stack and identified **4 bugs** that also exist in our Lovable Edge Functions. Here's what needs to be fixed:
+I reviewed all 60+ items against the current codebase. Here's the breakdown:
 
----
+## Already Done / Not Applicable
 
-## Fix 1: Buyer email missing for returning Stripe customers (Critical)
+Most items fall into these categories:
+- **Manus-specific infrastructure** (tRPC, Express routes, data migration, new Supabase project) — does not apply to this Lovable project
+- **Already implemented**: Recovery email template is already professional and branded. Pricing config ($59.99/$99.99) is correct. Membership detection via `useAuth()` context exists. My Orders page exists. FeeGateDialog correctly hides membership upsell when `isMember=true`. Stripe is in live mode.
+- **Already fixed in last session**: Buyer email fallback, delivery status accuracy, timezone handling.
+- **DNS/domain issue**: The email domain `notify.seats.ca` DNS has drifted — you need to re-verify the NS records at your domain provider (as mentioned in the previous message). This is blocking ALL email delivery.
 
-**Problem:** When `createCheckout` passes an existing Stripe `customer` ID, Stripe doesn't populate `customer_email` on the session. The webhook only checks `session.customer_email` and `session.customer_details?.email` — both can be empty for returning customers. This means the order gets created without a buyer, and no confirmation email is sent.
+## Fixes to Apply (4 items)
 
-**Fix:** Add a fallback in `stripe-webhook/index.ts` that calls `stripe.customers.retrieve()` when both session email fields are empty.
+### 1. ContactInfoGate: use upsert instead of update
+**Bug**: If a user's profile row doesn't exist yet (edge case with OAuth signups), the `Save & Continue` button fails silently because it uses `.update()` which requires an existing row.
+**Fix**: Change `.update()` to `.upsert()` in `ContactInfoGate.tsx` so it creates the row if missing.
 
----
+### 2. Hide sold-out tickets (quantity = 0 remaining)
+**Bug**: Tickets where `quantity - quantity_sold = 0` still appear in listings.
+**Fix**: Add a `.filter()` in `TicketListings.tsx` to exclude tickets with zero remaining quantity before displaying them.
 
-## Fix 2: Delivery status shows "Delivered" prematurely (High)
+### 3. Add Account/Profile page with password change
+**Missing feature**: There's no dedicated account page where users can view their profile, update their info, or change their password. Manus added this.
+**Fix**: Create a new `AccountPage.tsx` with sections for profile info editing, password change (using `supabase.auth.updateUser`), and a link to purchase history (/my-orders). Add route `/account` and a nav link.
 
-**Problem:** In `DeliveryStatusInfo.tsx`, `status === "confirmed"` is treated as delivered. But "confirmed" only means the AI verified the screenshot — the actual delivery to the buyer happens when `forward_sent_at` is set (the Ticketmaster accept link has been relayed).
+### 4. SEO: Reduce homepage meta keywords and set title
+**Missing**: The homepage doesn't set `document.title` or manage meta keywords.
+**Fix**: Add `document.title` in `Index.tsx` (concise ~53 char title) and a meta description tag focused on 6 core keywords.
 
-**Fix:** Change `getDeliveryStage()` so "delivered" requires `forward_sent_at` to be set. Confirmed-but-not-forwarded transfers show "Tickets verified — delivering shortly" instead.
+## Deferred / User Action Required
 
----
-
-## Fix 3: Timezone handling — hardcoded UTC-5 instead of EST/EDT (Medium)
-
-**Problem:** `formatEventDateET()` and `shortDateForSubject()` in the webhook use a hardcoded UTC-5 offset. During Eastern Daylight Time (March-November), all email timestamps are 1 hour off. Since Blue Jays games run April-October, nearly every email shows the wrong time.
-
-**Fix:** Replace the manual offset arithmetic with `Intl.DateTimeFormat` using `timeZone: "America/Toronto"`, which automatically handles EST/EDT transitions.
-
----
-
-## Fix 4: Email asset URLs use hardcoded Supabase storage path (Low)
-
-**Problem:** `LOGO_URL` and `HERO_BANNER_URL` reference the Supabase storage URL directly. This is currently working but fragile.
-
-**Fix:** This is already using our own Supabase project storage, so no change is needed here — the URLs are correct for our project. We'll skip this one.
-
----
-
-## Files to Change
-
-1. **`supabase/functions/stripe-webhook/index.ts`** — Fixes 1 + 3
-2. **`src/components/DeliveryStatusInfo.tsx`** — Fix 2
-
-After editing the Edge Function, it will be redeployed.
-
----
-
-## What We're NOT Importing
-
-Manus rebuilt the entire backend on Express + tRPC. We're keeping our existing Supabase Edge Functions architecture — we're only porting the **bug fixes**, not the architecture change.
+- **Email delivery**: All emails (recovery, transactional, auth) are blocked because the `notify.seats.ca` DNS records have drifted. Go to **Cloud > Emails > Manage Domains** and re-verify, or update your NS records at your domain provider.
+- **Design refinements** (color palette, typography, animations): These are cosmetic changes that should be reviewed individually rather than bulk-applied.
