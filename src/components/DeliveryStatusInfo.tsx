@@ -23,6 +23,18 @@ export function getDeliveryStage(
     return { stage: "awaiting_seller", eta: "Within a few hours", lastEvent: null };
   }
 
+  // Delivered = all transfers have been forwarded to buyer (forward_sent_at set)
+  const allForwarded = transfers.every((t) => !!t.forward_sent_at);
+  if (allForwarded) {
+    const last = transfers
+      .map((t) => t.forward_sent_at)
+      .filter(Boolean)
+      .sort()
+      .pop();
+    return { stage: "delivered", eta: "Delivered", lastEvent: last || null };
+  }
+
+  // Confirmed but not yet forwarded = verified, relay pending
   const allConfirmed = transfers.every((t) => t.status === "confirmed" || !!t.confirmed_at);
   if (allConfirmed) {
     const last = transfers
@@ -30,7 +42,7 @@ export function getDeliveryStage(
       .filter(Boolean)
       .sort()
       .pop();
-    return { stage: "delivered", eta: "Delivered", lastEvent: last || null };
+    return { stage: "in_review", eta: "Tickets verified — delivering shortly", lastEvent: last || null };
   }
 
   const anyUploaded = transfers.some((t) => !!t.uploaded_at);
