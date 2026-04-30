@@ -302,6 +302,13 @@ const Navbar = () => {
                         </Link>
                       )}
                       <Link
+                        to="/account"
+                        onClick={() => setOpenDropdown(null)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                      >
+                        <UserIcon className="h-4 w-4" /> My Account
+                      </Link>
+                      <Link
                         to="/my-orders"
                         onClick={() => setOpenDropdown(null)}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
@@ -363,6 +370,9 @@ const Navbar = () => {
                     Seller Portal
                   </Link>
                 )}
+                <Link to="/account" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]">
+                  My Account
+                </Link>
                 <Link to="/my-orders" onClick={() => setIsOpen(false)} className="block px-4 py-3.5 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors min-h-[48px]">
                   My Orders
                 </Link>

@@ -32,6 +32,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const About = lazy(() => import("./pages/About"));
 const NotificationDetail = lazy(() => import("./pages/NotificationDetail"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
+const Account = lazy(() => import("./pages/Account"));
 const SellerAgreement = lazy(() => import("./pages/SellerAgreement"));
 const CheapBlueJaysTickets = lazy(() => import("./pages/CheapBlueJaysTickets"));
 
@@ -81,6 +82,7 @@ const App = () => (
                 <Route path="/about" element={<About />} />
                 <Route path="/notifications/:id" element={<NotificationDetail />} />
                 <Route path="/my-orders" element={<MyOrders />} />
+                <Route path="/account" element={<Account />} />
                 <Route path="/cheap-blue-jays-tickets" element={<CheapBlueJaysTickets />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

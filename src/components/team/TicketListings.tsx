@@ -326,6 +326,7 @@ const TicketListings = ({ tickets, selectedSection, setSelectedSection, isGiveaw
 
   const sectionFilteredTickets = selectedSection ? tickets.filter((t) => t.section === selectedSection) : tickets;
   const allTickets = sectionFilteredTickets
+    .filter((ticket) => ticket.quantity - ticket.quantity_sold > 0)
     .filter((ticket) => canFulfillSeatCount(ticket, selectedSeatCount))
     .filter((ticket) => !filterAisle || ticket.perks?.includes("aisle"))
     .filter((ticket) => !filterRow1 || ticket.perks?.includes("row1") || ticket.row_name === "1")
