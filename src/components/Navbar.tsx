@@ -302,6 +302,13 @@ const Navbar = () => {
                         </Link>
                       )}
                       <Link
+                        to="/account"
+                        onClick={() => setOpenDropdown(null)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                      >
+                        <UserIcon className="h-4 w-4" /> My Account
+                      </Link>
+                      <Link
                         to="/my-orders"
                         onClick={() => setOpenDropdown(null)}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
