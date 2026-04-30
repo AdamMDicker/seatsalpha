@@ -85,8 +85,7 @@ const ContactInfoGate = ({ open, onOpenChange, userId, onComplete }: ContactInfo
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update(result.data)
-      .eq("user_id", userId);
+      .upsert({ user_id: userId, ...result.data }, { onConflict: "user_id" });
     setSaving(false);
     if (error) {
       toast({ title: "Could not save", description: error.message, variant: "destructive" });
