@@ -42,22 +42,14 @@ serve(async (req) => {
       try {
         const d = new Date(eventDate);
         if (!isNaN(d.getTime())) {
-          // Manual formatting for Deno compatibility
-          const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          // Convert to EST/EDT (UTC-5 / UTC-4)
-          const estOffset = -5 * 60;
-          const utc = d.getTime() + d.getTimezoneOffset() * 60000;
-          const est = new Date(utc + estOffset * 60000);
-          const day = days[est.getDay()];
-          const month = months[est.getMonth()];
-          const date = est.getDate();
-          const year = est.getFullYear();
-          let hours = est.getHours();
-          const minutes = est.getMinutes().toString().padStart(2, "0");
-          const ampm = hours >= 12 ? "PM" : "AM";
-          hours = hours % 12 || 12;
-          formattedEventDate = `${day}, ${month} ${date}, ${year} · ${hours}:${minutes} ${ampm} ET`;
+          const fmt = new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/Toronto",
+            weekday: "short", month: "short", day: "numeric", year: "numeric",
+            hour: "numeric", minute: "2-digit", hour12: true,
+          });
+          const parts = fmt.formatToParts(d);
+          const get = (t: string) => parts.find((p) => p.type === t)?.value || "";
+          formattedEventDate = `${get("weekday")}, ${get("month")} ${get("day")}, ${get("year")} · ${get("hour")}:${get("minute")} ${get("dayPeriod")} ET`;
         }
       } catch { /* fallback: leave empty */ }
     }
