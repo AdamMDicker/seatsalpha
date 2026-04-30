@@ -32,6 +32,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const About = lazy(() => import("./pages/About"));
 const NotificationDetail = lazy(() => import("./pages/NotificationDetail"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
+const Account = lazy(() => import("./pages/Account"));
 const SellerAgreement = lazy(() => import("./pages/SellerAgreement"));
 const CheapBlueJaysTickets = lazy(() => import("./pages/CheapBlueJaysTickets"));
 
