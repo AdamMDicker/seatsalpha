@@ -245,7 +245,22 @@ serve(async (req) => {
 
     const session = event.data.object as Stripe.Checkout.Session;
     const meta = session.metadata || {};
-    const customerEmail = session.customer_email || session.customer_details?.email || "";
+    let customerEmail = session.customer_email || session.customer_details?.email || "";
+
+    // Fallback: for returning customers, Stripe may not populate email fields on the session.
+    // Retrieve the customer object directly to get their email.
+    if (!customerEmail && session.customer) {
+      try {
+        const customerId = typeof session.customer === "string" ? session.customer : session.customer.id;
+        const customer = await stripe.customers.retrieve(customerId);
+        if (customer && !customer.deleted && customer.email) {
+          customerEmail = customer.email;
+          logStep("Resolved customer email via Stripe API fallback", { customerId, email: customerEmail });
+        }
+      } catch (err) {
+        logStep("WARNING: Failed to retrieve customer email from Stripe", { error: String(err) });
+      }
+    }
 
     // --- Seller signup fee path ---
     if (meta.type === "seller_signup_fee" && meta.reseller_id) {
